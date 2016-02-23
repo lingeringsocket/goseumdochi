@@ -1,0 +1,1 @@
+Sphero-Desktop-API-1.5.2-jvs.jar is based on https://github.com/nicklasgav/Sphero-Desktop-API, built from fork  https://github.com/jsichi/Sphero-Desktop-API, which contains a few modifications needed by goseumdochi.
