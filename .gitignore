@@ -1,3 +1,4 @@
+TAGS
 *.class
 *.log
 
@@ -5,6 +6,7 @@
 .cache
 .history
 .lib/
+lib/*
 dist/*
 target/
 lib_managed/
