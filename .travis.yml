@@ -3,3 +3,9 @@ scala:
   - 2.11.7
 jdk:
   - oraclejdk8
+
+before_install:
+  - sudo apt-get update
+
+install:
+  - sudo apt-get install libopencv-dev
