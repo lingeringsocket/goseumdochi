@@ -14,6 +14,8 @@ lazy val platform = org.bytedeco.javacpp.Loader.getPlatform
 
 classpathTypes += "maven-plugin"
 
+resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
+
 libraryDependencies ++= Seq(
   "com.typesafe.akka"      %% "akka-actor"     % "2.4.1",
   "com.typesafe.akka"      %% "akka-testkit"     % "2.4.1" % "test",
