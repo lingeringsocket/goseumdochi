@@ -1,8 +1,14 @@
 language: scala
+
 scala:
   - 2.11.7
+
 jdk:
   - oraclejdk8
+
+sudo: required
+
+dist: trusty
 
 before_install:
   - sudo apt-get update
