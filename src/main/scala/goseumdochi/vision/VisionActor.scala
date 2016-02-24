@@ -21,7 +21,6 @@ import scala.math._
 import goseumdochi.common.MoreMath._
 
 import javax.swing.JFrame._
-import java.awt.event._
 
 import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
@@ -89,7 +88,8 @@ class VisionActor(videoStream : VideoStream)
     canvas.getCanvas.addMouseListener(new MouseAdapter {
       override def mouseClicked(e : MouseEvent) {
         gossip(
-          MotionDetectedMsg(PlanarPos(e.getX, e.getY), System.currentTimeMillis))
+          MotionDetectedMsg(
+            PlanarPos(e.getX, e.getY), System.currentTimeMillis))
       }
     })
      */

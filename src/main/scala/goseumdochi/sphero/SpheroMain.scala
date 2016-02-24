@@ -80,13 +80,13 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
   {
     println("START DEVICE SEARCH")
   }
-  
+
   override def deviceSearchFailed(error: Bluetooth.EVENT)
   {
     println("FAILED DEVICE SEARCH")
     println("MESSAGE = " + error.getErrorMessage)
   }
-  
+
   override def deviceDiscovered(device : BluetoothDevice)
   {
     println("DISCOVERED DEVICE")
