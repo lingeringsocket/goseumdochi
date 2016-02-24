@@ -38,4 +38,6 @@ maxErrors := 99
 
 traceLevel := 10
 
+scalastyleFailOnError := true
+
 mainClass in Compile := Some("goseumdochi.sphero.SpheroMain")

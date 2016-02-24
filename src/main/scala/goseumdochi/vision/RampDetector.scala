@@ -79,7 +79,7 @@ class RampDetector(val settings : Settings) extends VisionAnalyzer
       val N = 11
 
       for (c <- 0 until 3) {
-        cvSetImageCOI(timg, c+1)
+        cvSetImageCOI(timg, c + 1)
         cvCopy(timg, tgray)
 
         for (l <- 0 until N) {
@@ -87,7 +87,7 @@ class RampDetector(val settings : Settings) extends VisionAnalyzer
             cvCanny(tgray, gray, 0, THRESH, 5)
             cvDilate(gray, gray, null, 1)
           } else {
-            cvThreshold(tgray, gray, (l+1)*255/N, 255, CV_THRESH_BINARY)
+            cvThreshold(tgray, gray, (l + 1)*255/N, 255, CV_THRESH_BINARY)
           }
 
           var contours = new CvSeq
