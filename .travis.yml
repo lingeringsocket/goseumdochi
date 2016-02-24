@@ -13,8 +13,6 @@ dist: trusty
 before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get -qq update
-  - sudo apt-get -qq upgrade
-  - sudo apt-get -qq dist-upgrade
 
 install:
   - sudo apt-get install -qq libopencv-dev libstdc++6
