@@ -30,12 +30,13 @@ object MotionDetector
 
 import MotionDetector._
 
-class MotionDetector(val settings : Settings) extends VisionAnalyzer
+abstract class MotionDetector(val settings : Settings, threshold : Int)
+    extends VisionAnalyzer
 {
   override def analyzeFrame(
     img : IplImage, gray : IplImage, prevGray : IplImage, now : Long) =
   {
-    detectIntruder(prevGray, gray).map(
+    detectMotion(prevGray, gray).map(
       pos => {
         val center = OpenCvUtil.point(pos)
         cvCircle(img, center, 2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
@@ -44,7 +45,7 @@ class MotionDetector(val settings : Settings) extends VisionAnalyzer
     )
   }
 
-  def detectIntruder(beforeImg : IplImage, afterImg : IplImage)
+  def detectMotion(beforeImg : IplImage, afterImg : IplImage)
       : Option[PlanarPos] =
   {
     val diff = AbstractIplImage.create(
@@ -64,7 +65,9 @@ class MotionDetector(val settings : Settings) extends VisionAnalyzer
           val box = cvMinAreaRect2(contour, storage);
           if (box != null) {
             val size = box.size
-            if ((size.width > 40) && (size.height > 40)) {
+            // FIXME:  return the largest object instead of the first
+            // over the threshold
+            if ((size.width > threshold) && (size.height > threshold)) {
               val center = box.center
               return Some(PlanarPos(center.x, center.y))
             }
@@ -79,3 +82,9 @@ class MotionDetector(val settings : Settings) extends VisionAnalyzer
     }
   }
 }
+
+class CoarseMotionDetector(settings : Settings)
+    extends MotionDetector(settings, 40)
+
+class FineMotionDetector(settings : Settings)
+    extends MotionDetector(settings, 5)

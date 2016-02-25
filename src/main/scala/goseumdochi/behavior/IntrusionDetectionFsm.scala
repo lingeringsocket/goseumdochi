@@ -62,7 +62,7 @@ class IntrusionDetectionFsm()
     case Event(ControlActor.CameraAcquiredMsg, _) => {
       sender ! VisionActor.ActivateAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
-        classOf[MotionDetector].getName))
+        classOf[CoarseMotionDetector].getName))
       goto(WaitingForIntruder)
     }
   }

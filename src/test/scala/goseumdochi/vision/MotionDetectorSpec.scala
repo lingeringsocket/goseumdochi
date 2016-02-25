@@ -19,7 +19,9 @@ import org.bytedeco.javacpp.opencv_highgui._
 
 class MotionDetectorSpec extends VisualizableSpecification
 {
-  private val intrusionDetector = new MotionDetector(settings)
+  private val coarseDetector = new CoarseMotionDetector(settings)
+
+  private val fineDetector = new FineMotionDetector(settings)
 
   private def loadImage(filename : String) =
     OpenCvUtil.grayscale(cvLoadImage(filename))
@@ -29,25 +31,46 @@ class MotionDetectorSpec extends VisualizableSpecification
     "detect nothing" in
     {
       val beforeImg = loadImage("data/baseline1.jpg")
-      val afterImg = loadImage("data/baseline2.jpg")
+      val afterImg = loadImage("data/baseline1.jpg")
 
-      val posOpt = intrusionDetector.detectIntruder(beforeImg, afterImg)
-      posOpt must beEmpty
+      val coarseOpt = coarseDetector.detectMotion(beforeImg, afterImg)
+      coarseOpt must beEmpty
+
+      val fineOpt = fineDetector.detectMotion(beforeImg, afterImg)
+      fineOpt must beEmpty
     }
 
-    "detect motion" in
+    "detect coarse motion" in
     {
       val beforeImg = loadImage("data/baseline1.jpg")
       val afterImg = loadImage("data/intruder.jpg")
 
-      val posOpt = intrusionDetector.detectIntruder(beforeImg, afterImg)
-      posOpt must not beEmpty
+      val coarseOpt = coarseDetector.detectMotion(beforeImg, afterImg)
+      coarseOpt must not beEmpty
 
-      val pos = posOpt.get
+      val pos = coarseOpt.get
       visualize(afterImg, pos)
 
       pos.x must be closeTo(424.3 +/- 0.1)
       pos.y must be closeTo(152.0 +/- 0.1)
+    }
+
+    "detect fine motion" in
+    {
+      val beforeImg = loadImage("data/room1.jpg")
+      val afterImg = loadImage("data/room2.jpg")
+
+      val coarseOpt = coarseDetector.detectMotion(beforeImg, afterImg)
+      coarseOpt must beEmpty
+
+      val fineOpt = fineDetector.detectMotion(beforeImg, afterImg)
+      fineOpt must not beEmpty
+
+      val pos = fineOpt.get
+      visualize(afterImg, pos)
+
+      pos.x must be closeTo(386.5 +/- 0.1)
+      pos.y must be closeTo(438.0 +/- 0.1)
     }
   }
 }

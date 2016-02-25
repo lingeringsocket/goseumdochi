@@ -67,7 +67,7 @@ abstract class VisualizableSpecification(confFile : String = "")
     }
 
     val center = OpenCvUtil.point(pos)
-    cvCircle(img, center, 2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
+    cvCircle(img, center, 2, AbstractCvScalar.BLACK, 6, CV_AA, 0)
 
     visualize(img)
   }
