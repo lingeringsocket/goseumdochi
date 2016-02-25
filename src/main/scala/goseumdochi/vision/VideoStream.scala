@@ -46,6 +46,8 @@ object LocalVideoStream extends VideoStream
     val grabber = new OpenCVFrameGrabber(0)
     grabber.setBitsPerPixel(CV_8U)
     grabber.setImageMode(FrameGrabber.ImageMode.COLOR)
+    // FIXME: find a way to suppress "HIGHGUI ERROR: V4L: Property
+    // <unknown property string>(16) not supported by device"
     grabber.start
     grabber
   }
