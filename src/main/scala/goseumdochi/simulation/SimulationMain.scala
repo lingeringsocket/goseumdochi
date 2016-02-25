@@ -15,7 +15,6 @@
 
 package goseumdochi.simulation
 
-import goseumdochi.common._
 import goseumdochi.control._
 import goseumdochi.vision._
 import goseumdochi.behavior._

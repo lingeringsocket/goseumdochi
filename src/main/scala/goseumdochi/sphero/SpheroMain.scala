@@ -20,17 +20,12 @@ import goseumdochi.control._
 import goseumdochi.vision._
 import goseumdochi.behavior._
 
-import scala.math._
-import goseumdochi.common.MoreMath._
-
 import se.nicklasgavelin.bluetooth._
 import se.nicklasgavelin.sphero._
 import se.nicklasgavelin.sphero.RobotListener.EVENT_CODE
 import se.nicklasgavelin.sphero.command._
 import se.nicklasgavelin.sphero.response._
 import se.nicklasgavelin.sphero.response.ResponseMessage.RESPONSE_CODE
-import se.nicklasgavelin.sphero.response.regular._
-import se.nicklasgavelin.sphero.response.information._
 
 import java.util._
 

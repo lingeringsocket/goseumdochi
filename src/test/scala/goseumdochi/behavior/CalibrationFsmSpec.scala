@@ -21,8 +21,6 @@ import goseumdochi.vision._
 
 import akka.actor._
 
-import CalibrationFsm._
-
 class CalibrationFsmSpec extends AkkaSpecification
 {
   "CalibrationFsm" should

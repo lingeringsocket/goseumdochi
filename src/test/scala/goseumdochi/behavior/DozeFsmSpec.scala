@@ -17,11 +17,8 @@ package goseumdochi.behavior
 
 import goseumdochi.common._
 import goseumdochi.control._
-import goseumdochi.vision._
 
 import akka.actor._
-
-import DozeFsm._
 
 class DozeFsmSpec extends AkkaSpecification
 {

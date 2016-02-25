@@ -21,9 +21,7 @@ import goseumdochi.vision._
 
 import akka.actor._
 
-import IntrusionDetectionFsm._
 import MotionDetector._
-import goseumdochi.common.MoreMath._
 
 class IntrusionDetectionFsmSpec extends AkkaSpecification
 {

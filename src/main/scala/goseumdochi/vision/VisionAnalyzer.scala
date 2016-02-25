@@ -19,8 +19,6 @@ import goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
 
-import akka.routing._
-
 trait VisionAnalyzer
 {
   def analyzeFrame(

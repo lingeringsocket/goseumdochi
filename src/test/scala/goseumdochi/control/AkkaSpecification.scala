@@ -15,12 +15,10 @@
 
 package goseumdochi.control
 
-import goseumdochi.common._
 import goseumdochi.vision._
 
 import org.specs2.mutable._
 import org.specs2.time.NoTimeConversions
-import akka.actor._
 import akka.testkit._
 import scala.concurrent.duration._
 

@@ -21,9 +21,6 @@ import org.bytedeco.javacpp._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
-import org.bytedeco.javacv._
-
-import collection._
 
 import goseumdochi.common.MoreMath._
 

@@ -17,10 +17,6 @@ package goseumdochi.control
 
 import goseumdochi.common._
 
-import scala.concurrent._
-import scala.util._
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class TestActuator extends Actuator
 {
   private var lastImpulse : Option[PolarImpulse] = None

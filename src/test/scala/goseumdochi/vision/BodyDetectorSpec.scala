@@ -19,12 +19,6 @@ import goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_highgui._
 
-import collection._
-
-import org.specs2.mutable._
-import org.specs2.specification._
-import org.specs2.execute._
-
 class BodyDetectorSpec extends VisualizableSpecification("simulation.conf")
 {
   private val bodyDetector = new RoundBodyDetector(settings)

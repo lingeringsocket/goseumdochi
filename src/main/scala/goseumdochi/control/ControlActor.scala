@@ -19,9 +19,7 @@ import goseumdochi.common._
 import goseumdochi.vision._
 
 import akka.actor._
-import akka.pattern._
 import akka.routing._
-import akka.util._
 import akka.event._
 
 import scala.concurrent.duration._
@@ -50,8 +48,6 @@ object ControlActor
   // VisionActor.ActivateAnalyzersMsg
   // any kind of VisionActor.ObjDetectedMsg
 }
-
-import ControlActor._
 
 class ControlActor(
   actuator : Actuator,

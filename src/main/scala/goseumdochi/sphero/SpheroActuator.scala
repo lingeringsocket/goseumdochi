@@ -19,7 +19,6 @@ import goseumdochi.common._
 import goseumdochi.control._
 
 import scala.math._
-import goseumdochi.common.MoreMath._
 
 import se.nicklasgavelin.sphero._
 import se.nicklasgavelin.sphero.command._

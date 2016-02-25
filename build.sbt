@@ -8,7 +8,9 @@ version := javacppVersion
 
 scalaVersion := "2.11.7"
 
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint")
+// FIXME:  add in -Ywarn-unused-import after bogus failures are fixed
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint",
+  "-Xfatal-warnings")
 
 lazy val platform = org.bytedeco.javacpp.Loader.getPlatform
 

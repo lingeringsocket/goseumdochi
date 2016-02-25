@@ -17,20 +17,10 @@ package goseumdochi.vision
 
 import goseumdochi.common._
 
-import scala.math._
-import goseumdochi.common.MoreMath._
-
-import javax.swing.JFrame._
-
-import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.helper.opencv_core._
-import org.bytedeco.javacpp.opencv_imgproc._
 import org.bytedeco.javacv._
 
 import akka.actor._
-import akka.pattern._
-import akka.util._
 import akka.routing._
 
 object VisionActor

@@ -20,8 +20,6 @@ import goseumdochi.control._
 import goseumdochi.vision._
 
 import akka.actor._
-import akka.pattern._
-import akka.util._
 
 import scala.concurrent.duration._
 import goseumdochi.common.MoreMath._

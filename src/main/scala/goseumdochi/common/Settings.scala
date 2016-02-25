@@ -17,7 +17,6 @@ package goseumdochi.common
 
 import akka.actor._
 import com.typesafe.config._
-import scala.concurrent.duration._
 import java.util.concurrent._
 
 class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)

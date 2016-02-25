@@ -21,9 +21,6 @@ import goseumdochi.vision._
 
 import akka.actor._
 
-import RampJumperFsm._
-import RampDetector._
-
 class RampJumperFsmSpec extends AkkaSpecification
 {
   "RampJumperFsm" should
@@ -42,7 +39,7 @@ class RampJumperFsmSpec extends AkkaSpecification
       val initialPos = PlanarPos(0, 0)
       val ramp = OrientedRamp(PlanarPos(100, 100), PlanarPos(100, 90))
 
-      fsm ! RampDetectedMsg(ramp, 0)
+      fsm ! RampDetector.RampDetectedMsg(ramp, 0)
       fsm ! ControlActor.BodyMovedMsg(initialPos, 0)
 
       val move1 = expectMsgClass(classOf[ControlActor.ActuateMoveMsg])

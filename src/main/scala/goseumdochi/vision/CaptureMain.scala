@@ -15,13 +15,10 @@
 
 package goseumdochi.vision
 
-import goseumdochi.common._
-
 import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacv._
 
-import javax.swing.JFrame._
 import java.awt.event._
 
 object CaptureMain extends App
