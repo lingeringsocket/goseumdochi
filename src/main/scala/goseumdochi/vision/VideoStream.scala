@@ -32,7 +32,7 @@ trait VideoStream
   def quit() {}
 }
 
-object LocalVideoStream extends VideoStream
+class LocalVideoStream(settings : Settings) extends VideoStream
 {
   private val frameGrabber = startGrabber
 
@@ -47,7 +47,8 @@ object LocalVideoStream extends VideoStream
     grabber
   }
 
-  override def nextFrame() = (frameGrabber.grab, System.currentTimeMillis)
+  override def nextFrame() =
+    (frameGrabber.grab, System.currentTimeMillis)
 
   override def quit()
   {
@@ -61,14 +62,15 @@ class RemoteVideoStream(settings : Settings) extends VideoStream
 
   override def beforeNext()
   {
-    val grabber = new IPCameraFrameGrabber(settings.Vision.cameraUrl)
+    val grabber = new IPCameraFrameGrabber(settings.Vision.remoteCameraUrl)
     grabber.setBitsPerPixel(CV_8U)
     grabber.setImageMode(FrameGrabber.ImageMode.COLOR)
     grabber.start
     frameGrabber = Some(grabber)
   }
 
-  override def nextFrame() = {
+  override def nextFrame() =
+  {
     (frameGrabber.get.grab, System.currentTimeMillis)
   }
 

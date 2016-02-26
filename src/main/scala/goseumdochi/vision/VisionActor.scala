@@ -23,6 +23,8 @@ import org.bytedeco.javacv._
 import akka.actor._
 import akka.routing._
 
+import scala.concurrent.duration._
+
 object VisionActor
 {
   // sent messages
@@ -30,11 +32,12 @@ object VisionActor
   trait ObjDetectedMsg { def eventTime : Long }
 
   // internal messages
-  final case object GrabFrameMsg
+  final case class GrabFrameMsg(lastTime : Long)
 
   // received messages
   final case class ActivateAnalyzersMsg(
     analyzerClassNames : Seq[String])
+  final case class HintBodyLocationMsg(pos : PlanarPos)
 }
 import VisionActor._
 
@@ -42,6 +45,8 @@ class VisionActor(videoStream : VideoStream)
     extends Actor with Listeners
 {
   private val settings = Settings(context)
+
+  private val throttlePeriod = settings.Vision.throttlePeriod
 
   private val canvas = initCanvas()
 
@@ -51,19 +56,32 @@ class VisionActor(videoStream : VideoStream)
 
   private var cornerSeen = false
 
+  private var hintBodyPos : Option[PlanarPos] = None
+
   def receive =
   {
-    case GrabFrameMsg => {
+    case GrabFrameMsg(lastTime) => {
       if (canvas.waitKey(-1) != null) {
         videoStream.quit()
       }
       grabOne()
-      self ! GrabFrameMsg
+      val thisTime = System.currentTimeMillis
+      val delay = throttlePeriod.toLong - (thisTime - lastTime)
+      if (delay <= 0) {
+        self ! GrabFrameMsg(thisTime)
+      } else {
+        import context.dispatcher
+        context.system.scheduler.scheduleOnce(Duration(delay, MILLISECONDS)) {
+          self ! GrabFrameMsg(thisTime)
+        }
+      }
     }
     case ActivateAnalyzersMsg(analyzerClassNames) => {
       analyzers = analyzerClassNames.map(
-        Class.forName(_).getConstructor(classOf[Settings]).
-          newInstance(settings).asInstanceOf[VisionAnalyzer])
+        settings.instantiateObject(_).asInstanceOf[VisionAnalyzer])
+    }
+    case HintBodyLocationMsg(pos) => {
+      hintBodyPos = Some(pos)
     }
     case m : Any => {
       listenerManagement(m)
@@ -94,8 +112,16 @@ class VisionActor(videoStream : VideoStream)
       prevGray => {
         analyzers.map(
           analyzer => {
-            analyzer.analyzeFrame(img, gray, prevGray, now).foreach(
-              msg => gossip(msg)
+            analyzer.analyzeFrame(img, gray, prevGray, now, hintBodyPos).
+              foreach(msg => {
+                msg match {
+                  case BodyDetector.BodyDetectedMsg(pos, _) => {
+                    hintBodyPos = Some(pos)
+                  }
+                  case _ => {}
+                }
+                gossip(msg)
+              }
             )
           }
         )
@@ -131,6 +157,6 @@ class VisionActor(videoStream : VideoStream)
 
   override def preStart()
   {
-    self ! GrabFrameMsg
+    self ! GrabFrameMsg(0L)
   }
 }

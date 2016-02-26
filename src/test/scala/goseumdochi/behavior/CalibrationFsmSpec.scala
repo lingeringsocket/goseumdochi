@@ -21,31 +21,46 @@ import goseumdochi.vision._
 
 import akka.actor._
 
-class CalibrationFsmSpec extends AkkaSpecification
+import scala.math._
+
+class CalibrationFsmSpec extends AkkaSpecification("simulation.conf")
 {
   "CalibrationFsm" should
   {
     "calibrate body mapping" in new AkkaExample
     {
-      val calibrationFsm = system.actorOf(
+      val fsm = system.actorOf(
         Props(classOf[CalibrationFsm]))
 
-      calibrationFsm ! ControlActor.CameraAcquiredMsg
+      fsm ! ControlActor.CameraAcquiredMsg
       expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
-        "goseumdochi.vision.RoundBodyDetector")))
+        "goseumdochi.vision.RoundBodyDetector",
+        "goseumdochi.vision.FineMotionDetector")))
+
+      expectQuiet
+
+      val backwardImpulse = expectMsgClass(
+        classOf[ControlActor.ActuateImpulseMsg]).impulse
+      backwardImpulse.speed must be closeTo(0.2 +/- 0.01)
+      backwardImpulse.duration must be closeTo(0.8 +/- 0.01)
+      backwardImpulse.theta must be closeTo(Pi +/- 0.01)
 
       val initialPos = PlanarPos(0, 0)
       val finalPos = PlanarPos(100, 30)
 
-      calibrationFsm ! ControlActor.BodyMovedMsg(initialPos, 0)
+      fsm ! MotionDetector.MotionDetectedMsg(initialPos, 0)
 
-      val impulse = expectMsgClass(
+      expectMsg(VisionActor.HintBodyLocationMsg(initialPos))
+
+      fsm ! ControlActor.BodyMovedMsg(initialPos, 0)
+
+      val forwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
-      impulse.speed must be closeTo(0.2 +/- 0.01)
-      impulse.duration must be closeTo(0.8 +/- 0.01)
-      impulse.theta must be closeTo(0.0 +/- 0.01)
+      forwardImpulse.speed must be closeTo(0.2 +/- 0.01)
+      forwardImpulse.duration must be closeTo(0.8 +/- 0.01)
+      forwardImpulse.theta must be closeTo(0.0 +/- 0.01)
 
-      calibrationFsm ! ControlActor.BodyMovedMsg(finalPos, 0)
+      fsm ! ControlActor.BodyMovedMsg(finalPos, 0)
 
       val bodyMapping = expectMsgClass(
         classOf[ControlActor.CalibratedMsg]).bodyMapping

@@ -21,13 +21,16 @@ import goseumdochi.behavior._
 
 import akka.actor._
 
+import scala.math._
+import scala.concurrent.duration._
+
 import ControlActor._
 
 class ControlActorSpec extends AkkaSpecification("simulation.conf")
 {
   "ControlActor" should
   {
-    "handle panic" in new AkkaExample
+    "keep cool" in new AkkaExample
     {
       val actuator = new TestActuator
       val controlActor = system.actorOf(
@@ -40,24 +43,36 @@ class ControlActorSpec extends AkkaSpecification("simulation.conf")
           false),
         "controlActor")
 
+      // FIXME:  use virtual time consistently
+      val zeroTime  = System.currentTimeMillis
+
       val initialPos = PlanarPos(25.0, 10.0)
-      val initialTime = 1000L
+      val initialTime = zeroTime + 1000L
       val corner = PlanarPos(100.0, 100.0)
 
+      val bodyFoundTime = zeroTime + 10000L
+
       val calibrationPos = PlanarPos(50.0, 20.0)
-      val calibrationTime = 7000L
-      val visibleTime = 8000L
-      val invisibleTime = 12000L
+      val calibrationTime = zeroTime + 17000L
+      val visibleTime = zeroTime + 18000L
+      val invisibleTime = zeroTime + 22000L
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner)
 
-      controlActor ! BodyDetector.BodyDetectedMsg(initialPos, initialTime)
+      expectQuiet
+      expectQuiet
+
+      val backwardImpulse = actuator.retrieveImpulse().get
+      backwardImpulse must be equalTo(PolarImpulse(0.2, 0.8, Pi))
+      actuator.reset
+
+      controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)
+      controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
 
       expectQuiet
 
       val calibrationImpulse = actuator.retrieveImpulse().get
       calibrationImpulse must be equalTo(PolarImpulse(0.2, 0.8, 0.0))
-
       actuator.reset
 
       controlActor !

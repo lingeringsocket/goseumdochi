@@ -21,7 +21,10 @@ import goseumdochi.vision._
 
 import akka.actor._
 
+import scala.math._
 import goseumdochi.common.MoreMath._
+
+import scala.concurrent.duration._
 
 object CalibrationFsm
 {
@@ -31,19 +34,24 @@ object CalibrationFsm
   // received messages
   // * ControlActor.CameraAcquiredMsg
   // * ControlActor.BodyMovedMsg
+  // * MotionDetector.MotionDetectedMsg
 
   // sent messages
   // * VisionActor.ActivateAnalyzersMsg
+  // * VisionActor.HintBodyLocationMsg
   // * ControlActor.CalibratedMsg
   // * ControlActor.ActuateImpulseMsg
 
   // states
   case object Blind extends State
+  case object WaitingForQuiet extends State
+  case object FindingBody extends State
   case object WaitingForStart extends State
   case object WaitingForEnd extends State
 
   // data
-  case object Uninitialized extends Data
+  case object Empty extends Data
+  final case class WithControl(controlActor : ActorRef) extends Data
   final case class StartPoint(pos : PlanarPos) extends Data
 }
 import CalibrationFsm._
@@ -53,24 +61,50 @@ class CalibrationFsm()
 {
   private val settings = Settings(context)
 
-  private val impulse = PolarImpulse(settings.Motor.defaultSpeed, 0.8, 0)
+  private val forwardImpulse =
+    PolarImpulse(settings.Motor.defaultSpeed, 0.8, 0)
 
-  startWith(Blind, Uninitialized)
+  private val backwardImpulse =
+    PolarImpulse(settings.Motor.defaultSpeed, 0.8, Pi)
+
+  startWith(Blind, Empty)
 
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg, _) => {
       sender ! VisionActor.ActivateAnalyzersMsg(Seq(
-        settings.BodyRecognition.className))
-      goto(WaitingForStart)
+        settings.BodyRecognition.className,
+        classOf[FineMotionDetector].getName))
+      goto(WaitingForQuiet) using WithControl(sender)
     }
-    case Event(ControlActor.BodyMovedMsg(_, _), _) => {
+  }
+
+  when(WaitingForQuiet,
+    stateTimeout = Duration(settings.Calibration.quietPeriod, MILLISECONDS))
+  {
+    case Event(StateTimeout, WithControl(controlActor)) => {
+      controlActor ! ControlActor.ActuateImpulseMsg(
+        backwardImpulse, System.currentTimeMillis)
+      goto(FindingBody)
+    }
+    case _ => {
       stay
     }
   }
 
+  // FIXME:  add a StateTimeout for moving around more aggressively
+  when(FindingBody) {
+    case Event(MotionDetector.MotionDetectedMsg(pos, eventTime), _) => {
+      sender ! VisionActor.HintBodyLocationMsg(pos)
+      goto(WaitingForStart)
+    }
+  }
+
   when(WaitingForStart) {
+    case Event(msg : MotionDetector.MotionDetectedMsg, _) => {
+      stay
+    }
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
-      sender ! ControlActor.ActuateImpulseMsg(impulse, eventTime)
+      sender ! ControlActor.ActuateImpulseMsg(forwardImpulse, eventTime)
       goto(WaitingForEnd) using StartPoint(pos)
     }
   }
@@ -80,7 +114,7 @@ class CalibrationFsm()
       ControlActor.BodyMovedMsg(endPos, eventTime),
       StartPoint(startPos)) =>
     {
-      val predictedMotion = predictMotion(impulse)
+      val predictedMotion = predictMotion(forwardImpulse)
       val actualMotion = polarMotion(startPos, endPos)
       val bodyMapping = BodyMapping(
         actualMotion.distance / predictedMotion.distance,

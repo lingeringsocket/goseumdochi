@@ -57,7 +57,9 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
     val r = new Robot(btd)
     r.addListener(this)
     if (r.connect(true)) {
-      val videoStream = new RemoteVideoStream(settings)
+      val videoStream =
+        settings.instantiateObject(settings.Vision.cameraClass).
+          asInstanceOf[VideoStream]
       val actuator = new SpheroActuator(r)
       val props = Props(
         classOf[ControlActor],
@@ -66,7 +68,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
         Props(classOf[CalibrationFsm]),
         Props(classOf[IntrusionDetectionFsm]),
         true)
-      system.actorOf(props, "controlActor")
+      val controlActor = system.actorOf(props, "controlActor")
       Await.result(system.whenTerminated, Duration.Inf)
     }
   }

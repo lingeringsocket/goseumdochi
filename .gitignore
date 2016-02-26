@@ -1,6 +1,7 @@
 TAGS
 *.class
 *.log
+lib/bluecove-gpl-2.1.1-SNAPSHOT.jar
 
 # sbt specific
 .cache

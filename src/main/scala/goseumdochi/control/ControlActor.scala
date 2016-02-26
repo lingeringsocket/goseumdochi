@@ -102,12 +102,14 @@ class ControlActor(
     }
     case ActuateMoveMsg(from, to, speed, extraTime, eventTime) => {
       val impulse = bodyMapping.computeImpulse(from, to, speed, extraTime)
+      // maybe we should interpolate HintBodyLocationMsgs along
+      // the way as well?
       actuateImpulse(impulse, eventTime)
     }
     case VisionActor.DimensionsKnownMsg(pos) => {
       cornerOpt = Some(pos)
     }
-    // note that this one needs to come BEFORE the
+    // note that this pattern needs to be matched BEFORE the
     // generic ObjDetectedMsg case
     case BodyDetector.BodyDetectedMsg(pos, eventTime) => {
       if (eventTime > movingUntil) {
@@ -124,16 +126,21 @@ class ControlActor(
       lastSeenTime = eventTime
     }
     case objectDetected : VisionActor.ObjDetectedMsg => {
-      if (!calibrating && (objectDetected.eventTime > movingUntil)) {
+      if (calibrating) {
+        calibrationActor ! objectDetected
+      } else if (objectDetected.eventTime > movingUntil) {
         behaviorActor ! objectDetected
       }
     }
     case VisionActor.ActivateAnalyzersMsg(analyzers) => {
       visionActor ! VisionActor.ActivateAnalyzersMsg(analyzers)
     }
+    case VisionActor.HintBodyLocationMsg(pos) => {
+      visionActor ! VisionActor.HintBodyLocationMsg(pos)
+    }
     case CheckVisibilityMsg(now) => {
       if (now < movingUntil) {
-        // rolling
+        // still moving
       } else {
         if (lastSeenTime == 0) {
           // never seen

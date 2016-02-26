@@ -27,17 +27,19 @@ class BodyDetectorSpec extends VisualizableSpecification("simulation.conf")
   {
     "detect nothing" in
     {
+      val hintPos = PlanarPos(500, 500)
       val img = cvLoadImage("data/empty.jpg")
       val gray = OpenCvUtil.grayscale(img)
-      val posOpt = bodyDetector.detectBody(img, gray)
+      val posOpt = bodyDetector.detectBody(img, gray, hintPos)
       posOpt must beEmpty
     }
 
-    "detect round body" in
+    "detect round body with useless hint" in
     {
+      val hintPos = PlanarPos(0, 0)
       val img = cvLoadImage("data/table1.jpg")
       val gray = OpenCvUtil.grayscale(img)
-      val posOpt = bodyDetector.detectBody(img, gray)
+      val posOpt = bodyDetector.detectBody(img, gray, hintPos)
       posOpt must not beEmpty
 
       val pos = posOpt.get
@@ -45,6 +47,21 @@ class BodyDetectorSpec extends VisualizableSpecification("simulation.conf")
 
       pos.x must be closeTo(563.0 +/- 0.1)
       pos.y must be closeTo(451.0 +/- 0.1)
+    }
+
+    "detect round body with good hint" in
+    {
+      val img = cvLoadImage("data/baseline1.jpg")
+      val gray = OpenCvUtil.grayscale(img)
+      val hintPos = PlanarPos(500, 500)
+      val posOpt = bodyDetector.detectBody(img, gray, hintPos)
+      posOpt must not beEmpty
+
+      val pos = posOpt.get
+      visualize(img, pos)
+
+      pos.x must be closeTo(569.0 +/- 0.1)
+      pos.y must be closeTo(471.0 +/- 0.1)
     }
   }
 }

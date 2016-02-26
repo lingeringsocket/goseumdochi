@@ -22,7 +22,8 @@ import org.bytedeco.javacpp.opencv_core._
 trait VisionAnalyzer
 {
   def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage, now : Long)
+    img : IplImage, gray : IplImage, prevGray : IplImage, now : Long,
+    hintBodyPos : Option[PlanarPos])
       : Iterable[Any]
 
   def settings : Settings

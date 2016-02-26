@@ -15,19 +15,26 @@
 
 package goseumdochi.vision
 
+import goseumdochi.common._
+
 import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacv._
+
+import com.typesafe.config._
 
 import java.awt.event._
 
 object CaptureMain extends App
 {
+  val config = ConfigFactory.load()
+  val settings = new Settings(config, null)
+
   captureFrameOnClick()
 
   def captureOneFrame(outFileName : String)
   {
-    val videoStream = LocalVideoStream
+    val videoStream = new LocalVideoStream(settings)
     val img = grabOneFrame(videoStream)
     cvSaveImage(outFileName, img)
   }
@@ -36,7 +43,7 @@ object CaptureMain extends App
   {
     val canvas = new CanvasFrame("Webcam")
     canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
-    val videoStream = LocalVideoStream
+    val videoStream = new LocalVideoStream(settings)
     var running = true
     var capture = false
     var nextSuffix = 1

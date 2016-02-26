@@ -45,7 +45,7 @@ object RampJumperFsm
   case object Launched extends State
 
   // data
-  case object Uninitialized extends Data
+  case object Empty extends Data
   final case class LaunchTrajectory(
     ramp : OrientedRamp,
     launchPos : Option[PlanarPos]
@@ -59,7 +59,7 @@ class RampJumperFsm()
 {
   private val settings = Settings(context)
 
-  startWith(Blind, Uninitialized)
+  startWith(Blind, Empty)
 
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg, _) => {
@@ -74,7 +74,7 @@ class RampJumperFsm()
     case Event(RampDetectedMsg(ramp, _), _) => {
       goto(ManeuveringToLaunch) using LaunchTrajectory(ramp, None)
     }
-    case Event(ControlActor.BodyMovedMsg(_, _), _) => {
+    case Event(msg : ControlActor.BodyMovedMsg, _) => {
       stay
     }
   }
@@ -111,7 +111,7 @@ class RampJumperFsm()
       if (offset.distance < 15.0) {
         sender ! ControlActor.ActuateMoveMsg(
           pos, ramp.center, settings.Motor.fullSpeed, 1.0, eventTime)
-        goto(Launched) using Uninitialized
+        goto(Launched) using Empty
       } else {
         val extraTime = {
           if (offset.distance < 40.0) {
@@ -125,7 +125,7 @@ class RampJumperFsm()
         stay using newTrajectory
       }
     }
-    case Event(RampDetectedMsg(_, _), _) => {
+    case Event(msg : RampDetectedMsg, _) => {
       stay
     }
   }
@@ -134,14 +134,17 @@ class RampJumperFsm()
     case Event(StateTimeout, _) => {
       goto(WaitingForRamp)
     }
-    case Event(ControlActor.BodyMovedMsg(_, _) | RampDetectedMsg(_, _), _) => {
+    case Event(msg : ControlActor.BodyMovedMsg, _) => {
+      stay
+    }
+    case Event(msg : RampDetectedMsg, _) => {
       stay
     }
   }
 
   whenUnhandled {
     case Event(ControlActor.PanicAttack, _) => {
-      goto(WaitingForRamp) using Uninitialized
+      goto(WaitingForRamp) using Empty
     }
     case event => handleUnknown(event)
   }

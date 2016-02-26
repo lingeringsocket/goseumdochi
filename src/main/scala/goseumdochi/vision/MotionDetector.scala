@@ -34,7 +34,8 @@ abstract class MotionDetector(val settings : Settings, threshold : Int)
     extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage, now : Long) =
+    img : IplImage, gray : IplImage, prevGray : IplImage, now : Long,
+    hintBodyPos : Option[PlanarPos]) =
   {
     detectMotion(prevGray, gray).map(
       pos => {
@@ -66,7 +67,8 @@ abstract class MotionDetector(val settings : Settings, threshold : Int)
           if (box != null) {
             val size = box.size
             // FIXME:  return the largest object instead of the first
-            // over the threshold
+            // over the threshold, and if a body pos hint is available,
+            // pick the one farthest from the body
             if ((size.width > threshold) && (size.height > threshold)) {
               val center = box.center
               return Some(PlanarPos(center.x, center.y))
@@ -84,7 +86,7 @@ abstract class MotionDetector(val settings : Settings, threshold : Int)
 }
 
 class CoarseMotionDetector(settings : Settings)
-    extends MotionDetector(settings, 40)
+    extends MotionDetector(settings, settings.MotionDetection.coarseThreshold)
 
 class FineMotionDetector(settings : Settings)
-    extends MotionDetector(settings, 5)
+    extends MotionDetector(settings, settings.MotionDetection.fineThreshold)
