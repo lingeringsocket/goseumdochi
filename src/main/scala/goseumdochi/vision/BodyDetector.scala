@@ -51,7 +51,7 @@ class FlashyBodyDetector(val settings : Settings)
   {
     motionDetector.detectMotion(prevGray, gray).map(
       pos => {
-        Some(BodyDetectedMsg(pos, frameTime))
+        BodyDetectedMsg(pos, frameTime)
       }
     )
   }
