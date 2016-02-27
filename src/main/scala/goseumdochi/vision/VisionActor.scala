@@ -18,10 +18,13 @@ package goseumdochi.vision
 import goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
+import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacv._
 
 import akka.actor._
 import akka.routing._
+
+import scala.concurrent.duration._
 
 object VisionActor
 {
@@ -64,16 +67,12 @@ class VisionActor(videoStream : VideoStream)
       if (canvas.waitKey(-1) != null) {
         videoStream.quit()
       }
-      grabOne()
       val thisTime = TimePoint.now
-      val delay = throttlePeriod - (thisTime - lastTime)
-      if (delay.toMillis <= 0) {
-        self ! GrabFrameMsg(thisTime)
-      } else {
-        import context.dispatcher
-        context.system.scheduler.scheduleOnce(delay) {
-          self ! GrabFrameMsg(thisTime)
-        }
+      val analyze = (thisTime > lastTime + throttlePeriod)
+      grabOne(analyze)
+      import context.dispatcher
+      context.system.scheduler.scheduleOnce(200.milliseconds) {
+        self ! GrabFrameMsg(if (analyze) thisTime else lastTime)
       }
     }
     case ActivateAnalyzersMsg(analyzerClassNames) => {
@@ -131,7 +130,7 @@ class VisionActor(videoStream : VideoStream)
     lastGray = Some(gray)
   }
 
-  private def grabOne()
+  private def grabOne(analyze : Boolean)
   {
     try {
       videoStream.beforeNext()
@@ -142,7 +141,17 @@ class VisionActor(videoStream : VideoStream)
         gossip(DimensionsKnownMsg(corner, frameTime))
         cornerSeen = true
       }
-      analyzeFrame(img, frameTime)
+      if (analyze) {
+        analyzeFrame(img, frameTime)
+      } else {
+        hintBodyPos match {
+          case Some(pos) => {
+            val center = OpenCvUtil.point(pos)
+            cvCircle(img, center, 2, AbstractCvScalar.GREEN, 6, CV_AA, 0)
+          }
+          case _ => {}
+        }
+      }
       val converted = OpenCvUtil.convert(img)
       canvas.showImage(converted)
       img.release
