@@ -43,27 +43,26 @@ class ControlActorSpec extends AkkaSpecification("simulation.conf")
           false),
         "controlActor")
 
-      // FIXME:  use virtual time consistently
-      val zeroTime  = System.currentTimeMillis
+      val zeroTime = TimePoint.ZERO
 
       val initialPos = PlanarPos(25.0, 10.0)
-      val initialTime = zeroTime + 1000L
+      val initialTime = zeroTime + 1.second
       val corner = PlanarPos(100.0, 100.0)
 
-      val bodyFoundTime = zeroTime + 10000L
+      val bodyFoundTime = zeroTime + 10.seconds
 
       val calibrationPos = PlanarPos(50.0, 20.0)
-      val calibrationTime = zeroTime + 17000L
-      val visibleTime = zeroTime + 18000L
-      val invisibleTime = zeroTime + 22000L
+      val calibrationTime = zeroTime + 17.seconds
+      val visibleTime = zeroTime + 18.seconds
+      val invisibleTime = zeroTime + 22.seconds
 
-      controlActor ! VisionActor.DimensionsKnownMsg(corner)
+      controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
       expectQuiet
       expectQuiet
 
       val backwardImpulse = actuator.retrieveImpulse().get
-      backwardImpulse must be equalTo(PolarImpulse(0.2, 0.8, Pi))
+      backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, Pi))
       actuator.reset
 
       controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)
@@ -72,7 +71,8 @@ class ControlActorSpec extends AkkaSpecification("simulation.conf")
       expectQuiet
 
       val calibrationImpulse = actuator.retrieveImpulse().get
-      calibrationImpulse must be equalTo(PolarImpulse(0.2, 0.8, 0.0))
+      calibrationImpulse must be equalTo(
+        PolarImpulse(0.2, 800.milliseconds, 0.0))
       actuator.reset
 
       controlActor !
@@ -96,8 +96,8 @@ class ControlActorSpec extends AkkaSpecification("simulation.conf")
       expectQuiet
 
       val panicImpulse = actuator.retrieveImpulse().get
-      panicImpulse.speed  must be closeTo(0.2 +/- 0.01)
-      panicImpulse.duration  must be closeTo(0.89 +/- 0.01)
+      panicImpulse.speed must be closeTo(0.2 +/- 0.01)
+      panicImpulse.duration.toMillis must be equalTo 891
       panicImpulse.theta  must be closeTo(1.19 +/- 0.01)
 
       expectQuiet

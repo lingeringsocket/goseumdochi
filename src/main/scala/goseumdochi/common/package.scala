@@ -13,18 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package goseumdochi.vision
+package goseumdochi
 
-import goseumdochi.common._
+import scala.concurrent.duration._
 
-import org.bytedeco.javacpp.opencv_core._
-
-trait VisionAnalyzer
+package object common
 {
-  def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
-      : Iterable[Any]
-
-  def settings : Settings
+  type TimeSpan = FiniteDuration
+  val TimeSpan = FiniteDuration
 }

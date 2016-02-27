@@ -24,7 +24,7 @@ import org.bytedeco.javacpp.opencv_imgproc._
 object MotionDetector
 {
   // result messages
-  final case class MotionDetectedMsg(pos : PlanarPos, eventTime : Long)
+  final case class MotionDetectedMsg(pos : PlanarPos, eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
 }
 
@@ -34,14 +34,14 @@ abstract class MotionDetector(val settings : Settings, threshold : Int)
     extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage, now : Long,
-    hintBodyPos : Option[PlanarPos]) =
+    img : IplImage, gray : IplImage, prevGray : IplImage,
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
     detectMotion(prevGray, gray).map(
       pos => {
         val center = OpenCvUtil.point(pos)
         cvCircle(img, center, 2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
-        MotionDetectedMsg(pos, now)
+        MotionDetectedMsg(pos, frameTime)
       }
     )
   }

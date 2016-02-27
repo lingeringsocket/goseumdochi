@@ -21,13 +21,12 @@ import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
 
-import scala.math._
 import MoreMath._
 
 object BodyDetector
 {
   // result messages
-  final case class BodyDetectedMsg(pos : PlanarPos, eventTime : Long)
+  final case class BodyDetectedMsg(pos : PlanarPos, eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
 }
 
@@ -50,13 +49,13 @@ class RoundBodyDetector(settings : Settings)
   private var maxRadius = conf.getInt("max-radius")
 
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage, now : Long,
-    hintBodyPos : Option[PlanarPos]) =
+    img : IplImage, gray : IplImage, prevGray : IplImage,
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
     hintBodyPos.flatMap(
       hintPos => detectBody(img, gray, hintPos).map(
         pos => {
-          BodyDetectedMsg(pos, now)
+          BodyDetectedMsg(pos, frameTime)
         }
       )
     )

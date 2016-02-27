@@ -27,20 +27,29 @@ import scala.concurrent.duration._
 object ControlActor
 {
   // sent messages
-  case object CameraAcquiredMsg
-  final case class BodyMovedMsg(pos : PlanarPos, eventTime : Long)
-  case object PanicAttack
+  final case class CameraAcquiredMsg(eventTime : TimePoint)
+      extends EventMsg
+  final case class BodyMovedMsg(pos : PlanarPos, eventTime : TimePoint)
+      extends EventMsg
+  final case class PanicAttackMsg(eventTime : TimePoint)
+      extends EventMsg
 
   // internal messages
-  final case class CheckVisibilityMsg(eventTime : Long)
+  final case class CheckVisibilityMsg(eventTime : TimePoint)
+      extends EventMsg
 
   // received messages
   // VisionActor.DimensionsKnownMsg
-  final case class CalibratedMsg(bodyMapping : BodyMapping)
-  final case class ActuateImpulseMsg(impulse : PolarImpulse, eventTime : Long)
+  final case class CalibratedMsg(
+    bodyMapping : BodyMapping, eventTime : TimePoint)
+      extends EventMsg
+  final case class ActuateImpulseMsg(
+    impulse : PolarImpulse, eventTime : TimePoint)
+      extends EventMsg
   final case class ActuateMoveMsg(
     from : PlanarPos, to : PlanarPos,
-    speed : Double, extraTime : Double, eventTime : Long)
+    speed : Double, extraTime : TimeSpan, eventTime : TimePoint)
+      extends EventMsg
   final case class ActuateLight(
     color : java.awt.Color)
 
@@ -69,11 +78,11 @@ class ControlActor(
 
   private var calibrating = true
 
-  private var movingUntil = 0L
+  private var movingUntil = TimePoint.ZERO
 
   private var bodyMappingOpt : Option[BodyMapping] = None
 
-  private var lastSeenTime = 0L
+  private var lastSeenTime = TimePoint.ZERO
 
   private var lastSeenPos : Option[PlanarPos] = None
 
@@ -84,14 +93,14 @@ class ControlActor(
   private val panicDelay = settings.Control.panicDelay
 
   private val visibilityCheckFreq =
-    Duration(settings.Control.visibilityCheckFreq, MILLISECONDS)
+    settings.Control.visibilityCheckFreq
 
   def receive = LoggingReceive(
   {
-    case CalibratedMsg(bodyMapping) => {
+    case CalibratedMsg(bodyMapping, eventTime) => {
       bodyMappingOpt = Some(bodyMapping)
       calibrating = false
-      behaviorActor ! CameraAcquiredMsg
+      behaviorActor ! CameraAcquiredMsg(eventTime)
       calibrationActor ! PoisonPill.getInstance
     }
     case ActuateLight(color : java.awt.Color) => {
@@ -106,8 +115,9 @@ class ControlActor(
       // the way as well?
       actuateImpulse(impulse, eventTime)
     }
-    case VisionActor.DimensionsKnownMsg(pos) => {
+    case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       cornerOpt = Some(pos)
+      calibrationActor ! CameraAcquiredMsg(eventTime)
     }
     // note that this pattern needs to be matched BEFORE the
     // generic ObjDetectedMsg case
@@ -132,29 +142,29 @@ class ControlActor(
         behaviorActor ! objectDetected
       }
     }
-    case VisionActor.ActivateAnalyzersMsg(analyzers) => {
-      visionActor ! VisionActor.ActivateAnalyzersMsg(analyzers)
+    case msg : VisionActor.ActivateAnalyzersMsg => {
+      visionActor ! msg
     }
-    case VisionActor.HintBodyLocationMsg(pos) => {
-      visionActor ! VisionActor.HintBodyLocationMsg(pos)
+    case msg : VisionActor.HintBodyLocationMsg => {
+      visionActor ! msg
     }
-    case CheckVisibilityMsg(now) => {
-      if (now < movingUntil) {
+    case CheckVisibilityMsg(checkTime) => {
+      if (checkTime < movingUntil) {
         // still moving
       } else {
-        if (lastSeenTime == 0) {
+        if (lastSeenTime == TimePoint.ZERO) {
           // never seen
         } else {
-          if ((now - lastSeenTime) > panicDelay) {
+          if ((checkTime - lastSeenTime) > panicDelay) {
             if (calibrating) {
               // not much we can do yet
             } else {
-              behaviorActor ! PanicAttack
+              behaviorActor ! PanicAttackMsg(checkTime)
               val from = lastSeenPos.get
               val to = PlanarPos(corner.x / 2.0, corner.y / 2.0)
               val impulse = bodyMapping.computeImpulse(
-                from, to, settings.Motor.defaultSpeed, 0.0)
-              actuateImpulse(impulse, now)
+                from, to, settings.Motor.defaultSpeed, 0.milliseconds)
+              actuateImpulse(impulse, checkTime)
             }
           } else {
             // all is well
@@ -163,7 +173,7 @@ class ControlActor(
       }
       if (monitorVisibility) {
         context.system.scheduler.scheduleOnce(visibilityCheckFreq) {
-          self ! CheckVisibilityMsg(System.currentTimeMillis)
+          self ! CheckVisibilityMsg(TimePoint.now)
         }
       }
     }
@@ -173,11 +183,11 @@ class ControlActor(
 
   private def corner = cornerOpt.get
 
-  private def actuateImpulse(impulse : PolarImpulse, now : Long)
+  private def actuateImpulse(impulse : PolarImpulse, eventTime : TimePoint)
   {
     actuator.actuateLight(java.awt.Color.GREEN)
     val sensorDelay = Settings(context).Vision.sensorDelay
-    movingUntil = now + (impulse.duration*1000.0).toLong + sensorDelay
+    movingUntil = eventTime + impulse.duration + sensorDelay
     actuator.actuateMotion(impulse)
   }
 
@@ -185,10 +195,9 @@ class ControlActor(
   {
     actuator.actuateLight(java.awt.Color.CYAN)
     visionActor ! Listen(self)
-    calibrationActor ! CameraAcquiredMsg
     if (monitorVisibility) {
       context.system.scheduler.scheduleOnce(visibilityCheckFreq) {
-        self ! CheckVisibilityMsg(System.currentTimeMillis)
+        self ! CheckVisibilityMsg(TimePoint.now)
       }
     }
   }

@@ -18,6 +18,32 @@ package goseumdochi.common
 import scala.math._
 import scala.annotation._
 
+import scala.concurrent.duration._
+
+case class TimePoint(d : TimeSpan)
+{
+  def <(that : TimePoint) = (this.d < that.d)
+  def <=(that : TimePoint) = (this.d <= that.d)
+  def >(that : TimePoint) = (this.d > that.d)
+  def >=(that : TimePoint) = (this.d >= that.d)
+  def -(that : TimePoint) = (this.d - that.d)
+
+  def +(that : TimeSpan) = TimePoint(this.d + that)
+  def -(that : TimeSpan) = TimePoint(this.d - that)
+}
+
+case object TimePoint
+{
+  def now = TimePoint(TimeSpan(System.currentTimeMillis, MILLISECONDS))
+
+  final val ZERO = TimePoint(TimeSpan(0, MILLISECONDS))
+}
+
+trait EventMsg
+{
+  def eventTime : TimePoint
+}
+
 case class PlanarPos(
   x : Double,
   y : Double
@@ -25,7 +51,7 @@ case class PlanarPos(
 
 case class PolarImpulse(
   speed : Double,
-  duration : Double,
+  duration : TimeSpan,
   theta : Double
 )
 
@@ -84,5 +110,7 @@ object MoreMath
   }
 
   def predictMotion(impulse : PolarImpulse) =
-    PolarVector(impulse.speed * impulse.duration, impulse.theta)
+    PolarVector(
+      impulse.speed * impulse.duration.toMillis / 1000.0,
+      impulse.theta)
 }

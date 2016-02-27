@@ -55,7 +55,7 @@ class DozeFsm()
   }
 
   whenUnhandled {
-    case Event(ControlActor.PanicAttack, _) => {
+    case Event(msg : ControlActor.PanicAttackMsg, _) => {
       goto(Dozing) using Red
     }
     case event => handleUnknown(event)

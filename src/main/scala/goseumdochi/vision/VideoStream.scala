@@ -21,11 +21,13 @@ import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacv._
 
+import scala.concurrent.duration._
+
 trait VideoStream
 {
   def beforeNext() {}
 
-  def nextFrame() : (Frame, Long)
+  def nextFrame() : (Frame, TimePoint)
 
   def afterNext() {}
 
@@ -48,7 +50,7 @@ class LocalVideoStream(settings : Settings) extends VideoStream
   }
 
   override def nextFrame() =
-    (frameGrabber.grab, System.currentTimeMillis)
+    (frameGrabber.grab, TimePoint.now)
 
   override def quit()
   {
@@ -71,7 +73,7 @@ class RemoteVideoStream(settings : Settings) extends VideoStream
 
   override def nextFrame() =
   {
-    (frameGrabber.get.grab, System.currentTimeMillis)
+    (frameGrabber.get.grab, TimePoint.now)
   }
 
   override def afterNext()
@@ -85,26 +87,27 @@ class RemoteVideoStream(settings : Settings) extends VideoStream
   }
 }
 
-class PlaybackStream(keyFrames : Seq[(String, Int)], realTime : Boolean = true)
+class PlaybackStream(
+  keyFrames : Seq[(String, TimeSpan)], realTime : Boolean = true)
     extends VideoStream
 {
   private val circular = Iterator.continually(keyFrames).flatten
 
-  private var simulatedTime = 1000L
+  private var simulatedTime = TimePoint(TimeSpan(1, SECONDS))
 
   override def nextFrame() =
   {
-    val (filename, delayMillis) = circular.next
-    val now = {
+    val (filename, delay) = circular.next
+    val frameTime = {
       if (realTime) {
-        Thread.sleep(delayMillis)
-        System.currentTimeMillis
+        Thread.sleep(delay.toMillis)
+        TimePoint.now
       } else {
-        simulatedTime += delayMillis
+        simulatedTime += delay
         simulatedTime
       }
     }
     val img = OpenCvUtil.convert(cvLoadImage(filename))
-    (img, now)
+    (img, frameTime)
   }
 }

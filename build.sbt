@@ -44,4 +44,4 @@ scalastyleFailOnError := true
 
 mainClass in Compile := Some("goseumdochi.sphero.SpheroMain")
 // mainClass in Compile := Some("goseumdochi.vision.CaptureMain")
-//  mainClass in Compile := Some("goseumdochi.simulation.SimulationMain")
+// mainClass in Compile := Some("goseumdochi.simulation.SimulationMain")

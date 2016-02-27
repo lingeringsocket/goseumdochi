@@ -31,7 +31,7 @@ class SpheroActuator(robot : Robot) extends Actuator
     val degrees = 360.0*impulse.theta / (2*Pi)
     robot.sendCommand(
       new RollCommand(degrees.toFloat, impulse.speed.toFloat, false))
-    Thread.sleep((impulse.duration*1000.0).toLong)
+    Thread.sleep(impulse.duration.toMillis)
     robot.sendCommand(
       new RollCommand(degrees.toFloat, 0.0f, true))
   }
@@ -46,7 +46,7 @@ class SpheroActuator(robot : Robot) extends Actuator
     val degrees = (360.0*impulse.theta / (2*Pi)).toInt
     val heading = (degrees % 360).toInt
     val velocity = Value.clamp(impulse.speed.toFloat, 0.0D, 1.0D).toFloat
-    val millis = (impulse.duration*1000.0).toInt
+    val millis = impulse.duration.toMillis.toInt
     macroDef(1) = (velocity * 255.0D).toInt.toByte
     macroDef(2) = (heading >> 8).toByte
     macroDef(3) = heading.toByte

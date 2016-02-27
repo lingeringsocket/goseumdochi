@@ -32,7 +32,7 @@ class CalibrationFsmSpec extends AkkaSpecification("simulation.conf")
       val fsm = system.actorOf(
         Props(classOf[CalibrationFsm]))
 
-      fsm ! ControlActor.CameraAcquiredMsg
+      fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
         "goseumdochi.vision.RoundBodyDetector",
         "goseumdochi.vision.FineMotionDetector")))
@@ -42,25 +42,25 @@ class CalibrationFsmSpec extends AkkaSpecification("simulation.conf")
       val backwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
       backwardImpulse.speed must be closeTo(0.2 +/- 0.01)
-      backwardImpulse.duration must be closeTo(0.8 +/- 0.01)
+      backwardImpulse.duration.toMillis must be equalTo 800
       backwardImpulse.theta must be closeTo(Pi +/- 0.01)
 
       val initialPos = PlanarPos(0, 0)
       val finalPos = PlanarPos(100, 30)
 
-      fsm ! MotionDetector.MotionDetectedMsg(initialPos, 0)
+      fsm ! MotionDetector.MotionDetectedMsg(initialPos, TimePoint.ZERO)
 
-      expectMsg(VisionActor.HintBodyLocationMsg(initialPos))
+      expectMsg(VisionActor.HintBodyLocationMsg(initialPos, TimePoint.ZERO))
 
-      fsm ! ControlActor.BodyMovedMsg(initialPos, 0)
+      fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
 
       val forwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
       forwardImpulse.speed must be closeTo(0.2 +/- 0.01)
-      forwardImpulse.duration must be closeTo(0.8 +/- 0.01)
+      forwardImpulse.duration.toMillis must be equalTo 800
       forwardImpulse.theta must be closeTo(0.0 +/- 0.01)
 
-      fsm ! ControlActor.BodyMovedMsg(finalPos, 0)
+      fsm ! ControlActor.BodyMovedMsg(finalPos, TimePoint.ZERO)
 
       val bodyMapping = expectMsgClass(
         classOf[ControlActor.CalibratedMsg]).bodyMapping

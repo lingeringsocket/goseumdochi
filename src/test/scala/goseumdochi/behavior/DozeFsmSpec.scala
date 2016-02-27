@@ -31,8 +31,8 @@ class DozeFsmSpec extends AkkaSpecification
 
       val initialPos = PlanarPos(0, 0)
 
-      fsm ! ControlActor.CameraAcquiredMsg
-      fsm ! ControlActor.BodyMovedMsg(initialPos, 0)
+      fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
+      fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
 
       expectMsg(ControlActor.ActuateLight(java.awt.Color.GREEN))
       expectMsg(ControlActor.ActuateLight(java.awt.Color.BLUE))

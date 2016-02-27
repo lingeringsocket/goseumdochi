@@ -62,7 +62,7 @@ class RampJumperFsm()
   startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(ControlActor.CameraAcquiredMsg, _) => {
+    case Event(msg : ControlActor.CameraAcquiredMsg, _) => {
       sender ! VisionActor.ActivateAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
         classOf[RampDetector].getName))
@@ -110,14 +110,14 @@ class RampJumperFsm()
       val offset = polarMotion(pos, launchPos)
       if (offset.distance < 15.0) {
         sender ! ControlActor.ActuateMoveMsg(
-          pos, ramp.center, settings.Motor.fullSpeed, 1.0, eventTime)
+          pos, ramp.center, settings.Motor.fullSpeed, 1.second, eventTime)
         goto(Launched) using Empty
       } else {
         val extraTime = {
           if (offset.distance < 40.0) {
-            0.2
+            200.milliseconds
           } else {
-            0.0
+            0.seconds
           }
         }
         sender ! ControlActor.ActuateMoveMsg(
@@ -143,7 +143,7 @@ class RampJumperFsm()
   }
 
   whenUnhandled {
-    case Event(ControlActor.PanicAttack, _) => {
+    case Event(msg : ControlActor.PanicAttackMsg, _) => {
       goto(WaitingForRamp) using Empty
     }
     case event => handleUnknown(event)

@@ -18,6 +18,7 @@ package goseumdochi.common
 import akka.actor._
 import com.typesafe.config._
 import java.util.concurrent._
+import scala.concurrent.duration._
 
 class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     extends Extension
@@ -25,7 +26,7 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
   private val conf = rootConf.getConfig("goseumdochi")
 
   private def getMillis(subConf: Config, path : String) =
-    subConf.getDuration(path, TimeUnit.MILLISECONDS)
+    TimeSpan(subConf.getDuration(path, TimeUnit.MILLISECONDS), MILLISECONDS)
 
   object Bluetooth
   {

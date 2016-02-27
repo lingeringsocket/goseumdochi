@@ -23,6 +23,8 @@ import akka.actor._
 
 import goseumdochi.common.MoreMath._
 
+import scala.concurrent.duration._
+
 object IntrusionDetectionFsm
 {
   sealed trait State
@@ -59,7 +61,7 @@ class IntrusionDetectionFsm()
   startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(ControlActor.CameraAcquiredMsg, _) => {
+    case Event(msg : ControlActor.CameraAcquiredMsg, _) => {
       sender ! VisionActor.ActivateAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
         classOf[CoarseMotionDetector].getName))
@@ -86,7 +88,8 @@ class IntrusionDetectionFsm()
         goto(WaitingForIntruder) using Empty
       } else {
         sender ! ControlActor.ActuateMoveMsg(
-          pos, intruderPos, settings.Motor.defaultSpeed, 0.2, eventTime)
+          pos, intruderPos, settings.Motor.defaultSpeed,
+          200.milliseconds, eventTime)
         stay
       }
     }
@@ -96,7 +99,7 @@ class IntrusionDetectionFsm()
   }
 
   whenUnhandled {
-    case Event(ControlActor.PanicAttack, _) => {
+    case Event(msg : ControlActor.PanicAttackMsg, _) => {
       goto(WaitingForIntruder) using Empty
     }
     case event => handleUnknown(event)

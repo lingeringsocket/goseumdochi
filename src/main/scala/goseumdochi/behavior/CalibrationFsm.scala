@@ -48,10 +48,12 @@ object CalibrationFsm
   case object FindingBody extends State
   case object WaitingForStart extends State
   case object WaitingForEnd extends State
+  case object Done extends State
 
   // data
   case object Empty extends Data
-  final case class WithControl(controlActor : ActorRef) extends Data
+  final case class WithControl(
+    controlActor : ActorRef, eventTime : TimePoint) extends Data
   final case class StartPoint(pos : PlanarPos) extends Data
 }
 import CalibrationFsm._
@@ -61,29 +63,29 @@ class CalibrationFsm()
 {
   private val settings = Settings(context)
 
+  private val quietPeriod = settings.Calibration.quietPeriod
+
   private val forwardImpulse =
-    PolarImpulse(settings.Motor.defaultSpeed, 0.8, 0)
+    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, 0)
 
   private val backwardImpulse =
-    PolarImpulse(settings.Motor.defaultSpeed, 0.8, Pi)
+    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, Pi)
 
   startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(ControlActor.CameraAcquiredMsg, _) => {
+    case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
       sender ! VisionActor.ActivateAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
         classOf[FineMotionDetector].getName))
-      goto(WaitingForQuiet) using WithControl(sender)
+      goto(WaitingForQuiet) using WithControl(sender, eventTime + quietPeriod)
     }
   }
 
-  when(WaitingForQuiet,
-    stateTimeout = Duration(settings.Calibration.quietPeriod, MILLISECONDS))
-  {
-    case Event(StateTimeout, WithControl(controlActor)) => {
+  when(WaitingForQuiet, stateTimeout = quietPeriod) {
+    case Event(StateTimeout, WithControl(controlActor, eventTime)) => {
       controlActor ! ControlActor.ActuateImpulseMsg(
-        backwardImpulse, System.currentTimeMillis)
+        backwardImpulse, eventTime)
       goto(FindingBody)
     }
     case _ => {
@@ -94,7 +96,7 @@ class CalibrationFsm()
   // FIXME:  add a StateTimeout for moving around more aggressively
   when(FindingBody) {
     case Event(MotionDetector.MotionDetectedMsg(pos, eventTime), _) => {
-      sender ! VisionActor.HintBodyLocationMsg(pos)
+      sender ! VisionActor.HintBodyLocationMsg(pos, eventTime)
       goto(WaitingForStart)
     }
   }
@@ -110,17 +112,30 @@ class CalibrationFsm()
   }
 
   when(WaitingForEnd) {
+    case Event(msg : MotionDetector.MotionDetectedMsg, _) => {
+      stay
+    }
     case Event(
       ControlActor.BodyMovedMsg(endPos, eventTime),
       StartPoint(startPos)) =>
     {
       val predictedMotion = predictMotion(forwardImpulse)
       val actualMotion = polarMotion(startPos, endPos)
-      val bodyMapping = BodyMapping(
-        actualMotion.distance / predictedMotion.distance,
-        normalizeRadians(actualMotion.theta - predictedMotion.theta))
-      sender ! ControlActor.CalibratedMsg(bodyMapping)
-      goto(Blind)
+      if (actualMotion.distance < 0.1) {
+        stay
+      } else {
+        val bodyMapping = BodyMapping(
+          actualMotion.distance / predictedMotion.distance,
+          normalizeRadians(actualMotion.theta - predictedMotion.theta))
+        sender ! ControlActor.CalibratedMsg(bodyMapping, eventTime)
+        goto(Done)
+      }
+    }
+  }
+
+  when(Done) {
+    case _ => {
+      stay
     }
   }
 

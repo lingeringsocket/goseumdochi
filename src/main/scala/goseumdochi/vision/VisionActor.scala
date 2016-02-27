@@ -23,21 +23,21 @@ import org.bytedeco.javacv._
 import akka.actor._
 import akka.routing._
 
-import scala.concurrent.duration._
-
 object VisionActor
 {
   // sent messages
-  final case class DimensionsKnownMsg(corner : PlanarPos)
-  trait ObjDetectedMsg { def eventTime : Long }
+  final case class DimensionsKnownMsg(corner : PlanarPos, eventTime : TimePoint)
+      extends EventMsg
+  trait ObjDetectedMsg extends EventMsg
 
   // internal messages
-  final case class GrabFrameMsg(lastTime : Long)
+  final case class GrabFrameMsg(lastTime : TimePoint)
 
   // received messages
   final case class ActivateAnalyzersMsg(
     analyzerClassNames : Seq[String])
-  final case class HintBodyLocationMsg(pos : PlanarPos)
+  final case class HintBodyLocationMsg(pos : PlanarPos, eventTime : TimePoint)
+      extends EventMsg
 }
 import VisionActor._
 
@@ -65,13 +65,13 @@ class VisionActor(videoStream : VideoStream)
         videoStream.quit()
       }
       grabOne()
-      val thisTime = System.currentTimeMillis
-      val delay = throttlePeriod.toLong - (thisTime - lastTime)
-      if (delay <= 0) {
+      val thisTime = TimePoint.now
+      val delay = throttlePeriod - (thisTime - lastTime)
+      if (delay.toMillis <= 0) {
         self ! GrabFrameMsg(thisTime)
       } else {
         import context.dispatcher
-        context.system.scheduler.scheduleOnce(Duration(delay, MILLISECONDS)) {
+        context.system.scheduler.scheduleOnce(delay) {
           self ! GrabFrameMsg(thisTime)
         }
       }
@@ -80,7 +80,7 @@ class VisionActor(videoStream : VideoStream)
       analyzers = analyzerClassNames.map(
         settings.instantiateObject(_).asInstanceOf[VisionAnalyzer])
     }
-    case HintBodyLocationMsg(pos) => {
+    case HintBodyLocationMsg(pos, eventTime) => {
       hintBodyPos = Some(pos)
     }
     case m : Any => {
@@ -104,7 +104,7 @@ class VisionActor(videoStream : VideoStream)
     canvas
   }
 
-  private def analyzeFrame(img : IplImage, now : Long)
+  private def analyzeFrame(img : IplImage, frameTime : TimePoint)
   {
     val gray = OpenCvUtil.grayscale(img)
 
@@ -112,8 +112,8 @@ class VisionActor(videoStream : VideoStream)
       prevGray => {
         analyzers.map(
           analyzer => {
-            analyzer.analyzeFrame(img, gray, prevGray, now, hintBodyPos).
-              foreach(msg => {
+            analyzer.analyzeFrame(
+              img, gray, prevGray, frameTime, hintBodyPos).foreach(msg => {
                 msg match {
                   case BodyDetector.BodyDetectedMsg(pos, _) => {
                     hintBodyPos = Some(pos)
@@ -135,14 +135,14 @@ class VisionActor(videoStream : VideoStream)
   {
     try {
       videoStream.beforeNext()
-      val (orig, now) = videoStream.nextFrame()
+      val (orig, frameTime) = videoStream.nextFrame()
       val img = OpenCvUtil.convert(orig)
       if (!cornerSeen) {
         val corner = PlanarPos(img.width, img.height)
-        gossip(DimensionsKnownMsg(corner))
+        gossip(DimensionsKnownMsg(corner, frameTime))
         cornerSeen = true
       }
-      analyzeFrame(img, now)
+      analyzeFrame(img, frameTime)
       val converted = OpenCvUtil.convert(img)
       canvas.showImage(converted)
       img.release
@@ -157,6 +157,6 @@ class VisionActor(videoStream : VideoStream)
 
   override def preStart()
   {
-    self ! GrabFrameMsg(0L)
+    self ! GrabFrameMsg(TimePoint.now)
   }
 }

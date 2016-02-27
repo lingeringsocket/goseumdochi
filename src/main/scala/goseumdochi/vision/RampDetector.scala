@@ -32,7 +32,7 @@ case class OrientedRamp(
 object RampDetector
 {
   // result messages
-  final case class RampDetectedMsg(ramp : OrientedRamp, eventTime : Long)
+  final case class RampDetectedMsg(ramp : OrientedRamp, eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
 }
 
@@ -41,8 +41,8 @@ import RampDetector._
 class RampDetector(val settings : Settings) extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage, now : Long,
-    hintBodyPos : Option[PlanarPos]) =
+    img : IplImage, gray : IplImage, prevGray : IplImage,
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
     detectRamp(img).map(
       ramp => {
@@ -52,7 +52,7 @@ class RampDetector(val settings : Settings) extends VisionAnalyzer
         cvCircle(
           img, OpenCvUtil.point(ramp.entry),
           2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
-        RampDetectedMsg(ramp, now)
+        RampDetectedMsg(ramp, frameTime)
       }
     )
   }
