@@ -99,6 +99,9 @@ class CalibrationFsm()
       sender ! VisionActor.HintBodyLocationMsg(pos, eventTime)
       goto(WaitingForStart)
     }
+    case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
+      goto(WaitingForStart)
+    }
   }
 
   when(WaitingForStart) {

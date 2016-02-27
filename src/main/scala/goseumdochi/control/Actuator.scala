@@ -22,6 +22,8 @@ trait Actuator
   def actuateMotion(impulse : PolarImpulse)
 
   def actuateLight(color : java.awt.Color)
+
+  def actuateTwirl(degrees: Int, duration : TimeSpan)
 }
 
 object NullActuator extends Actuator
@@ -29,4 +31,6 @@ object NullActuator extends Actuator
   override def actuateMotion(impulse : PolarImpulse) {}
 
   override def actuateLight(color : java.awt.Color) {}
+
+  override def actuateTwirl(degreest : Int, duration : TimeSpan) {}
 }

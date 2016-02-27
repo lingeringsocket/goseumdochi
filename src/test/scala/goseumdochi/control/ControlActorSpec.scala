@@ -26,7 +26,7 @@ import scala.concurrent.duration._
 
 import ControlActor._
 
-class ControlActorSpec extends AkkaSpecification("simulation.conf")
+class ControlActorSpec extends AkkaSpecification
 {
   "ControlActor" should
   {

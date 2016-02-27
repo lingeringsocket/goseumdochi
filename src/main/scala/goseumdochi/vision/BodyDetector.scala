@@ -32,16 +32,34 @@ object BodyDetector
 
 import BodyDetector._
 
-abstract class BodyDetector(val settings : Settings)
-    extends VisionAnalyzer
+trait BodyDetector extends VisionAnalyzer
 {
+  protected val conf = settings.BodyRecognition.subConf
 }
 
-class RoundBodyDetector(settings : Settings)
-    extends BodyDetector(settings)
+class FlashyBodyDetector(val settings : Settings)
+    extends BodyDetector
 {
-  private val conf = settings.BodyRecognition.subConf
+  class BodyMotionDetector extends MotionDetector(
+    settings, settings.MotionDetection.bodyThreshold, true)
 
+  private val motionDetector = new BodyMotionDetector
+
+  override def analyzeFrame(
+    img : IplImage, gray : IplImage, prevGray : IplImage,
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
+  {
+    motionDetector.detectMotion(prevGray, gray).map(
+      pos => {
+        Some(BodyDetectedMsg(pos, frameTime))
+      }
+    )
+  }
+}
+
+class RoundBodyDetector(val settings : Settings)
+    extends BodyDetector
+{
   private val sensitivity = conf.getInt("sensitivity")
 
   private var minRadius = conf.getInt("min-radius")

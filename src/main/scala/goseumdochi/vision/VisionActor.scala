@@ -134,8 +134,7 @@ class VisionActor(videoStream : VideoStream)
   {
     try {
       videoStream.beforeNext()
-      val (orig, frameTime) = videoStream.nextFrame()
-      val img = OpenCvUtil.convert(orig)
+      val (img, frameTime) = videoStream.nextFrame()
       if (!cornerSeen) {
         val corner = PlanarPos(img.width, img.height)
         gossip(DimensionsKnownMsg(corner, frameTime))

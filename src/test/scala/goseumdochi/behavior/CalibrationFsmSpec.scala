@@ -23,7 +23,7 @@ import akka.actor._
 
 import scala.math._
 
-class CalibrationFsmSpec extends AkkaSpecification("simulation.conf")
+class CalibrationFsmSpec extends AkkaSpecification
 {
   "CalibrationFsm" should
   {

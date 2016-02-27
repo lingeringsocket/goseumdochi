@@ -27,7 +27,7 @@ trait VideoStream
 {
   def beforeNext() {}
 
-  def nextFrame() : (Frame, TimePoint)
+  def nextFrame() : (IplImage, TimePoint)
 
   def afterNext() {}
 
@@ -50,7 +50,11 @@ class LocalVideoStream(settings : Settings) extends VideoStream
   }
 
   override def nextFrame() =
-    (frameGrabber.grab, TimePoint.now)
+  {
+    val img = OpenCvUtil.convert(frameGrabber.grab)
+    cvFlip(img, img, 1)
+    (img, TimePoint.now)
+  }
 
   override def quit()
   {
@@ -73,7 +77,7 @@ class RemoteVideoStream(settings : Settings) extends VideoStream
 
   override def nextFrame() =
   {
-    (frameGrabber.get.grab, TimePoint.now)
+    (OpenCvUtil.convert(frameGrabber.get.grab), TimePoint.now)
   }
 
   override def afterNext()
@@ -108,6 +112,6 @@ class PlaybackStream(
       }
     }
     val img = OpenCvUtil.convert(cvLoadImage(filename))
-    (img, frameTime)
+    (OpenCvUtil.convert(img), frameTime)
   }
 }

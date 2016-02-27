@@ -50,6 +50,9 @@ object ControlActor
     from : PlanarPos, to : PlanarPos,
     speed : Double, extraTime : TimeSpan, eventTime : TimePoint)
       extends EventMsg
+  final case class ActuateTwirlMsg(
+    degrees : Int, duration : TimeSpan, eventTime : TimePoint)
+      extends EventMsg
   final case class ActuateLight(
     color : java.awt.Color)
 
@@ -95,6 +98,8 @@ class ControlActor(
   private val visibilityCheckFreq =
     settings.Control.visibilityCheckFreq
 
+  private val random = scala.util.Random
+
   def receive = LoggingReceive(
   {
     case CalibratedMsg(bodyMapping, eventTime) => {
@@ -115,6 +120,9 @@ class ControlActor(
       // the way as well?
       actuateImpulse(impulse, eventTime)
     }
+    case ActuateTwirlMsg(degrees, duration, eventTime) => {
+      actuator.actuateTwirl(degrees, duration)
+    }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       cornerOpt = Some(pos)
       calibrationActor ! CameraAcquiredMsg(eventTime)
@@ -123,9 +131,6 @@ class ControlActor(
     // generic ObjDetectedMsg case
     case BodyDetector.BodyDetectedMsg(pos, eventTime) => {
       if (eventTime > movingUntil) {
-        if (lastSeenTime < movingUntil) {
-          actuator.actuateLight(java.awt.Color.BLUE)
-        }
         if (calibrating) {
           calibrationActor ! BodyMovedMsg(pos, eventTime)
         } else {
@@ -149,6 +154,9 @@ class ControlActor(
       visionActor ! msg
     }
     case CheckVisibilityMsg(checkTime) => {
+      val randomColor = new java.awt.Color(
+        random.nextInt(256), random.nextInt(256), random.nextInt(256))
+      actuator.actuateLight(randomColor)
       if (checkTime < movingUntil) {
         // still moving
       } else {
@@ -185,7 +193,6 @@ class ControlActor(
 
   private def actuateImpulse(impulse : PolarImpulse, eventTime : TimePoint)
   {
-    actuator.actuateLight(java.awt.Color.GREEN)
     val sensorDelay = Settings(context).Vision.sensorDelay
     movingUntil = eventTime + impulse.duration + sensorDelay
     actuator.actuateMotion(impulse)

@@ -76,9 +76,5 @@ object CaptureMain extends App
   }
 
   private def grabOneFrame(videoStream : VideoStream) =
-  {
-    val img = OpenCvUtil.convert(videoStream.nextFrame._1)
-    cvFlip(img, img, 1)
-    img
-  }
+    videoStream.nextFrame._1
 }
