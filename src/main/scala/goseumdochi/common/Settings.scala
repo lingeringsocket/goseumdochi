@@ -66,6 +66,7 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
   object Calibration
   {
     val subConf = conf.getConfig("calibration")
+    val className = subConf.getString("class-name")
     val quietPeriod = getMillis(subConf, "quiet-period")
   }
 

@@ -64,7 +64,6 @@ object ControlActor
 class ControlActor(
   actuator : Actuator,
   visionProps : Props,
-  calibrationProps : Props,
   behaviorProps : Props,
   monitorVisibility : Boolean)
     extends Actor
@@ -72,10 +71,13 @@ class ControlActor(
   import ControlActor._
   import context.dispatcher
 
+  private val settings = Settings(context)
+
   private val visionActor = context.actorOf(
     visionProps, "visionActor")
   private val calibrationActor = context.actorOf(
-    calibrationProps, "calibrationActor")
+    Props(Class.forName(settings.Calibration.className)),
+    "calibrationActor")
   private val behaviorActor = context.actorOf(
     behaviorProps, "behaviorActor")
 
@@ -90,8 +92,6 @@ class ControlActor(
   private var lastSeenPos : Option[PlanarPos] = None
 
   private var cornerOpt : Option[PlanarPos] = None
-
-  private val settings = Settings(context)
 
   private val panicDelay = settings.Control.panicDelay
 

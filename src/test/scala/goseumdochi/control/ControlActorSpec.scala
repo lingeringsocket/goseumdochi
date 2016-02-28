@@ -38,7 +38,6 @@ class ControlActorSpec extends AkkaSpecification
           classOf[ControlActor],
           actuator,
           Props(classOf[NullActor]),
-          Props(classOf[CalibrationFsm]),
           Props(classOf[DozeFsm]),
           false),
         "controlActor")

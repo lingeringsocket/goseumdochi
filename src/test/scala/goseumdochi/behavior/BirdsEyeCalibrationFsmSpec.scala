@@ -23,14 +23,14 @@ import akka.actor._
 
 import scala.math._
 
-class CalibrationFsmSpec extends AkkaSpecification
+class BirdsEyeCalibrationFsmSpec extends AkkaSpecification
 {
-  "CalibrationFsm" should
+  "BirdsEyeCalibrationFsm" should
   {
     "calibrate body mapping" in new AkkaExample
     {
       val fsm = system.actorOf(
-        Props(classOf[CalibrationFsm]))
+        Props(classOf[BirdsEyeCalibrationFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(

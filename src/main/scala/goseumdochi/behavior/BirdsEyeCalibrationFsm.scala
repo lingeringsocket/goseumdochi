@@ -26,7 +26,7 @@ import goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
 
-object CalibrationFsm
+object BirdsEyeCalibrationFsm
 {
   sealed trait State
   sealed trait Data
@@ -56,9 +56,9 @@ object CalibrationFsm
     controlActor : ActorRef, eventTime : TimePoint) extends Data
   final case class StartPoint(pos : PlanarPos) extends Data
 }
-import CalibrationFsm._
+import BirdsEyeCalibrationFsm._
 
-class CalibrationFsm()
+class BirdsEyeCalibrationFsm()
     extends BehaviorFsm[State, Data]
 {
   private val settings = Settings(context)

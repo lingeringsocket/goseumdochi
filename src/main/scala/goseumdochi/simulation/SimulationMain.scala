@@ -53,7 +53,6 @@ object SimulationMain extends App
       classOf[ControlActor],
       actuator,
       Props(classOf[VisionActor], videoStream),
-      Props(classOf[CalibrationFsm]),
       Props(classOf[DozeFsm]),
       true)
     val simulationConfig = ConfigFactory.load("simulation.conf")
