@@ -15,18 +15,9 @@
 
 package goseumdochi.vision
 
-import goseumdochi.common._
-
 import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
-import org.bytedeco.javacv._
-
-import collection._
-
-import org.specs2.mutable._
-import org.specs2.specification._
-import org.specs2.execute._
 
 class RampDetectorSpec extends VisualizableSpecification
 {

@@ -15,7 +15,6 @@
 
 package goseumdochi.simulation
 
-import goseumdochi.common._
 import goseumdochi.control._
 import goseumdochi.vision._
 import goseumdochi.behavior._
@@ -35,31 +34,28 @@ object SimulationMain extends App
   {
     val videoStream = new PlaybackStream(
       Array(
-        ("data/table1.jpg", 1000),
-        ("data/table1.jpg", 1000),
-        ("data/table1.jpg", 1000),
-        ("data/table1.jpg", 1000),
-        ("data/table2.jpg", 1000),
-        ("data/table2.jpg", 1000),
-        ("data/table2.jpg", 1000),
-        ("data/table2.jpg", 1000),
-        ("data/empty.jpg", 1000),
-        ("data/empty.jpg", 1000),
-        ("data/empty.jpg", 1000),
-        ("data/empty.jpg", 1000),
-        ("data/empty.jpg", 1000)),
+        ("data/table1.jpg", 1.second),
+        ("data/table1.jpg", 1.second),
+        ("data/table1.jpg", 1.second),
+        ("data/table1.jpg", 1.second),
+        ("data/table2.jpg", 1.second),
+        ("data/table2.jpg", 1.second),
+        ("data/table2.jpg", 1.second),
+        ("data/table2.jpg", 1.second),
+        ("data/empty.jpg", 1.second),
+        ("data/empty.jpg", 1.second),
+        ("data/empty.jpg", 1.second),
+        ("data/empty.jpg", 1.second),
+        ("data/empty.jpg", 1.second)),
       true)
     val actuator = NullActuator
     val props = Props(
       classOf[ControlActor],
       actuator,
       Props(classOf[VisionActor], videoStream),
-      Props(classOf[CalibrationFsm]),
       Props(classOf[DozeFsm]),
       true)
-    val simulationConfig = ConfigFactory.load("simulation.conf")
-    val defaultConfig = ConfigFactory.load()
-    val config = simulationConfig.withFallback(defaultConfig)
+    val config = ConfigFactory.load("simulation.conf")
     val system = ActorSystem("SimulationActors", config)
     system.actorOf(props, "controlActor")
     Await.result(system.whenTerminated, Duration.Inf)

@@ -17,8 +17,8 @@ package goseumdochi.common
 
 import akka.actor._
 import com.typesafe.config._
-import scala.concurrent.duration._
 import java.util.concurrent._
+import scala.concurrent.duration._
 
 class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     extends Extension
@@ -26,7 +26,7 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
   private val conf = rootConf.getConfig("goseumdochi")
 
   private def getMillis(subConf: Config, path : String) =
-    subConf.getDuration(path, TimeUnit.MILLISECONDS)
+    TimeSpan(subConf.getDuration(path, TimeUnit.MILLISECONDS), MILLISECONDS)
 
   object Bluetooth
   {
@@ -43,7 +43,9 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
   object Vision
   {
     val subConf = conf.getConfig("vision")
-    val cameraUrl = subConf.getString("camera-url")
+    val cameraClass = subConf.getString("camera-class")
+    val remoteCameraUrl = subConf.getString("remote-camera-url")
+    val throttlePeriod = getMillis(subConf, "throttle-period")
     val sensorDelay = getMillis(subConf, "sensor-delay")
   }
 
@@ -61,10 +63,25 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     val fullSpeed = subConf.getDouble("full-speed")
   }
 
+  object Calibration
+  {
+    val subConf = conf.getConfig("calibration")
+    val className = subConf.getString("class-name")
+    val quietPeriod = getMillis(subConf, "quiet-period")
+  }
+
   object BodyRecognition
   {
     val subConf = conf.getConfig("body-recognition")
     val className = subConf.getString("class-name")
+  }
+
+  object MotionDetection
+  {
+    val subConf = conf.getConfig("motion-detection")
+    val bodyThreshold = subConf.getInt("body-threshold")
+    val fineThreshold = subConf.getInt("fine-threshold")
+    val coarseThreshold = subConf.getInt("coarse-threshold")
   }
 
   object Test
@@ -72,6 +89,9 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     val subConf = conf.getConfig("test")
     val visualize = subConf.getBoolean("visualize")
   }
+
+  def instantiateObject(className : String) =
+    Class.forName(className).getConstructor(this.getClass).newInstance(this)
 }
 
 object Settings extends ExtensionId[Settings] with ExtensionIdProvider
@@ -82,4 +102,9 @@ object Settings extends ExtensionId[Settings] with ExtensionIdProvider
     new Settings(system.settings.config, system)
 
   def apply(context : ActorContext) : Settings = apply(context.system)
+
+  def complainMissing(path : String)
+  {
+    throw new ConfigException.Missing(path)
+  }
 }

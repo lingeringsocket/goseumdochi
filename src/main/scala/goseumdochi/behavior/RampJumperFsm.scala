@@ -20,8 +20,6 @@ import goseumdochi.control._
 import goseumdochi.vision._
 
 import akka.actor._
-import akka.pattern._
-import akka.util._
 
 import scala.concurrent.duration._
 import goseumdochi.common.MoreMath._
@@ -47,7 +45,7 @@ object RampJumperFsm
   case object Launched extends State
 
   // data
-  case object Uninitialized extends Data
+  case object Empty extends Data
   final case class LaunchTrajectory(
     ramp : OrientedRamp,
     launchPos : Option[PlanarPos]
@@ -61,10 +59,10 @@ class RampJumperFsm()
 {
   private val settings = Settings(context)
 
-  startWith(Blind, Uninitialized)
+  startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(ControlActor.CameraAcquiredMsg, _) => {
+    case Event(msg : ControlActor.CameraAcquiredMsg, _) => {
       sender ! VisionActor.ActivateAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
         classOf[RampDetector].getName))
@@ -76,7 +74,7 @@ class RampJumperFsm()
     case Event(RampDetectedMsg(ramp, _), _) => {
       goto(ManeuveringToLaunch) using LaunchTrajectory(ramp, None)
     }
-    case Event(ControlActor.BodyMovedMsg(_, _), _) => {
+    case Event(msg : ControlActor.BodyMovedMsg, _) => {
       stay
     }
   }
@@ -112,14 +110,14 @@ class RampJumperFsm()
       val offset = polarMotion(pos, launchPos)
       if (offset.distance < 15.0) {
         sender ! ControlActor.ActuateMoveMsg(
-          pos, ramp.center, settings.Motor.fullSpeed, 1.0, eventTime)
-        goto(Launched) using Uninitialized
+          pos, ramp.center, settings.Motor.fullSpeed, 1.second, eventTime)
+        goto(Launched) using Empty
       } else {
         val extraTime = {
           if (offset.distance < 40.0) {
-            0.2
+            200.milliseconds
           } else {
-            0.0
+            0.seconds
           }
         }
         sender ! ControlActor.ActuateMoveMsg(
@@ -127,7 +125,7 @@ class RampJumperFsm()
         stay using newTrajectory
       }
     }
-    case Event(RampDetectedMsg(_, _), _) => {
+    case Event(msg : RampDetectedMsg, _) => {
       stay
     }
   }
@@ -136,14 +134,17 @@ class RampJumperFsm()
     case Event(StateTimeout, _) => {
       goto(WaitingForRamp)
     }
-    case Event(ControlActor.BodyMovedMsg(_, _) | RampDetectedMsg(_, _), _) => {
+    case Event(msg : ControlActor.BodyMovedMsg, _) => {
+      stay
+    }
+    case Event(msg : RampDetectedMsg, _) => {
       stay
     }
   }
 
   whenUnhandled {
-    case Event(ControlActor.PanicAttack, _) => {
-      goto(WaitingForRamp) using Uninitialized
+    case Event(msg : ControlActor.PanicAttackMsg, _) => {
+      goto(WaitingForRamp) using Empty
     }
     case event => handleUnknown(event)
   }

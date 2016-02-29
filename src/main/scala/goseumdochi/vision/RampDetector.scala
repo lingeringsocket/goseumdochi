@@ -21,9 +21,6 @@ import org.bytedeco.javacpp._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
-import org.bytedeco.javacv._
-
-import collection._
 
 import goseumdochi.common.MoreMath._
 
@@ -35,7 +32,7 @@ case class OrientedRamp(
 object RampDetector
 {
   // result messages
-  final case class RampDetectedMsg(ramp : OrientedRamp, eventTime : Long)
+  final case class RampDetectedMsg(ramp : OrientedRamp, eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
 }
 
@@ -44,7 +41,8 @@ import RampDetector._
 class RampDetector(val settings : Settings) extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage, now : Long) =
+    img : IplImage, gray : IplImage, prevGray : IplImage,
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
     detectRamp(img).map(
       ramp => {
@@ -54,7 +52,7 @@ class RampDetector(val settings : Settings) extends VisionAnalyzer
         cvCircle(
           img, OpenCvUtil.point(ramp.entry),
           2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
-        RampDetectedMsg(ramp, now)
+        RampDetectedMsg(ramp, frameTime)
       }
     )
   }
@@ -130,7 +128,7 @@ class RampDetector(val settings : Settings) extends VisionAnalyzer
                 val ratio = major/minor
                 if ((ratio > 1.3) && (ratio < 1.33)) {
                   val center = midpoint(p0, p2)
-                  // FIXME:  orientation
+                  // FIXME:  orientation (at least use hintBodyPos)
                   val entry = {
                     if (side1.distance < side2.distance) {
                       midpoint(p1, p2)

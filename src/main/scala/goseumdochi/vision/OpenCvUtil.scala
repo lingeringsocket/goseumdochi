@@ -17,9 +17,7 @@ package goseumdochi.vision
 
 import goseumdochi.common._
 
-import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
 import org.bytedeco.javacv._
 

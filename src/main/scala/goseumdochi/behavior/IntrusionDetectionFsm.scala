@@ -20,11 +20,10 @@ import goseumdochi.control._
 import goseumdochi.vision._
 
 import akka.actor._
-import akka.pattern._
-import akka.util._
+
+import goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
-import goseumdochi.common.MoreMath._
 
 object IntrusionDetectionFsm
 {
@@ -46,7 +45,7 @@ object IntrusionDetectionFsm
   case object ManeuveringToIntruder extends State
 
   // data
-  case object Uninitialized extends Data
+  case object Empty extends Data
   final case class IntruderAt(
     pos : PlanarPos
   ) extends Data
@@ -59,13 +58,13 @@ class IntrusionDetectionFsm()
 {
   private val settings = Settings(context)
 
-  startWith(Blind, Uninitialized)
+  startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(ControlActor.CameraAcquiredMsg, _) => {
+    case Event(msg : ControlActor.CameraAcquiredMsg, _) => {
       sender ! VisionActor.ActivateAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
-        classOf[MotionDetector].getName))
+        classOf[CoarseMotionDetector].getName))
       goto(WaitingForIntruder)
     }
   }
@@ -74,7 +73,7 @@ class IntrusionDetectionFsm()
     case Event(MotionDetectedMsg(pos, _), _) => {
       goto(ManeuveringToIntruder) using IntruderAt(pos)
     }
-    case Event(ControlActor.BodyMovedMsg(_, _), _) => {
+    case Event(msg : ControlActor.BodyMovedMsg, _) => {
       stay
     }
   }
@@ -86,10 +85,11 @@ class IntrusionDetectionFsm()
     {
       val offset = polarMotion(pos, intruderPos)
       if (offset.distance < 30.0) {
-        goto(WaitingForIntruder) using Uninitialized
+        goto(WaitingForIntruder) using Empty
       } else {
         sender ! ControlActor.ActuateMoveMsg(
-          pos, intruderPos, settings.Motor.defaultSpeed, 0.2, eventTime)
+          pos, intruderPos, settings.Motor.defaultSpeed,
+          200.milliseconds, eventTime)
         stay
       }
     }
@@ -99,8 +99,8 @@ class IntrusionDetectionFsm()
   }
 
   whenUnhandled {
-    case Event(ControlActor.PanicAttack, _) => {
-      goto(WaitingForIntruder) using Uninitialized
+    case Event(msg : ControlActor.PanicAttackMsg, _) => {
+      goto(WaitingForIntruder) using Empty
     }
     case event => handleUnknown(event)
   }

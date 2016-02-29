@@ -19,7 +19,6 @@ import goseumdochi.common._
 import goseumdochi.control._
 
 import scala.math._
-import goseumdochi.common.MoreMath._
 
 import se.nicklasgavelin.sphero._
 import se.nicklasgavelin.sphero.command._
@@ -27,38 +26,60 @@ import se.nicklasgavelin.util.Value
 
 class SpheroActuator(robot : Robot) extends Actuator
 {
-  private def actuateMotionOld(impulse : PolarImpulse)
-  {
-    val degrees = 360.0*impulse.theta / (2*Pi)
-    robot.sendCommand(
-      new RollCommand(degrees.toFloat, impulse.speed.toFloat, false))
-    Thread.sleep((impulse.duration*1000.0).toLong)
-    robot.sendCommand(
-      new RollCommand(degrees.toFloat, 0.0f, true))
-  }
-
   override def actuateMotion(impulse : PolarImpulse)
   {
     // kill motor on exit
     val macroFlags = SaveTemporaryMacroCommand.MacroFlagMotorControl
     val macroDef = Array.ofDim[Byte](10)
-    // first macro:  ROLL2
+    // first command:  ROLL2
     macroDef(0) = 0x1D.toByte
     val degrees = (360.0*impulse.theta / (2*Pi)).toInt
     val heading = (degrees % 360).toInt
     val velocity = Value.clamp(impulse.speed.toFloat, 0.0D, 1.0D).toFloat
-    val millis = (impulse.duration*1000.0).toInt
+    val millis = impulse.duration.toMillis.toInt
     macroDef(1) = (velocity * 255.0D).toInt.toByte
     macroDef(2) = (heading >> 8).toByte
     macroDef(3) = heading.toByte
     macroDef(4) = (millis >> 8).toByte
     macroDef(5) = millis.toByte
-    // third macro:  SET SPEED
+    // second command:  SET SPEED
     macroDef(6) = 0x25.toByte
     macroDef(7) = 0.toByte
     macroDef(8) = 0.toByte
-    // fourth macro:  END
+    // third command:  END
     macroDef(9) = 0x1.toByte
+    robot.sendCommand(
+      new SaveTemporaryMacroCommand(macroFlags, macroDef))
+    robot.sendCommand(
+      new RunMacroCommand(255))
+  }
+
+  override def actuateTwirl(degrees : Int, duration : TimeSpan)
+  {
+    // kill motor on exit
+    val macroFlags = SaveTemporaryMacroCommand.MacroFlagMotorControl
+    val macroDef = Array.ofDim[Byte](15)
+    // first command:  SET BACK LED on
+    macroDef(0) = 0x9
+    macroDef(1) = 0xFF.toByte
+    macroDef(2) = 0
+    // second command:  ROTATE OVER TIME
+    val millis = duration.toMillis.toInt
+    macroDef(3) = 0x1A
+    macroDef(4) = (degrees >> 8).toByte
+    macroDef(5) = degrees.toByte
+    macroDef(6) = (millis >> 8).toByte
+    macroDef(7) = millis.toByte
+    // third command:  DELAY
+    macroDef(8) = 0xB
+    macroDef(9) = (millis >> 8).toByte
+    macroDef(10) = millis.toByte
+    // fourth command:  SET BACK LED off
+    macroDef(11) = 0x9
+    macroDef(12) = 0
+    macroDef(13) = 0
+    // fifth command macro:  END
+    macroDef(14) = 0x1.toByte
     robot.sendCommand(
       new SaveTemporaryMacroCommand(macroFlags, macroDef))
     robot.sendCommand(

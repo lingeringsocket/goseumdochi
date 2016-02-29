@@ -17,27 +17,24 @@ package goseumdochi.vision
 
 import goseumdochi.common._
 
-import scala.math._
-import goseumdochi.common.MoreMath._
-
 import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.helper.opencv_core._
-import org.bytedeco.javacpp.opencv_imgproc._
 import org.bytedeco.javacv._
+
+import scala.concurrent.duration._
 
 trait VideoStream
 {
   def beforeNext() {}
 
-  def nextFrame() : (Frame, Long)
+  def nextFrame() : (IplImage, TimePoint)
 
   def afterNext() {}
 
   def quit() {}
 }
 
-object LocalVideoStream extends VideoStream
+class LocalVideoStream(settings : Settings) extends VideoStream
 {
   private val frameGrabber = startGrabber
 
@@ -46,11 +43,18 @@ object LocalVideoStream extends VideoStream
     val grabber = new OpenCVFrameGrabber(0)
     grabber.setBitsPerPixel(CV_8U)
     grabber.setImageMode(FrameGrabber.ImageMode.COLOR)
+    // FIXME: find a way to suppress "HIGHGUI ERROR: V4L: Property
+    // <unknown property string>(16) not supported by device"
     grabber.start
     grabber
   }
 
-  override def nextFrame() = (frameGrabber.grab, System.currentTimeMillis)
+  override def nextFrame() =
+  {
+    val img = OpenCvUtil.convert(frameGrabber.grab)
+    cvFlip(img, img, 1)
+    (img, TimePoint.now)
+  }
 
   override def quit()
   {
@@ -64,15 +68,20 @@ class RemoteVideoStream(settings : Settings) extends VideoStream
 
   override def beforeNext()
   {
-    val grabber = new IPCameraFrameGrabber(settings.Vision.cameraUrl)
+    val url = settings.Vision.remoteCameraUrl
+    if (url.isEmpty) {
+      Settings.complainMissing("goseumdochi.vision.remote-camera-url")
+    }
+    val grabber = new IPCameraFrameGrabber(url)
     grabber.setBitsPerPixel(CV_8U)
     grabber.setImageMode(FrameGrabber.ImageMode.COLOR)
     grabber.start
     frameGrabber = Some(grabber)
   }
 
-  override def nextFrame() = {
-    (frameGrabber.get.grab, System.currentTimeMillis)
+  override def nextFrame() =
+  {
+    (OpenCvUtil.convert(frameGrabber.get.grab), TimePoint.now)
   }
 
   override def afterNext()
@@ -86,26 +95,27 @@ class RemoteVideoStream(settings : Settings) extends VideoStream
   }
 }
 
-class PlaybackStream(keyFrames : Seq[(String, Int)], realTime : Boolean = true)
+class PlaybackStream(
+  keyFrames : Seq[(String, TimeSpan)], realTime : Boolean = true)
     extends VideoStream
 {
   private val circular = Iterator.continually(keyFrames).flatten
 
-  private var simulatedTime = 1000L
+  private var simulatedTime = TimePoint(TimeSpan(1, SECONDS))
 
   override def nextFrame() =
   {
-    val (filename, delayMillis) = circular.next
-    val now = {
+    val (filename, delay) = circular.next
+    val frameTime = {
       if (realTime) {
-        Thread.sleep(delayMillis)
-        System.currentTimeMillis
+        Thread.sleep(delay.toMillis)
+        TimePoint.now
       } else {
-        simulatedTime += delayMillis
+        simulatedTime += delay
         simulatedTime
       }
     }
     val img = OpenCvUtil.convert(cvLoadImage(filename))
-    (img, now)
+    (OpenCvUtil.convert(img), frameTime)
   }
 }

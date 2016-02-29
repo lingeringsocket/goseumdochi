@@ -21,33 +21,46 @@ import goseumdochi.vision._
 
 import akka.actor._
 
-import CalibrationFsm._
+import scala.math._
 
-class CalibrationFsmSpec extends AkkaSpecification
+class BirdsEyeCalibrationFsmSpec extends AkkaSpecification
 {
-  "CalibrationFsm" should
+  "BirdsEyeCalibrationFsm" should
   {
     "calibrate body mapping" in new AkkaExample
     {
-      val calibrationFsm = system.actorOf(
-        Props(classOf[CalibrationFsm]))
+      val fsm = system.actorOf(
+        Props(classOf[BirdsEyeCalibrationFsm]))
 
-      calibrationFsm ! ControlActor.CameraAcquiredMsg
+      fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
-        "goseumdochi.vision.RoundBodyDetector")))
+        "goseumdochi.vision.RoundBodyDetector",
+        "goseumdochi.vision.FineMotionDetector")))
+
+      expectQuiet
+
+      val backwardImpulse = expectMsgClass(
+        classOf[ControlActor.ActuateImpulseMsg]).impulse
+      backwardImpulse.speed must be closeTo(0.2 +/- 0.01)
+      backwardImpulse.duration.toMillis must be equalTo 800
+      backwardImpulse.theta must be closeTo(Pi +/- 0.01)
 
       val initialPos = PlanarPos(0, 0)
       val finalPos = PlanarPos(100, 30)
 
-      calibrationFsm ! ControlActor.BodyMovedMsg(initialPos, 0)
+      fsm ! MotionDetector.MotionDetectedMsg(initialPos, TimePoint.ZERO)
 
-      val impulse = expectMsgClass(
+      expectMsg(VisionActor.HintBodyLocationMsg(initialPos, TimePoint.ZERO))
+
+      fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
+
+      val forwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
-      impulse.speed must be closeTo(0.2 +/- 0.01)
-      impulse.duration must be closeTo(0.8 +/- 0.01)
-      impulse.theta must be closeTo(0.0 +/- 0.01)
+      forwardImpulse.speed must be closeTo(0.2 +/- 0.01)
+      forwardImpulse.duration.toMillis must be equalTo 800
+      forwardImpulse.theta must be closeTo(0.0 +/- 0.01)
 
-      calibrationFsm ! ControlActor.BodyMovedMsg(finalPos, 0)
+      fsm ! ControlActor.BodyMovedMsg(finalPos, TimePoint.ZERO)
 
       val bodyMapping = expectMsgClass(
         classOf[ControlActor.CalibratedMsg]).bodyMapping

@@ -19,17 +19,22 @@ import goseumdochi.common._
 
 import goseumdochi.common.MoreMath._
 
+import scala.concurrent.duration._
+
 case class BodyMapping(
   scale : Double,
   thetaOffset : Double)
 {
   def computeImpulse(
     origin : PlanarPos, dest : PlanarPos,
-    speed : Double, extraTime : Double) =
+    speed : Double, extraTime : TimeSpan) =
   {
     val motion = polarMotion(origin, dest)
     val duration = (motion.distance / speed) / scale
     val theta = normalizeRadians(motion.theta - thetaOffset)
-    PolarImpulse(speed, duration + extraTime, theta)
+    PolarImpulse(
+      speed,
+      TimeSpan((duration*1000.0).toLong, MILLISECONDS) + extraTime,
+      theta)
   }
 }

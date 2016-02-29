@@ -1,0 +1,19 @@
+akka {
+  actor {
+    debug {
+      receive = off
+      fsm = off
+    }
+  }
+  loglevel = "INFO"
+}
+
+goseumdochi {
+  sphero {
+    bluetooth-id = "ABCDEF012345"
+  }
+  vision {
+    camera-class = "goseumdochi.vision.RemoteVideoStream"
+    remote-camera-url = "http://192.168.43.1:8080/videofeed"
+  }
+}

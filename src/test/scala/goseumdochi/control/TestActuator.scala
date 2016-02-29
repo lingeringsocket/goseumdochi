@@ -17,15 +17,13 @@ package goseumdochi.control
 
 import goseumdochi.common._
 
-import scala.concurrent._
-import scala.util._
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class TestActuator extends Actuator
 {
   private var lastImpulse : Option[PolarImpulse] = None
 
   private var lastColor : Option[java.awt.Color] = None
+
+  private var lastTwirl : Option[TimeSpan] = None
 
   override def actuateMotion(impulse : PolarImpulse)
   {
@@ -37,13 +35,21 @@ class TestActuator extends Actuator
     lastColor = Some(color)
   }
 
+  override def actuateTwirl(degrees : Int, duration : TimeSpan)
+  {
+    lastTwirl = Some(duration)
+  }
+
   def reset()
   {
     lastImpulse = None
     lastColor = None
+    lastTwirl = None
   }
 
   def retrieveImpulse() : Option[PolarImpulse] = lastImpulse
 
   def retrieveColor() : Option[java.awt.Color] = lastColor
+
+  def retrieveTwirl() : Option[TimeSpan] = lastTwirl
 }

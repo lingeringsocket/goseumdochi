@@ -17,39 +17,37 @@ package goseumdochi.vision
 
 import goseumdochi.common._
 
-import org.bytedeco.javacpp._
-import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
-import org.bytedeco.javacv._
-
-import collection._
 
 object MotionDetector
 {
   // result messages
-  final case class MotionDetectedMsg(pos : PlanarPos, eventTime : Long)
+  final case class MotionDetectedMsg(pos : PlanarPos, eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
 }
 
 import MotionDetector._
 
-class MotionDetector(val settings : Settings) extends VisionAnalyzer
+abstract class MotionDetector(
+  val settings : Settings, threshold : Int, under : Boolean = false)
+    extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage, now : Long) =
+    img : IplImage, gray : IplImage, prevGray : IplImage,
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
   {
-    detectIntruder(prevGray, gray).map(
+    detectMotion(prevGray, gray).map(
       pos => {
         val center = OpenCvUtil.point(pos)
         cvCircle(img, center, 2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
-        MotionDetectedMsg(pos, now)
+        MotionDetectedMsg(pos, frameTime)
       }
     )
   }
 
-  def detectIntruder(beforeImg : IplImage, afterImg : IplImage)
+  def detectMotion(beforeImg : IplImage, afterImg : IplImage)
       : Option[PlanarPos] =
   {
     val diff = AbstractIplImage.create(
@@ -69,7 +67,17 @@ class MotionDetector(val settings : Settings) extends VisionAnalyzer
           val box = cvMinAreaRect2(contour, storage);
           if (box != null) {
             val size = box.size
-            if ((size.width > 40) && (size.height > 40)) {
+            // FIXME:  return the largest object instead of the first
+            // over the threshold, and if a body pos hint is available,
+            // pick the one nearest/farthest from the body
+            val detected = {
+              if (under) {
+                (size.width < threshold) && (size.height < threshold)
+              } else {
+                (size.width > threshold) && (size.height > threshold)
+              }
+            }
+            if (detected) {
               val center = box.center
               return Some(PlanarPos(center.x, center.y))
             }
@@ -84,3 +92,9 @@ class MotionDetector(val settings : Settings) extends VisionAnalyzer
     }
   }
 }
+
+class CoarseMotionDetector(settings : Settings)
+    extends MotionDetector(settings, settings.MotionDetection.coarseThreshold)
+
+class FineMotionDetector(settings : Settings)
+    extends MotionDetector(settings, settings.MotionDetection.fineThreshold)

@@ -15,15 +15,9 @@
 
 package goseumdochi.behavior
 
-import goseumdochi.common._
 import goseumdochi.control._
-import goseumdochi.vision._
 
 import akka.actor._
-import akka.pattern._
-import akka.util._
-
-import scala.concurrent.duration._
 
 object DozeFsm
 {
@@ -61,7 +55,7 @@ class DozeFsm()
   }
 
   whenUnhandled {
-    case Event(ControlActor.PanicAttack, _) => {
+    case Event(msg : ControlActor.PanicAttackMsg, _) => {
       goto(Dozing) using Red
     }
     case event => handleUnknown(event)
