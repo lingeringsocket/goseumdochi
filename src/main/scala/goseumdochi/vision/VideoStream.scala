@@ -68,7 +68,11 @@ class RemoteVideoStream(settings : Settings) extends VideoStream
 
   override def beforeNext()
   {
-    val grabber = new IPCameraFrameGrabber(settings.Vision.remoteCameraUrl)
+    val url = settings.Vision.remoteCameraUrl
+    if (url.isEmpty) {
+      Settings.complainMissing("goseumdochi.vision.remote-camera-url")
+    }
+    val grabber = new IPCameraFrameGrabber(url)
     grabber.setBitsPerPixel(CV_8U)
     grabber.setImageMode(FrameGrabber.ImageMode.COLOR)
     grabber.start

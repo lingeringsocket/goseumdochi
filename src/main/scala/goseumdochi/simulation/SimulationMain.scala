@@ -55,9 +55,7 @@ object SimulationMain extends App
       Props(classOf[VisionActor], videoStream),
       Props(classOf[DozeFsm]),
       true)
-    val simulationConfig = ConfigFactory.load("simulation.conf")
-    val defaultConfig = ConfigFactory.load()
-    val config = simulationConfig.withFallback(defaultConfig)
+    val config = ConfigFactory.load("simulation.conf")
     val system = ActorSystem("SimulationActors", config)
     system.actorOf(props, "controlActor")
     Await.result(system.whenTerminated, Duration.Inf)

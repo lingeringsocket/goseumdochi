@@ -42,9 +42,7 @@ abstract class VisualizableSpecification(confFile : String = "simulation.conf")
     if (confFile.isEmpty) {
       ActorSystem(systemName)
     } else {
-      val chosenConfig = ConfigFactory.load(confFile)
-      val defaultConfig = ConfigFactory.load()
-      val config = chosenConfig.withFallback(defaultConfig)
+      val config = ConfigFactory.load(confFile)
       ActorSystem(systemName, config)
     }
   }

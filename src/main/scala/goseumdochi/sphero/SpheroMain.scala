@@ -22,6 +22,7 @@ import goseumdochi.behavior._
 
 import se.nicklasgavelin.bluetooth._
 import se.nicklasgavelin.sphero._
+import se.nicklasgavelin.sphero.exception._
 import se.nicklasgavelin.sphero.RobotListener.EVENT_CODE
 import se.nicklasgavelin.sphero.command._
 import se.nicklasgavelin.sphero.response._
@@ -34,6 +35,8 @@ import akka.actor._
 import scala.concurrent._
 import scala.concurrent.duration._
 
+import com.typesafe.config._
+
 object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
 {
   var systemOpt : Option[ActorSystem] = None
@@ -42,25 +45,38 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
 
   private def run()
   {
-    val system = ActorSystem("SpheroActors")
+    val config = args.headOption match {
+      case Some(configFile) => {
+        println("Using custom configuration " + configFile)
+        ConfigFactory.load(configFile)
+      }
+      case _ => {
+        ConfigFactory.load()
+      }
+    }
+    val system = ActorSystem("SpheroActors", config)
     systemOpt = Some(system)
     val settings = Settings(system)
 
-    if (settings.Bluetooth.debug) {
-      com.intel.bluetooth.DebugLog.setDebugEnabled(true)
-    }
-
-    val bt = new Bluetooth(this, Bluetooth.SERIAL_COM)
     val id = settings.Sphero.bluetoothId
-    val btd = new BluetoothDevice(
-      bt, "btspp://" + id + ":1;authenticate=true;encrypt=false;master=false")
-    val r = new Robot(btd)
-    r.addListener(this)
-    if (r.connect(true)) {
+    if (id.isEmpty) {
+      System.err.println(
+        "Required property goseumdochi.sphero.bluetooth-id is not set.")
+      System.err.println(
+        "In src/main/resources, copy application.conf.template to ")
+      System.err.println("application.conf, then edit for your configuration.")
+      system.terminate
+      return
+    }
+    try {
+      if (settings.Bluetooth.debug) {
+        com.intel.bluetooth.DebugLog.setDebugEnabled(true)
+      }
+      val robot = connectToRobot(id)
       val videoStream =
         settings.instantiateObject(settings.Vision.cameraClass).
           asInstanceOf[VideoStream]
-      val actuator = new SpheroActuator(r)
+      val actuator = new SpheroActuator(robot)
       val props = Props(
         classOf[ControlActor],
         actuator,
@@ -68,8 +84,34 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
         Props(classOf[IntrusionDetectionFsm]),
         true)
       val controlActor = system.actorOf(props, "controlActor")
-      Await.result(system.whenTerminated, Duration.Inf)
+    } catch {
+      case ex : Throwable => {
+        system.terminate
+        throw ex
+      }
     }
+    Await.result(system.whenTerminated, Duration.Inf)
+  }
+
+  private def connectToRobot(id : String) : Robot =
+  {
+    val bt = new Bluetooth(this, Bluetooth.SERIAL_COM)
+    val btd = new BluetoothDevice(
+      bt, "btspp://" + id + ":1;authenticate=true;encrypt=false;master=false")
+    val robot = new Robot(btd)
+    robot.addListener(this)
+
+    while (true) {
+      try {
+        robot.connect(true)
+        return robot
+      } catch {
+        case ex : RobotInitializeConnectionFailed => {
+          println("RETRY...")
+        }
+      }
+    }
+    return robot
   }
 
   override def deviceSearchStarted()

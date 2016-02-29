@@ -102,4 +102,9 @@ object Settings extends ExtensionId[Settings] with ExtensionIdProvider
     new Settings(system.settings.config, system)
 
   def apply(context : ActorContext) : Settings = apply(context.system)
+
+  def complainMissing(path : String)
+  {
+    throw new ConfigException.Missing(path)
+  }
 }
