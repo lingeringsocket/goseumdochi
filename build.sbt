@@ -1,10 +1,10 @@
 name := "goseumdochi"
 
-organization := "org.lingeringsocket"
+organization := "org.goseumdochi"
 
 val javacppVersion = "0.11"
 
-version := javacppVersion
+version := "0.1"
 
 scalaVersion := "2.11.7"
 
@@ -42,4 +42,4 @@ traceLevel := 10
 
 scalastyleFailOnError := true
 
-mainClass in Compile := Some("goseumdochi.ConsoleMain")
+mainClass in Compile := Some("org.goseumdochi.ConsoleMain")
