@@ -76,7 +76,11 @@ case class LinearMotionModel(
 
 object MoreMath
 {
-  final val TWO_PI = 2*Pi
+  final val PI = Pi
+
+  final val TWO_PI = 2.0*Pi
+
+  final val HALF_PI = Pi/2.0
 
   def sqr(n : Int) = (n*n)
 
@@ -86,12 +90,22 @@ object MoreMath
 
   @tailrec def normalizeRadians(theta : Double) : Double =
   {
-    if (theta < 0) {
+    if (theta <= -PI) {
       normalizeRadians(theta + TWO_PI)
-    } else if (theta >= TWO_PI) {
+    } else if (theta > PI) {
       normalizeRadians(theta - TWO_PI)
     } else {
       theta
+    }
+  }
+
+  def normalizeRadiansPositive(theta : Double) : Double =
+  {
+    val normalized = normalizeRadians(theta)
+    if (normalized < 0) {
+      normalized + TWO_PI
+    } else {
+      normalized
     }
   }
 

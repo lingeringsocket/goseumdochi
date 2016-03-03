@@ -22,6 +22,8 @@ import org.goseumdochi.behavior._
 import akka.actor._
 
 import scala.math._
+import MoreMath._
+
 import scala.concurrent.duration._
 
 import ControlActor._
@@ -61,7 +63,7 @@ class ControlActorSpec extends AkkaSpecification
       expectQuiet
 
       val backwardImpulse = actuator.retrieveImpulse().get
-      backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, Pi))
+      backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, PI))
       actuator.reset
 
       controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)

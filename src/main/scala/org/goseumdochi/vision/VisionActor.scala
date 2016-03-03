@@ -55,6 +55,8 @@ class VisionActor(videoStream : VideoStream)
 
   private var analyzers : Seq[VisionAnalyzer] = Seq.empty
 
+  private var lastImg : Option[IplImage] = None
+
   private var lastGray : Option[IplImage] = None
 
   private var cornerSeen = false
@@ -106,13 +108,16 @@ class VisionActor(videoStream : VideoStream)
   private def analyzeFrame(img : IplImage, frameTime : TimePoint)
   {
     val gray = OpenCvUtil.grayscale(img)
+    val copy = cvCloneImage(img)
 
     lastGray.foreach(
       prevGray => {
+        val prevImg = lastImg.get
         analyzers.map(
           analyzer => {
             analyzer.analyzeFrame(
-              img, gray, prevGray, frameTime, hintBodyPos).foreach(msg => {
+              img, prevImg, gray, prevGray, frameTime, hintBodyPos).
+              foreach(msg => {
                 msg match {
                   case BodyDetector.BodyDetectedMsg(pos, _) => {
                     hintBodyPos = Some(pos)
@@ -125,16 +130,19 @@ class VisionActor(videoStream : VideoStream)
           }
         )
         prevGray.release
+        prevImg.release
       }
     )
     lastGray = Some(gray)
+    lastImg = Some(copy)
   }
 
   private def grabOne(analyze : Boolean)
   {
     try {
       videoStream.beforeNext()
-      val (img, frameTime) = videoStream.nextFrame()
+      val (frame, frameTime) = videoStream.nextFrame()
+      val img = OpenCvUtil.convert(frame)
       if (!cornerSeen) {
         val corner = PlanarPos(img.width, img.height)
         gossip(DimensionsKnownMsg(corner, frameTime))

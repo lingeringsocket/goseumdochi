@@ -35,7 +35,7 @@ abstract class MotionDetector(
     extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage,
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
   {
     detectMotion(prevGray, gray).map(
@@ -64,7 +64,7 @@ abstract class MotionDetector(
     try {
       while (contour != null && !contour.isNull) {
         if (contour.elem_size > 0) {
-          val box = cvMinAreaRect2(contour, storage);
+          val box = cvMinAreaRect2(contour, storage)
           if (box != null) {
             val size = box.size
             // FIXME:  return the largest object instead of the first
@@ -83,7 +83,7 @@ abstract class MotionDetector(
             }
           }
         }
-        contour = contour.h_next();
+        contour = contour.h_next()
       }
       return None
     } finally {

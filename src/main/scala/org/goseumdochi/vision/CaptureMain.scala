@@ -34,8 +34,12 @@ object CaptureMain extends App
 
   def captureOneFrame(outFileName : String)
   {
-    val videoStream = new LocalVideoStream(settings)
-    val img = grabOneFrame(videoStream)
+    val videoStream =
+      settings.instantiateObject(settings.Vision.cameraClass).
+        asInstanceOf[VideoStream]
+    videoStream.beforeNext
+    val img = OpenCvUtil.convert(grabOneFrame(videoStream))
+    videoStream.afterNext
     cvSaveImage(outFileName, img)
   }
 
@@ -43,7 +47,9 @@ object CaptureMain extends App
   {
     val canvas = new CanvasFrame("Webcam")
     canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
-    val videoStream = new LocalVideoStream(settings)
+    val videoStream =
+      settings.instantiateObject(settings.Vision.cameraClass).
+        asInstanceOf[VideoStream]
     var running = true
     var capture = false
     var nextSuffix = 1
@@ -58,8 +64,10 @@ object CaptureMain extends App
     println("Click mouse inside webcam window to capture; " +
       "close webcam window to quit")
     while (running) {
-      val img = grabOneFrame(videoStream)
-      canvas.showImage(OpenCvUtil.convert(img))
+      videoStream.beforeNext
+      val frame = grabOneFrame(videoStream)
+      canvas.showImage(frame)
+      val img = OpenCvUtil.convert(frame)
       if (capture) {
         val outFileName = "frame" + nextSuffix + ".jpg"
         nextSuffix += 1
@@ -67,6 +75,7 @@ object CaptureMain extends App
         capture = false
         println("Captured " + outFileName)
       }
+      videoStream.afterNext
       if (canvas.waitKey(-1) != null) {
         println("Done")
         videoStream.quit

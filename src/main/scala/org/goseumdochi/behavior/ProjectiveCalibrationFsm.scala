@@ -26,7 +26,10 @@ import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
 
-object BirdsEyeCalibrationFsm
+// FIXME:  split off body detection phase from orientation phase,
+// and get rid of "Calibration" terminology
+
+object ProjectiveCalibrationFsm
 {
   sealed trait State
   sealed trait Data
@@ -46,19 +49,23 @@ object BirdsEyeCalibrationFsm
   case object Blind extends State
   case object WaitingForQuiet extends State
   case object FindingBody extends State
-  case object WaitingForStart extends State
-  case object WaitingForEnd extends State
+  case object Aligning extends State
+  case object Measuring extends State
   case object Done extends State
 
   // data
   case object Empty extends Data
+  final case class Alignment(
+    lastTheta : Double,
+    lastPos : PlanarPos,
+    scale : Double = 0.0) extends Data
   final case class WithControl(
-    controlActor : ActorRef, eventTime : TimePoint) extends Data
-  final case class StartPoint(pos : PlanarPos) extends Data
+    controlActor : ActorRef,
+    eventTime : TimePoint) extends Data
 }
-import BirdsEyeCalibrationFsm._
+import ProjectiveCalibrationFsm._
 
-class BirdsEyeCalibrationFsm()
+class ProjectiveCalibrationFsm()
     extends BehaviorFsm[State, Data]
 {
   private val settings = Settings(context)
@@ -66,10 +73,10 @@ class BirdsEyeCalibrationFsm()
   private val quietPeriod = settings.Calibration.quietPeriod
 
   private val forwardImpulse =
-    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, 0)
+    PolarImpulse(settings.Motor.defaultSpeed, 1500.milliseconds, 0)
 
   private val backwardImpulse =
-    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, PI)
+    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, Pi)
 
   startWith(Blind, Empty)
 
@@ -97,45 +104,66 @@ class BirdsEyeCalibrationFsm()
   when(FindingBody) {
     case Event(MotionDetector.MotionDetectedMsg(pos, eventTime), _) => {
       sender ! VisionActor.HintBodyLocationMsg(pos, eventTime)
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
-        settings.BodyRecognition.className))
-      goto(WaitingForStart)
+      startAlignment(pos, eventTime)
     }
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
-        settings.BodyRecognition.className))
-      goto(WaitingForStart)
+      startAlignment(pos, eventTime)
     }
   }
 
-  when(WaitingForStart) {
+  when(Aligning) {
     case Event(msg : MotionDetector.MotionDetectedMsg, _) => {
       stay
     }
-    case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
-      sender ! ControlActor.ActuateImpulseMsg(forwardImpulse, eventTime)
-      goto(WaitingForEnd) using StartPoint(pos)
+    case Event(ControlActor.BodyMovedMsg(pos, eventTime), a : Alignment) => {
+      val motion = polarMotion(a.lastPos, pos)
+      val SMALL_ANGLE = 0.1
+      if (motion.distance < 0.1) {
+        stay
+      } else if (abs(motion.theta) < SMALL_ANGLE) {
+        val newTheta = a.lastTheta + HALF_PI
+        val newImpulse = forwardImpulse.copy(theta = newTheta)
+        val predictedMotion = predictMotion(forwardImpulse)
+        val scale = motion.distance / predictedMotion.distance
+        sender ! ControlActor.ActuateImpulseMsg(
+          newImpulse, eventTime)
+        goto(Measuring) using Alignment(a.lastTheta, pos, scale)
+      } else {
+        val normalizedTheta = {
+          if ((motion.theta < HALF_PI) && (motion.theta > -HALF_PI)) {
+            motion.theta
+          } else {
+            normalizeRadians(motion.theta + PI)
+          }
+        }
+        val newTheta = normalizeRadians(
+          PI + a.lastTheta - (0.8 * normalizedTheta))
+        val newImpulse = forwardImpulse.copy(theta = newTheta)
+        sender ! ControlActor.ActuateImpulseMsg(
+          newImpulse, eventTime)
+        stay using Alignment(normalizeRadians(newTheta), pos)
+      }
     }
   }
 
-  when(WaitingForEnd) {
+  when(Measuring) {
     case Event(msg : MotionDetector.MotionDetectedMsg, _) => {
       stay
     }
-    case Event(
-      ControlActor.BodyMovedMsg(endPos, eventTime),
-      StartPoint(startPos)) =>
-    {
-      val predictedMotion = predictMotion(forwardImpulse)
-      val actualMotion = polarMotion(startPos, endPos)
-      if (actualMotion.distance < 0.1) {
+    case Event(ControlActor.BodyMovedMsg(pos, eventTime), a : Alignment) => {
+      val motion = polarMotion(a.lastPos, pos)
+      val SMALL_ANGLE = 0.1
+      if (motion.distance < 0.1) {
         stay
       } else {
-        val bodyMapping = BodyMapping(
-          actualMotion.distance / predictedMotion.distance,
-          normalizeRadians(actualMotion.theta - predictedMotion.theta))
+        val predictedMotion = predictMotion(forwardImpulse)
+        val vscale = motion.distance / predictedMotion.distance
+        println("ANGLE = " + motion.theta)
+        println("HSCALE = " + a.scale)
+        println("VSCALE = " + vscale)
+        val bodyMapping = BodyMapping(a.scale, a.lastTheta)
         sender ! ControlActor.CalibratedMsg(bodyMapping, eventTime)
-        goto(Done)
+        goto(Done) using Empty
       }
     }
   }
@@ -147,4 +175,13 @@ class BirdsEyeCalibrationFsm()
   }
 
   initialize()
+
+  private def startAlignment(pos : PlanarPos, eventTime : TimePoint) =
+  {
+    sender ! VisionActor.ActivateAnalyzersMsg(Seq(
+      settings.BodyRecognition.className))
+    sender ! ControlActor.ActuateImpulseMsg(
+      forwardImpulse, eventTime)
+    goto(Aligning) using Alignment(0.0, pos)
+  }
 }

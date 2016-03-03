@@ -19,6 +19,7 @@ import org.goseumdochi.common._
 import org.goseumdochi.control._
 
 import scala.math._
+import MoreMath._
 
 import se.nicklasgavelin.sphero._
 import se.nicklasgavelin.sphero.command._
@@ -33,7 +34,7 @@ class SpheroActuator(robot : Robot) extends Actuator
     val macroDef = Array.ofDim[Byte](10)
     // first command:  ROLL2
     macroDef(0) = 0x1D.toByte
-    val degrees = (360.0*impulse.theta / (2*Pi)).toInt
+    val degrees = (360.0*normalizeRadiansPositive(impulse.theta) / TWO_PI).toInt
     val heading = (degrees % 360).toInt
     val velocity = Value.clamp(impulse.speed.toFloat, 0.0D, 1.0D).toFloat
     val millis = impulse.duration.toMillis.toInt

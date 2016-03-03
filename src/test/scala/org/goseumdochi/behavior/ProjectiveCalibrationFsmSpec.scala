@@ -24,14 +24,16 @@ import akka.actor._
 import scala.math._
 import MoreMath._
 
-class BirdsEyeCalibrationFsmSpec extends AkkaSpecification
+import scala.concurrent.duration._
+
+class ProjectiveCalibrationFsmSpec extends AkkaSpecification
 {
-  "BirdsEyeCalibrationFsm" should
+  "ProjectiveCalibrationFsm" should
   {
-    "calibrate body mapping" in new AkkaExample
+    "calibrate alignment" in new AkkaExample
     {
       val fsm = system.actorOf(
-        Props(classOf[BirdsEyeCalibrationFsm]))
+        Props(classOf[ProjectiveCalibrationFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
@@ -47,7 +49,9 @@ class BirdsEyeCalibrationFsmSpec extends AkkaSpecification
       backwardImpulse.theta must be closeTo(PI +/- 0.01)
 
       val initialPos = PlanarPos(0, 0)
-      val finalPos = PlanarPos(100, 30)
+      val secondPos = PlanarPos(50, 50)
+      val thirdPos = PlanarPos(150, 50)
+      val finalPos = PlanarPos(150, 250)
 
       fsm ! MotionDetector.MotionDetectedMsg(initialPos, TimePoint.ZERO)
 
@@ -58,18 +62,34 @@ class BirdsEyeCalibrationFsmSpec extends AkkaSpecification
       expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector")))
 
-      val forwardImpulse = expectMsgClass(
+      val firstImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
-      forwardImpulse.speed must be closeTo(0.2 +/- 0.01)
-      forwardImpulse.duration.toMillis must be equalTo 800
-      forwardImpulse.theta must be closeTo(0.0 +/- 0.01)
+      firstImpulse.speed must be closeTo(0.2 +/- 0.01)
+      firstImpulse.duration must be equalTo 1500.milliseconds
+      firstImpulse.theta must be closeTo(0.0 +/- 0.01)
+
+      fsm ! ControlActor.BodyMovedMsg(secondPos, TimePoint.ZERO)
+
+      val secondImpulse = expectMsgClass(
+        classOf[ControlActor.ActuateImpulseMsg]).impulse
+      secondImpulse.speed must be closeTo(0.2 +/- 0.01)
+      secondImpulse.duration must be equalTo 1500.milliseconds
+      secondImpulse.theta must be closeTo(2.51 +/- 0.01)
+
+      fsm ! ControlActor.BodyMovedMsg(thirdPos, TimePoint.ZERO)
+
+      val thirdImpulse = expectMsgClass(
+        classOf[ControlActor.ActuateImpulseMsg]).impulse
+      thirdImpulse.speed must be closeTo(0.2 +/- 0.01)
+      thirdImpulse.duration must be equalTo 1500.milliseconds
+      thirdImpulse.theta must be closeTo(4.08 +/- 0.01)
 
       fsm ! ControlActor.BodyMovedMsg(finalPos, TimePoint.ZERO)
 
       val bodyMapping = expectMsgClass(
         classOf[ControlActor.CalibratedMsg]).bodyMapping
-      bodyMapping.scale must be closeTo(652.5 +/- 0.1)
-      bodyMapping.thetaOffset must be closeTo(0.29 +/- 0.01)
+      bodyMapping.scale must be closeTo(333.3 +/- 0.1)
+      bodyMapping.thetaOffset must be closeTo(2.51 +/- 0.01)
     }
   }
 }

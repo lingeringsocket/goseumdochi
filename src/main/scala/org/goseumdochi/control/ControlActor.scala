@@ -154,8 +154,14 @@ class ControlActor(
       visionActor ! msg
     }
     case CheckVisibilityMsg(checkTime) => {
-      val randomColor = new java.awt.Color(
-        random.nextInt(256), random.nextInt(256), random.nextInt(256))
+      val randomColor = {
+        if (random.nextBoolean) {
+          new java.awt.Color(
+            random.nextInt(256), random.nextInt(256), random.nextInt(256))
+        } else {
+          java.awt.Color.BLACK
+        }
+      }
       actuator.actuateLight(randomColor)
       if (checkTime < movingUntil) {
         // still moving

@@ -41,7 +41,7 @@ import RampDetector._
 class RampDetector(val settings : Settings) extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage,
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
     detectRamp(img).map(

@@ -46,7 +46,7 @@ class FlashyBodyDetector(val settings : Settings)
   private val motionDetector = new BodyMotionDetector
 
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage,
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
     motionDetector.detectMotion(prevGray, gray).map(
@@ -67,7 +67,7 @@ class RoundBodyDetector(val settings : Settings)
   private var maxRadius = conf.getInt("max-radius")
 
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage,
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
     hintBodyPos.flatMap(
