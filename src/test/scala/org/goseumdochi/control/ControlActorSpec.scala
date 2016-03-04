@@ -61,6 +61,7 @@ class ControlActorSpec extends AkkaSpecification
 
       expectQuiet
       expectQuiet
+      expectQuiet
 
       val backwardImpulse = actuator.retrieveImpulse().get
       backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, PI))
