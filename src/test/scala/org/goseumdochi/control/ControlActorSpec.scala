@@ -52,8 +52,8 @@ class ControlActorSpec extends AkkaSpecification
 
       val bodyFoundTime = zeroTime + 10.seconds
 
-      val calibrationPos = PlanarPos(50.0, 20.0)
-      val calibrationTime = zeroTime + 17.seconds
+      val orientationPos = PlanarPos(50.0, 20.0)
+      val orientationTime = zeroTime + 17.seconds
       val visibleTime = zeroTime + 18.seconds
       val invisibleTime = zeroTime + 22.seconds
 
@@ -66,23 +66,27 @@ class ControlActorSpec extends AkkaSpecification
       backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, PI))
       actuator.reset
 
+      controlActor ! VisionActor.HintBodyLocationMsg(initialPos, initialTime)
+
+      expectQuiet
+
       controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)
       controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
 
       expectQuiet
 
-      val calibrationImpulse = actuator.retrieveImpulse().get
-      calibrationImpulse must be equalTo(
+      val orientationImpulse = actuator.retrieveImpulse().get
+      orientationImpulse must be equalTo(
         PolarImpulse(0.2, 800.milliseconds, 0.0))
       actuator.reset
 
       controlActor !
-        BodyDetector.BodyDetectedMsg(calibrationPos, calibrationTime)
+        BodyDetector.BodyDetectedMsg(orientationPos, orientationTime)
 
-      controlActor ! CheckVisibilityMsg(calibrationTime)
+      controlActor ! CheckVisibilityMsg(orientationTime)
 
       controlActor !
-        BodyDetector.BodyDetectedMsg(calibrationPos, visibleTime)
+        BodyDetector.BodyDetectedMsg(orientationPos, visibleTime)
 
       controlActor ! CheckVisibilityMsg(visibleTime)
 

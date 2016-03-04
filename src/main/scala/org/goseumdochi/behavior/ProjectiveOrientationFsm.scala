@@ -26,10 +26,7 @@ import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
 
-// FIXME:  split off body detection phase from orientation phase,
-// and get rid of "Calibration" terminology
-
-object ProjectiveCalibrationFsm
+object ProjectiveOrientationFsm
 {
   sealed trait State
   sealed trait Data
@@ -41,14 +38,12 @@ object ProjectiveCalibrationFsm
 
   // sent messages
   // * VisionActor.ActivateAnalyzersMsg
-  // * VisionActor.HintBodyLocationMsg
   // * ControlActor.CalibratedMsg
   // * ControlActor.ActuateImpulseMsg
 
   // states
   case object Blind extends State
-  case object WaitingForQuiet extends State
-  case object FindingBody extends State
+  case object WaitingForStart extends State
   case object Aligning extends State
   case object Measuring extends State
   case object Done extends State
@@ -59,18 +54,13 @@ object ProjectiveCalibrationFsm
     lastTheta : Double,
     lastPos : PlanarPos,
     scale : Double = 0.0) extends Data
-  final case class WithControl(
-    controlActor : ActorRef,
-    eventTime : TimePoint) extends Data
 }
-import ProjectiveCalibrationFsm._
+import ProjectiveOrientationFsm._
 
-class ProjectiveCalibrationFsm()
+class ProjectiveOrientationFsm()
     extends BehaviorFsm[State, Data]
 {
   private val settings = Settings(context)
-
-  private val quietPeriod = settings.Calibration.quietPeriod
 
   private val forwardImpulse =
     PolarImpulse(settings.Motor.defaultSpeed, 1500.milliseconds, 0)
@@ -83,31 +73,18 @@ class ProjectiveCalibrationFsm()
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
       sender ! VisionActor.ActivateAnalyzersMsg(Seq(
-        settings.BodyRecognition.className,
-        classOf[FineMotionDetector].getName))
-      goto(WaitingForQuiet) using WithControl(sender, eventTime + quietPeriod)
+        settings.BodyRecognition.className))
+      goto(WaitingForStart)
     }
   }
 
-  when(WaitingForQuiet, stateTimeout = quietPeriod) {
-    case Event(StateTimeout, WithControl(controlActor, eventTime)) => {
-      controlActor ! ControlActor.ActuateImpulseMsg(
-        backwardImpulse, eventTime)
-      goto(FindingBody)
-    }
-    case _ => {
+  when(WaitingForStart) {
+    case Event(msg : MotionDetector.MotionDetectedMsg, _) => {
       stay
     }
-  }
-
-  // FIXME:  add a StateTimeout for moving around more aggressively
-  when(FindingBody) {
-    case Event(MotionDetector.MotionDetectedMsg(pos, eventTime), _) => {
-      sender ! VisionActor.HintBodyLocationMsg(pos, eventTime)
-      startAlignment(pos, eventTime)
-    }
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
-      startAlignment(pos, eventTime)
+      sender ! ControlActor.ActuateImpulseMsg(forwardImpulse, eventTime)
+      goto(Aligning) using Alignment(0.0, pos)
     }
   }
 
@@ -175,13 +152,4 @@ class ProjectiveCalibrationFsm()
   }
 
   initialize()
-
-  private def startAlignment(pos : PlanarPos, eventTime : TimePoint) =
-  {
-    sender ! VisionActor.ActivateAnalyzersMsg(Seq(
-      settings.BodyRecognition.className))
-    sender ! ControlActor.ActuateImpulseMsg(
-      forwardImpulse, eventTime)
-    goto(Aligning) using Alignment(0.0, pos)
-  }
 }

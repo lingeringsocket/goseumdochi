@@ -63,10 +63,11 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     val fullSpeed = subConf.getDouble("full-speed")
   }
 
-  object Calibration
+  object Orientation
   {
-    val subConf = conf.getConfig("calibration")
+    val subConf = conf.getConfig("orientation")
     val className = subConf.getString("class-name")
+    val bodyFinderClassName = subConf.getString("body-finder-class-name")
     val quietPeriod = getMillis(subConf, "quiet-period")
   }
 

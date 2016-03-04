@@ -26,41 +26,27 @@ import MoreMath._
 
 import scala.concurrent.duration._
 
-class ProjectiveCalibrationFsmSpec extends AkkaSpecification
+class ProjectiveOrientationFsmSpec extends AkkaSpecification
 {
-  "ProjectiveCalibrationFsm" should
+  "ProjectiveOrientationFsm" should
   {
     "calibrate alignment" in new AkkaExample
     {
       val fsm = system.actorOf(
-        Props(classOf[ProjectiveCalibrationFsm]))
+        Props(classOf[ProjectiveOrientationFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
-        "org.goseumdochi.vision.RoundBodyDetector",
-        "org.goseumdochi.vision.FineMotionDetector")))
+        "org.goseumdochi.vision.RoundBodyDetector")))
 
       expectQuiet
-
-      val backwardImpulse = expectMsgClass(
-        classOf[ControlActor.ActuateImpulseMsg]).impulse
-      backwardImpulse.speed must be closeTo(0.2 +/- 0.01)
-      backwardImpulse.duration.toMillis must be equalTo 800
-      backwardImpulse.theta must be closeTo(PI +/- 0.01)
 
       val initialPos = PlanarPos(0, 0)
       val secondPos = PlanarPos(50, 50)
       val thirdPos = PlanarPos(150, 50)
       val finalPos = PlanarPos(150, 250)
 
-      fsm ! MotionDetector.MotionDetectedMsg(initialPos, TimePoint.ZERO)
-
-      expectMsg(VisionActor.HintBodyLocationMsg(initialPos, TimePoint.ZERO))
-
       fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
-
-      expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
-        "org.goseumdochi.vision.RoundBodyDetector")))
 
       val firstImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse

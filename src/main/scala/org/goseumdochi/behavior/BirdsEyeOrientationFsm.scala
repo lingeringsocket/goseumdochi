@@ -26,7 +26,7 @@ import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
 
-object BirdsEyeCalibrationFsm
+object BirdsEyeOrientationFsm
 {
   sealed trait State
   sealed trait Data
@@ -38,70 +38,33 @@ object BirdsEyeCalibrationFsm
 
   // sent messages
   // * VisionActor.ActivateAnalyzersMsg
-  // * VisionActor.HintBodyLocationMsg
   // * ControlActor.CalibratedMsg
   // * ControlActor.ActuateImpulseMsg
 
   // states
   case object Blind extends State
-  case object WaitingForQuiet extends State
-  case object FindingBody extends State
   case object WaitingForStart extends State
   case object WaitingForEnd extends State
   case object Done extends State
 
   // data
   case object Empty extends Data
-  final case class WithControl(
-    controlActor : ActorRef, eventTime : TimePoint) extends Data
   final case class StartPoint(pos : PlanarPos) extends Data
 }
-import BirdsEyeCalibrationFsm._
+import BirdsEyeOrientationFsm._
 
-class BirdsEyeCalibrationFsm()
+class BirdsEyeOrientationFsm()
     extends BehaviorFsm[State, Data]
 {
   private val settings = Settings(context)
 
-  private val quietPeriod = settings.Calibration.quietPeriod
-
   private val forwardImpulse =
     PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, 0)
-
-  private val backwardImpulse =
-    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, PI)
 
   startWith(Blind, Empty)
 
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
-        settings.BodyRecognition.className,
-        classOf[FineMotionDetector].getName))
-      goto(WaitingForQuiet) using WithControl(sender, eventTime + quietPeriod)
-    }
-  }
-
-  when(WaitingForQuiet, stateTimeout = quietPeriod) {
-    case Event(StateTimeout, WithControl(controlActor, eventTime)) => {
-      controlActor ! ControlActor.ActuateImpulseMsg(
-        backwardImpulse, eventTime)
-      goto(FindingBody)
-    }
-    case _ => {
-      stay
-    }
-  }
-
-  // FIXME:  add a StateTimeout for moving around more aggressively
-  when(FindingBody) {
-    case Event(MotionDetector.MotionDetectedMsg(pos, eventTime), _) => {
-      sender ! VisionActor.HintBodyLocationMsg(pos, eventTime)
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
-        settings.BodyRecognition.className))
-      goto(WaitingForStart)
-    }
-    case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
       sender ! VisionActor.ActivateAnalyzersMsg(Seq(
         settings.BodyRecognition.className))
       goto(WaitingForStart)

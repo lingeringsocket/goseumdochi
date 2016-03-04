@@ -75,13 +75,18 @@ class ControlActor(
 
   private val visionActor = context.actorOf(
     visionProps, "visionActor")
-  private val calibrationActor = context.actorOf(
-    Props(Class.forName(settings.Calibration.className)),
-    "calibrationActor")
+  private val bodyFinderActor = context.actorOf(
+    Props(Class.forName(settings.Orientation.bodyFinderClassName)),
+    "bodyFinderActor")
+  private val orientationActor = context.actorOf(
+    Props(Class.forName(settings.Orientation.className)),
+    "orientationActor")
   private val behaviorActor = context.actorOf(
     behaviorProps, "behaviorActor")
 
-  private var calibrating = true
+  private var findingBody = true
+
+  private var orienting = true
 
   private var movingUntil = TimePoint.ZERO
 
@@ -104,9 +109,9 @@ class ControlActor(
   {
     case CalibratedMsg(bodyMapping, eventTime) => {
       bodyMappingOpt = Some(bodyMapping)
-      calibrating = false
+      orienting = false
       behaviorActor ! CameraAcquiredMsg(eventTime)
-      calibrationActor ! PoisonPill.getInstance
+      orientationActor ! PoisonPill.getInstance
     }
     case ActuateLight(color : java.awt.Color) => {
       actuator.actuateLight(color)
@@ -125,14 +130,16 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       cornerOpt = Some(pos)
-      calibrationActor ! CameraAcquiredMsg(eventTime)
+      bodyFinderActor ! CameraAcquiredMsg(eventTime)
     }
     // note that this pattern needs to be matched BEFORE the
     // generic ObjDetectedMsg case
     case BodyDetector.BodyDetectedMsg(pos, eventTime) => {
       if (eventTime > movingUntil) {
-        if (calibrating) {
-          calibrationActor ! BodyMovedMsg(pos, eventTime)
+        if (findingBody) {
+          bodyFinderActor ! BodyMovedMsg(pos, eventTime)
+        } else if (orienting) {
+          orientationActor ! BodyMovedMsg(pos, eventTime)
         } else {
           behaviorActor ! BodyMovedMsg(pos, eventTime)
         }
@@ -141,8 +148,10 @@ class ControlActor(
       lastSeenTime = eventTime
     }
     case objectDetected : VisionActor.ObjDetectedMsg => {
-      if (calibrating) {
-        calibrationActor ! objectDetected
+      if (findingBody) {
+        bodyFinderActor ! objectDetected
+      } else if (orienting) {
+        orientationActor ! objectDetected
       } else if (objectDetected.eventTime > movingUntil) {
         behaviorActor ! objectDetected
       }
@@ -150,8 +159,13 @@ class ControlActor(
     case msg : VisionActor.ActivateAnalyzersMsg => {
       visionActor ! msg
     }
-    case msg : VisionActor.HintBodyLocationMsg => {
-      visionActor ! msg
+    case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
+      if (findingBody) {
+        findingBody = false
+        orientationActor ! CameraAcquiredMsg(eventTime)
+        bodyFinderActor ! PoisonPill.getInstance
+      }
+      visionActor ! VisionActor.HintBodyLocationMsg(pos, eventTime)
     }
     case CheckVisibilityMsg(checkTime) => {
       val randomColor = {
@@ -170,7 +184,7 @@ class ControlActor(
           // never seen
         } else {
           if ((checkTime - lastSeenTime) > panicDelay) {
-            if (calibrating) {
+            if (orienting) {
               // not much we can do yet
             } else {
               behaviorActor ! PanicAttackMsg(checkTime)

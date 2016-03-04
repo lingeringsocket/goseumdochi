@@ -24,39 +24,25 @@ import akka.actor._
 import scala.math._
 import MoreMath._
 
-class BirdsEyeCalibrationFsmSpec extends AkkaSpecification
+class BirdsEyeOrientationFsmSpec extends AkkaSpecification
 {
-  "BirdsEyeCalibrationFsm" should
+  "BirdsEyeOrientationFsm" should
   {
     "calibrate body mapping" in new AkkaExample
     {
       val fsm = system.actorOf(
-        Props(classOf[BirdsEyeCalibrationFsm]))
+        Props(classOf[BirdsEyeOrientationFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
-        "org.goseumdochi.vision.RoundBodyDetector",
-        "org.goseumdochi.vision.FineMotionDetector")))
+        "org.goseumdochi.vision.RoundBodyDetector")))
 
       expectQuiet
-
-      val backwardImpulse = expectMsgClass(
-        classOf[ControlActor.ActuateImpulseMsg]).impulse
-      backwardImpulse.speed must be closeTo(0.2 +/- 0.01)
-      backwardImpulse.duration.toMillis must be equalTo 800
-      backwardImpulse.theta must be closeTo(PI +/- 0.01)
 
       val initialPos = PlanarPos(0, 0)
       val finalPos = PlanarPos(100, 30)
 
-      fsm ! MotionDetector.MotionDetectedMsg(initialPos, TimePoint.ZERO)
-
-      expectMsg(VisionActor.HintBodyLocationMsg(initialPos, TimePoint.ZERO))
-
       fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
-
-      expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
-        "org.goseumdochi.vision.RoundBodyDetector")))
 
       val forwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
