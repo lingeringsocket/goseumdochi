@@ -29,7 +29,8 @@ import scala.concurrent.duration._
 object VisionActor
 {
   // sent messages
-  final case class DimensionsKnownMsg(corner : RetinalPos, eventTime : TimePoint)
+  final case class DimensionsKnownMsg(
+    corner : RetinalPos, eventTime : TimePoint)
       extends EventMsg
   trait ObjDetectedMsg extends EventMsg
 
