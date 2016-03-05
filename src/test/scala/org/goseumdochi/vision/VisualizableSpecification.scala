@@ -58,7 +58,7 @@ abstract class VisualizableSpecification(confFile : String = "simulation.conf")
     }
   }
 
-  protected def visualize(img : IplImage, pos : PlanarPos)
+  protected def visualize(img : IplImage, pos : RetinalPos)
   {
     if (!shouldVisualize) {
       return
@@ -68,6 +68,13 @@ abstract class VisualizableSpecification(confFile : String = "simulation.conf")
     cvCircle(img, center, 2, AbstractCvScalar.BLACK, 6, CV_AA, 0)
 
     visualize(img)
+  }
+
+  protected def visualize(
+    img : IplImage, pos : PlanarPos,
+    xform : RetinalTransformation = IdentityRetinalTransformation)
+  {
+    visualize(img, xform.worldToRetina(pos))
   }
 
   private def loadCanvas() =

@@ -48,7 +48,7 @@ class ControlActorSpec extends AkkaSpecification
 
       val initialPos = PlanarPos(25.0, 10.0)
       val initialTime = zeroTime + 1.second
-      val corner = PlanarPos(100.0, 100.0)
+      val corner = RetinalPos(100.0, 100.0)
 
       val bodyFoundTime = zeroTime + 10.seconds
 

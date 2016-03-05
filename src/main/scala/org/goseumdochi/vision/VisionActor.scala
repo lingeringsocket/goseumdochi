@@ -29,7 +29,7 @@ import scala.concurrent.duration._
 object VisionActor
 {
   // sent messages
-  final case class DimensionsKnownMsg(corner : PlanarPos, eventTime : TimePoint)
+  final case class DimensionsKnownMsg(corner : RetinalPos, eventTime : TimePoint)
       extends EventMsg
   trait ObjDetectedMsg extends EventMsg
 
@@ -63,6 +63,8 @@ class VisionActor(videoStream : VideoStream)
 
   private var hintBodyPos : Option[PlanarPos] = None
 
+  private var xform = IdentityRetinalTransformation
+
   def receive =
   {
     case GrabFrameMsg(lastTime) => {
@@ -78,8 +80,10 @@ class VisionActor(videoStream : VideoStream)
       }
     }
     case ActivateAnalyzersMsg(analyzerClassNames) => {
+      val xform : RetinalTransformation = IdentityRetinalTransformation
       analyzers = analyzerClassNames.map(
-        settings.instantiateObject(_).asInstanceOf[VisionAnalyzer])
+        settings.instantiateObject(_, xform).
+          asInstanceOf[VisionAnalyzer])
     }
     case HintBodyLocationMsg(pos, eventTime) => {
       hintBodyPos = Some(pos)
@@ -144,7 +148,7 @@ class VisionActor(videoStream : VideoStream)
       val (frame, frameTime) = videoStream.nextFrame()
       val img = OpenCvUtil.convert(frame)
       if (!cornerSeen) {
-        val corner = PlanarPos(img.width, img.height)
+        val corner = RetinalPos(img.width, img.height)
         gossip(DimensionsKnownMsg(corner, frameTime))
         cornerSeen = true
       }
@@ -153,7 +157,7 @@ class VisionActor(videoStream : VideoStream)
       } else {
         hintBodyPos match {
           case Some(pos) => {
-            val center = OpenCvUtil.point(pos)
+            val center = OpenCvUtil.point(xform.worldToRetina(pos))
             cvCircle(img, center, 2, AbstractCvScalar.GREEN, 6, CV_AA, 0)
           }
           case _ => {}

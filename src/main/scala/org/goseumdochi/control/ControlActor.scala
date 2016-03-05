@@ -96,7 +96,7 @@ class ControlActor(
 
   private var lastSeenPos : Option[PlanarPos] = None
 
-  private var cornerOpt : Option[PlanarPos] = None
+  private var cornerOpt : Option[RetinalPos] = None
 
   private val panicDelay = settings.Control.panicDelay
 

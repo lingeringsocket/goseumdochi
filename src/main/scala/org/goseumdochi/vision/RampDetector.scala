@@ -38,7 +38,8 @@ object RampDetector
 
 import RampDetector._
 
-class RampDetector(val settings : Settings) extends VisionAnalyzer
+class RampDetector(val settings : Settings, val xform : RetinalTransformation)
+    extends VisionAnalyzer
 {
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
@@ -47,10 +48,10 @@ class RampDetector(val settings : Settings) extends VisionAnalyzer
     detectRamp(img).map(
       ramp => {
         cvCircle(
-          img, OpenCvUtil.point(ramp.center),
+          img, OpenCvUtil.point(xform.worldToRetina(ramp.center)),
           2, AbstractCvScalar.GREEN, 6, CV_AA, 0)
         cvCircle(
-          img, OpenCvUtil.point(ramp.entry),
+          img, OpenCvUtil.point(xform.worldToRetina(ramp.entry)),
           2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
         RampDetectedMsg(ramp, frameTime)
       }
@@ -136,7 +137,8 @@ class RampDetector(val settings : Settings) extends VisionAnalyzer
                       midpoint(p0, p1)
                     }
                   }
-                  return Some(OrientedRamp(center, entry))
+                  return Some(OrientedRamp(
+                    xform.retinaToWorld(center), xform.retinaToWorld(entry)))
                 }
               }
             }

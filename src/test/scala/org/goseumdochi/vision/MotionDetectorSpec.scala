@@ -19,9 +19,11 @@ import org.bytedeco.javacpp.opencv_highgui._
 
 class MotionDetectorSpec extends VisualizableSpecification
 {
-  private val coarseDetector = new CoarseMotionDetector(settings)
+  private val coarseDetector = new CoarseMotionDetector(
+    settings, IdentityRetinalTransformation)
 
-  private val fineDetector = new FineMotionDetector(settings)
+  private val fineDetector = new FineMotionDetector(
+    settings, IdentityRetinalTransformation)
 
   private def loadImage(filename : String) =
     OpenCvUtil.grayscale(cvLoadImage(filename))

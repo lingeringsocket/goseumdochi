@@ -44,10 +44,28 @@ trait EventMsg
   def eventTime : TimePoint
 }
 
+trait PlanarVector
+{
+  def x : Double
+  def y : Double
+  def construct(x : Double, y : Double) : PlanarVector
+}
+
 case class PlanarPos(
   x : Double,
   y : Double
-)
+) extends PlanarVector
+{
+  override def construct(x : Double, y : Double) : PlanarPos = PlanarPos(x, y)
+}
+
+case class RetinalPos(
+  x : Double,
+  y : Double
+) extends PlanarVector
+{
+  override def construct(x : Double, y : Double) : RetinalPos = RetinalPos(x, y)
+}
 
 case class PolarImpulse(
   speed : Double,
@@ -109,12 +127,12 @@ object MoreMath
     }
   }
 
-  def midpoint(p1 : PlanarPos, p2 : PlanarPos) =
+  def midpoint[PV <: PlanarVector](p1 : PV, p2 : PV) : PV =
   {
-    PlanarPos((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
+    p1.construct((p1.x + p2.x) / 2, (p1.y + p2.y) / 2).asInstanceOf[PV]
   }
 
-  def polarMotion(p1 : PlanarPos, p2 : PlanarPos) =
+  def polarMotion(p1 : PlanarVector, p2 : PlanarVector) =
   {
     val x = p2.x - p1.x
     val y = p2.y - p1.y

@@ -21,8 +21,10 @@ import org.bytedeco.javacpp.opencv_highgui._
 
 class BodyDetectorSpec extends VisualizableSpecification
 {
-  private val roundBodyDetector = new RoundBodyDetector(settings)
-  private val flashyBodyDetector = new FlashyBodyDetector(settings)
+  private val roundBodyDetector =
+    new RoundBodyDetector(settings, IdentityRetinalTransformation)
+  private val flashyBodyDetector =
+    new FlashyBodyDetector(settings, IdentityRetinalTransformation)
 
   "BodyDetector" should
   {

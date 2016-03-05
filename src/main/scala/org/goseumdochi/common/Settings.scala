@@ -91,8 +91,9 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     val visualize = subConf.getBoolean("visualize")
   }
 
-  def instantiateObject(className : String) =
-    Class.forName(className).getConstructor(this.getClass).newInstance(this)
+  def instantiateObject(className : String, args : AnyRef*) =
+    Class.forName(className).getConstructors.head.
+      newInstance((Seq(this) ++ args) : _*)
 }
 
 object Settings extends ExtensionId[Settings] with ExtensionIdProvider

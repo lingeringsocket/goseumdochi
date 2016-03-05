@@ -21,7 +21,8 @@ import org.bytedeco.javacpp.helper.opencv_core._
 
 class RampDetectorSpec extends VisualizableSpecification
 {
-  private val rampDetector = new RampDetector(settings)
+  private val rampDetector = new RampDetector(
+    settings, IdentityRetinalTransformation)
 
   private def visualize(img : IplImage, ramp : OrientedRamp)
   {
@@ -29,10 +30,10 @@ class RampDetectorSpec extends VisualizableSpecification
       return
     }
 
-    val center = OpenCvUtil.point(ramp.center)
+    val center = OpenCvUtil.point(rampDetector.xform.worldToRetina(ramp.center))
     cvCircle(img, center, 2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
 
-    val entry = OpenCvUtil.point(ramp.entry)
+    val entry = OpenCvUtil.point(rampDetector.xform.worldToRetina(ramp.entry))
     cvCircle(img, entry, 2, AbstractCvScalar.RED, 6, CV_AA, 0)
 
     visualize(img)

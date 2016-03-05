@@ -37,7 +37,7 @@ object OpenCvUtil
     gray
   }
 
-  def point(pos : PlanarPos) =
+  def point(pos : RetinalPos) =
   {
     val point = new CvPoint2D32f
     point.x(pos.x.toFloat)
@@ -45,5 +45,5 @@ object OpenCvUtil
     cvPointFrom32f(point)
   }
 
-  def pos(point : CvPoint) = PlanarPos(point.x, point.y)
+  def pos(point : CvPoint) = RetinalPos(point.x, point.y)
 }
