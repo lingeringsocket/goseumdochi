@@ -75,7 +75,7 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
   {
     val subConf = conf.getConfig("orientation")
     val className = subConf.getString("class-name")
-    val bodyFinderClassName = subConf.getString("body-finder-class-name")
+    val localizationClassName = subConf.getString("localization-class-name")
     val quietPeriod = getMillis(subConf, "quiet-period")
   }
 

@@ -79,9 +79,9 @@ class ControlActor(
 
   private val visionActor = context.actorOf(
     visionProps, "visionActor")
-  private val bodyFinderActor = context.actorOf(
-    Props(Class.forName(settings.Orientation.bodyFinderClassName)),
-    "bodyFinderActor")
+  private val localizationActor = context.actorOf(
+    Props(Class.forName(settings.Orientation.localizationClassName)),
+    "localizationActor")
   private val orientationActor = context.actorOf(
     Props(Class.forName(settings.Orientation.className)),
     "orientationActor")
@@ -89,7 +89,7 @@ class ControlActor(
     Props(Class.forName(settings.Behavior.className)),
     "behaviorActor")
 
-  private var findingBody = true
+  private var localizing = true
 
   private var orienting = true
 
@@ -140,14 +140,14 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       cornerOpt = Some(pos)
-      bodyFinderActor ! CameraAcquiredMsg(eventTime)
+      localizationActor ! CameraAcquiredMsg(eventTime)
     }
     // note that this pattern needs to be matched BEFORE the
     // generic ObjDetectedMsg case
     case BodyDetector.BodyDetectedMsg(pos, eventTime) => {
       if (eventTime > movingUntil) {
-        if (findingBody) {
-          bodyFinderActor ! BodyMovedMsg(pos, eventTime)
+        if (localizing) {
+          localizationActor ! BodyMovedMsg(pos, eventTime)
         } else if (orienting) {
           orientationActor ! BodyMovedMsg(pos, eventTime)
         } else {
@@ -158,8 +158,8 @@ class ControlActor(
       lastSeenTime = eventTime
     }
     case objectDetected : VisionActor.ObjDetectedMsg => {
-      if (findingBody) {
-        bodyFinderActor ! objectDetected
+      if (localizing) {
+        localizationActor ! objectDetected
       } else if (orienting) {
         orientationActor ! objectDetected
       } else if (objectDetected.eventTime > movingUntil) {
@@ -171,10 +171,10 @@ class ControlActor(
         analyzers, retinalTransform)
     }
     case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
-      if (findingBody) {
-        findingBody = false
+      if (localizing) {
+        localizing = false
         orientationActor ! CameraAcquiredMsg(eventTime)
-        bodyFinderActor ! PoisonPill.getInstance
+        localizationActor ! PoisonPill.getInstance
         log.info("BODY LOCATED")
       }
       visionActor ! VisionActor.HintBodyLocationMsg(pos, eventTime)

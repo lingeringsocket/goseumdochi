@@ -26,7 +26,7 @@ import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
 
-object BodyFinderFsm
+object LocalizationFsm
 {
   sealed trait State
   sealed trait Data
@@ -53,9 +53,9 @@ object BodyFinderFsm
     controlActor : ActorRef, eventTime : TimePoint, forward : Boolean)
       extends Data
 }
-import BodyFinderFsm._
+import LocalizationFsm._
 
-class BodyFinderFsm()
+class LocalizationFsm()
     extends BehaviorFsm[State, Data]
 {
   private val settings = Settings(context)

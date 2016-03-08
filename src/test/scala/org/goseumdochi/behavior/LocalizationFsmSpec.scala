@@ -24,14 +24,14 @@ import akka.actor._
 import scala.math._
 import MoreMath._
 
-class BodyFinderFsmSpec extends AkkaSpecification
+class LocalizationFsmSpec extends AkkaSpecification
 {
-  "BodyFinderFsm" should
+  "LocalizationFsm" should
   {
     "find body" in new AkkaExample
     {
       val fsm = system.actorOf(
-        Props(classOf[BodyFinderFsm]))
+        Props(classOf[LocalizationFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
