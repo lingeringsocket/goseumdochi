@@ -55,8 +55,18 @@ class SpheroActuator(robot : Robot) extends Actuator
       new RunMacroCommand(255))
   }
 
-  override def actuateTwirl(degrees : Int, duration : TimeSpan)
+  override def actuateTwirl(
+    theta : Double, duration : TimeSpan, newHeading : Boolean)
   {
+    if (newHeading) {
+      val spin = PolarImpulse(0.0, duration, theta)
+      actuateMotion(spin)
+      Thread.sleep(duration.toMillis*2)
+      robot.sendCommand(new CalibrateCommand(0))
+      return
+    }
+    val degrees = (360.0*theta / TWO_PI).toInt
+    val heading = degrees.toInt
     // kill motor on exit
     val macroFlags = SaveTemporaryMacroCommand.MacroFlagMotorControl
     val macroDef = Array.ofDim[Byte](15)
@@ -67,8 +77,8 @@ class SpheroActuator(robot : Robot) extends Actuator
     // second command:  ROTATE OVER TIME
     val millis = duration.toMillis.toInt
     macroDef(3) = 0x1A
-    macroDef(4) = (degrees >> 8).toByte
-    macroDef(5) = degrees.toByte
+    macroDef(4) = (heading >> 8).toByte
+    macroDef(5) = heading.toByte
     macroDef(6) = (millis >> 8).toByte
     macroDef(7) = millis.toByte
     // third command:  DELAY

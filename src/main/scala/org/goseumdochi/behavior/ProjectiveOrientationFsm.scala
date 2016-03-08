@@ -120,13 +120,14 @@ class ProjectiveOrientationFsm()
       if (motion.distance < 0.1) {
         stay
       } else if (abs(motion.theta) < SMALL_ANGLE) {
-        val newTheta = a.lastTheta - HALF_PI
+        val correction = a.lastTheta - motion.theta
+        val newTheta = correction - HALF_PI
         val newImpulse = forwardImpulse.copy(theta = newTheta)
         val predictedMotion = predictMotion(forwardImpulse)
         val scale = motion.distance / predictedMotion.distance
         sender ! ControlActor.ActuateImpulseMsg(
           newImpulse, eventTime)
-        goto(Measuring) using Alignment(a.lastTheta, pos, scale)
+        goto(Measuring) using Alignment(correction, pos, scale)
       } else {
         val normalizedTheta = {
           if ((motion.theta < HALF_PI) && (motion.theta > -HALF_PI)) {

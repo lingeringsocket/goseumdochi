@@ -86,11 +86,8 @@ class SquareFsm()
     pos : PlanarPos, newTheta : Double, eventTime : TimePoint) =
   {
     val impulse = PolarImpulse(
-      settings.Motor.defaultSpeed, 500.milliseconds, newTheta)
-    val motion = predictMotion(impulse)
-    val newPos = PlanarPos(pos.x + motion.dx, pos.y + motion.dy)
-    sender ! ControlActor.ActuateMoveMsg(
-      pos, newPos, settings.Motor.defaultSpeed, 0.seconds, eventTime)
+      settings.Motor.defaultSpeed, 1500.milliseconds, newTheta)
+    sender ! ControlActor.ActuateImpulseMsg(impulse, eventTime)
     goto(Moving) using Angle(newTheta)
   }
 

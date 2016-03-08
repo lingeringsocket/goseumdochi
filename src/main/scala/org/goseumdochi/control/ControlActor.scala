@@ -54,7 +54,7 @@ object ControlActor
     speed : Double, extraTime : TimeSpan, eventTime : TimePoint)
       extends EventMsg
   final case class ActuateTwirlMsg(
-    degrees : Int, duration : TimeSpan, eventTime : TimePoint)
+    theta : Double, duration : TimeSpan, eventTime : TimePoint)
       extends EventMsg
   final case class ActuateLightMsg(
     color : java.awt.Color)
@@ -111,14 +111,19 @@ class ControlActor(
   private val visibilityCheckFreq =
     settings.Control.visibilityCheckFreq
 
+  private val sensorDelay = Settings(context).Vision.sensorDelay
+
   private val random = scala.util.Random
 
   def receive = LoggingReceive(
   {
     case CalibratedMsg(bodyMapping, xform, eventTime) => {
       retinalTransform = xform
-      bodyMappingOpt = Some(bodyMapping)
+      bodyMappingOpt = Some(BodyMapping(bodyMapping.scale, 0.0))
       orienting = false
+      val spinDuration = 500.milliseconds
+      movingUntil = eventTime + spinDuration + sensorDelay
+      actuator.actuateTwirl(-bodyMapping.thetaOffset, spinDuration, true)
       behaviorActor ! CameraAcquiredMsg(eventTime)
       orientationActor ! PoisonPill.getInstance
       log.info("ORIENTATION COMPLETE")
@@ -135,8 +140,8 @@ class ControlActor(
       // the way as well?
       actuateImpulse(impulse, eventTime)
     }
-    case ActuateTwirlMsg(degrees, duration, eventTime) => {
-      actuator.actuateTwirl(degrees, duration)
+    case ActuateTwirlMsg(theta, duration, eventTime) => {
+      actuator.actuateTwirl(theta, duration, false)
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       cornerOpt = Some(pos)
@@ -227,7 +232,6 @@ class ControlActor(
 
   private def actuateImpulse(impulse : PolarImpulse, eventTime : TimePoint)
   {
-    val sensorDelay = Settings(context).Vision.sensorDelay
     movingUntil = eventTime + impulse.duration + sensorDelay
     actuator.actuateMotion(impulse)
   }

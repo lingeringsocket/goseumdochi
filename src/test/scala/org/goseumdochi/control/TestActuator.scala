@@ -23,7 +23,7 @@ class TestActuator extends Actuator
 
   private var lastColor : Option[java.awt.Color] = None
 
-  private var lastTwirl : Option[TimeSpan] = None
+  private var lastTwirl : Option[Double] = None
 
   override def actuateMotion(impulse : PolarImpulse)
   {
@@ -35,9 +35,10 @@ class TestActuator extends Actuator
     lastColor = Some(color)
   }
 
-  override def actuateTwirl(degrees : Int, duration : TimeSpan)
+  override def actuateTwirl(
+    theta : Double, duration : TimeSpan, newHeading : Boolean)
   {
-    lastTwirl = Some(duration)
+    lastTwirl = Some(theta)
   }
 
   def reset()
@@ -51,5 +52,5 @@ class TestActuator extends Actuator
 
   def retrieveColor() : Option[java.awt.Color] = lastColor
 
-  def retrieveTwirl() : Option[TimeSpan] = lastTwirl
+  def retrieveTwirl() : Option[Double] = lastTwirl
 }

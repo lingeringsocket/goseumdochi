@@ -60,9 +60,10 @@ class ProjectiveSquareSpec extends AkkaSpecification("square-test.conf")
 
       val startPos = PlanarPos(50.0, 10.0)
       val startTime = zeroTime + 35.seconds
+      val twirlTime = zeroTime + 40.seconds
 
       val nextPos = PlanarPos(60.0, 10.0)
-      val nextTime = zeroTime + 40.seconds
+      val nextTime = zeroTime + 45.seconds
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
@@ -121,14 +122,15 @@ class ProjectiveSquareSpec extends AkkaSpecification("square-test.conf")
       expectQuiet
 
       actuator.retrieveImpulse must beEmpty
+      actuator.retrieveTwirl.get must be closeTo(-0.3 +/- 0.1)
 
       controlActor !
-        BodyDetector.BodyDetectedMsg(startPos, startTime)
+        BodyDetector.BodyDetectedMsg(startPos, twirlTime)
 
       expectQuiet
 
       val fifthImpulse = actuator.retrieveImpulse.get
-      fifthImpulse.theta must be closeTo(-0.30 +/- 0.01)
+      fifthImpulse.theta must be closeTo(0.0 +/- 0.01)
       actuator.reset
 
       controlActor !
@@ -137,7 +139,7 @@ class ProjectiveSquareSpec extends AkkaSpecification("square-test.conf")
       expectQuiet
 
       val sixthImpulse = actuator.retrieveImpulse.get
-      sixthImpulse.theta must be closeTo(-1.87 +/- 0.01)
+      sixthImpulse.theta must be closeTo(-1.57 +/- 0.01)
       actuator.reset
     }
   }

@@ -23,7 +23,7 @@ trait Actuator
 
   def actuateLight(color : java.awt.Color)
 
-  def actuateTwirl(degrees: Int, duration : TimeSpan)
+  def actuateTwirl(theta : Double, duration : TimeSpan, newHeading : Boolean)
 }
 
 object NullActuator extends Actuator
@@ -32,5 +32,6 @@ object NullActuator extends Actuator
 
   override def actuateLight(color : java.awt.Color) {}
 
-  override def actuateTwirl(degreest : Int, duration : TimeSpan) {}
+  override def actuateTwirl(
+    theta : Double, duration : TimeSpan, newHeading : Boolean) {}
 }

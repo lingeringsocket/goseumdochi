@@ -103,7 +103,7 @@ class ControlActorSpec extends AkkaSpecification
       val panicImpulse = actuator.retrieveImpulse.get
       panicImpulse.speed must be closeTo(0.2 +/- 0.01)
       panicImpulse.duration.toMillis must be equalTo 891
-      panicImpulse.theta must be closeTo(1.19 +/- 0.01)
+      panicImpulse.theta must be closeTo(1.57 +/- 0.01)
 
       expectQuiet
     }

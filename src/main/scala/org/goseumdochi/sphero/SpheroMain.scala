@@ -107,6 +107,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
       } catch {
         case ex : RobotInitializeConnectionFailed => {
           println("RETRY...")
+          Thread.sleep(200)
         }
       }
     }
