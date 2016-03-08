@@ -27,6 +27,7 @@ import scala.concurrent.duration._
 object ControlActor
 {
   // sent messages
+  // VisionActor.ActivateAnalyzersMsg
   final case class CameraAcquiredMsg(eventTime : TimePoint)
       extends EventMsg
   final case class BodyMovedMsg(pos : PlanarPos, eventTime : TimePoint)
@@ -41,7 +42,9 @@ object ControlActor
   // received messages
   // VisionActor.DimensionsKnownMsg
   final case class CalibratedMsg(
-    bodyMapping : BodyMapping, eventTime : TimePoint)
+    bodyMapping : BodyMapping,
+    xform : RetinalTransform,
+    eventTime : TimePoint)
       extends EventMsg
   final case class ActuateImpulseMsg(
     impulse : PolarImpulse, eventTime : TimePoint)
@@ -53,23 +56,24 @@ object ControlActor
   final case class ActuateTwirlMsg(
     degrees : Int, duration : TimeSpan, eventTime : TimePoint)
       extends EventMsg
-  final case class ActuateLight(
+  final case class ActuateLightMsg(
     color : java.awt.Color)
+  final case class UseVisionAnalyzersMsg(analyzerClassNames : Seq[String])
 
   // pass-through messages
-  // VisionActor.ActivateAnalyzersMsg
   // any kind of VisionActor.ObjDetectedMsg
 }
 
 class ControlActor(
   actuator : Actuator,
   visionProps : Props,
-  behaviorProps : Props,
   monitorVisibility : Boolean)
     extends Actor
 {
   import ControlActor._
   import context.dispatcher
+
+  private val log = Logging(context.system, this)
 
   private val settings = Settings(context)
 
@@ -82,13 +86,17 @@ class ControlActor(
     Props(Class.forName(settings.Orientation.className)),
     "orientationActor")
   private val behaviorActor = context.actorOf(
-    behaviorProps, "behaviorActor")
+    Props(Class.forName(settings.Behavior.className)),
+    "behaviorActor")
 
   private var findingBody = true
 
   private var orienting = true
 
   private var movingUntil = TimePoint.ZERO
+
+  private var retinalTransform : RetinalTransform =
+    IdentityRetinalTransform
 
   private var bodyMappingOpt : Option[BodyMapping] = None
 
@@ -107,13 +115,15 @@ class ControlActor(
 
   def receive = LoggingReceive(
   {
-    case CalibratedMsg(bodyMapping, eventTime) => {
+    case CalibratedMsg(bodyMapping, xform, eventTime) => {
+      retinalTransform = xform
       bodyMappingOpt = Some(bodyMapping)
       orienting = false
       behaviorActor ! CameraAcquiredMsg(eventTime)
       orientationActor ! PoisonPill.getInstance
+      log.info("ORIENTATION COMPLETE")
     }
-    case ActuateLight(color : java.awt.Color) => {
+    case ActuateLightMsg(color : java.awt.Color) => {
       actuator.actuateLight(color)
     }
     case ActuateImpulseMsg(impulse, eventTime) => {
@@ -156,14 +166,16 @@ class ControlActor(
         behaviorActor ! objectDetected
       }
     }
-    case msg : VisionActor.ActivateAnalyzersMsg => {
-      visionActor ! msg
+    case UseVisionAnalyzersMsg(analyzers) => {
+      visionActor ! VisionActor.ActivateAnalyzersMsg(
+        analyzers, retinalTransform)
     }
     case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
       if (findingBody) {
         findingBody = false
         orientationActor ! CameraAcquiredMsg(eventTime)
         bodyFinderActor ! PoisonPill.getInstance
+        log.info("BODY LOCATED")
       }
       visionActor ! VisionActor.HintBodyLocationMsg(pos, eventTime)
     }
@@ -187,9 +199,11 @@ class ControlActor(
             if (orienting) {
               // not much we can do yet
             } else {
+              log.info("PANIC!")
               behaviorActor ! PanicAttackMsg(checkTime)
               val from = lastSeenPos.get
-              val to = PlanarPos(corner.x / 2.0, corner.y / 2.0)
+              val to = retinalTransform.retinaToWorld(
+                RetinalPos(corner.x / 2.0, corner.y / 2.0))
               val impulse = bodyMapping.computeImpulse(
                 from, to, settings.Motor.defaultSpeed, 0.milliseconds)
               actuateImpulse(impulse, checkTime)

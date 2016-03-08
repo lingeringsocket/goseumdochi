@@ -17,15 +17,13 @@ package org.goseumdochi.behavior
 
 import org.goseumdochi.common._
 import org.goseumdochi.control._
-import org.goseumdochi.vision._
+import org.goseumdochi.common.MoreMath._
 
 import akka.actor._
 
-import org.goseumdochi.common.MoreMath._
-
 import scala.concurrent.duration._
 
-object IntrusionDetectionFsm
+object SquareFsm
 {
   sealed trait State
   sealed trait Data
@@ -33,7 +31,6 @@ object IntrusionDetectionFsm
   // received messages
   // * ControlActor.CameraAcquiredMsg
   // * ControlActor.BodyMovedMsg
-  // * MotionDetector.MotionDetectedMsg
 
   // sent messages
   // * ControlActor.UseVisionAnalyzersMsg
@@ -41,19 +38,16 @@ object IntrusionDetectionFsm
 
   // states
   case object Blind extends State
-  case object WaitingForIntruder extends State
-  case object ManeuveringToIntruder extends State
+  case object WaitingForStart extends State
+  case object Moving extends State
 
   // data
   case object Empty extends Data
-  final case class IntruderAt(
-    pos : PlanarPos
-  ) extends Data
+  case class Angle(theta : Double) extends Data
 }
-import IntrusionDetectionFsm._
-import MotionDetector._
+import SquareFsm._
 
-class IntrusionDetectionFsm()
+class SquareFsm()
     extends BehaviorFsm[State, Data]
 {
   private val settings = Settings(context)
@@ -63,41 +57,41 @@ class IntrusionDetectionFsm()
   when(Blind) {
     case Event(msg : ControlActor.CameraAcquiredMsg, _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
-        settings.BodyRecognition.className,
-        settings.Behavior.intrusionDetectorClassName))
-      goto(WaitingForIntruder)
+        settings.BodyRecognition.className))
+      goto(WaitingForStart)
     }
   }
 
-  when(WaitingForIntruder) {
-    case Event(MotionDetectedMsg(pos, _), _) => {
-      goto(ManeuveringToIntruder) using IntruderAt(pos)
-    }
-    case Event(msg : ControlActor.BodyMovedMsg, _) => {
-      stay
+  when(WaitingForStart) {
+    case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
+      actuateMove(pos, 0.0, eventTime)
     }
   }
 
-  when(ManeuveringToIntruder) {
-    case Event(
-      ControlActor.BodyMovedMsg(pos, eventTime),
-      IntruderAt(intruderPos)) =>
-    {
-      sender ! ControlActor.ActuateMoveMsg(
-        pos, intruderPos, settings.Motor.defaultSpeed,
-        0.seconds, eventTime)
-      goto(WaitingForIntruder) using Empty
-    }
-    case Event(MotionDetectedMsg(pos, _), _) => {
-      stay
+  when(Moving) {
+    case Event(ControlActor.BodyMovedMsg(pos, eventTime), Angle(theta)) => {
+      val newTheta = normalizeRadians(theta - HALF_PI)
+      actuateMove(pos, newTheta, eventTime)
     }
   }
 
   whenUnhandled {
     case Event(msg : ControlActor.PanicAttackMsg, _) => {
-      goto(WaitingForIntruder) using Empty
+      goto(Moving) using Angle(0.0)
     }
     case event => handleUnknown(event)
+  }
+
+  private def actuateMove(
+    pos : PlanarPos, newTheta : Double, eventTime : TimePoint) =
+  {
+    val impulse = PolarImpulse(
+      settings.Motor.defaultSpeed, 500.milliseconds, newTheta)
+    val motion = predictMotion(impulse)
+    val newPos = PlanarPos(pos.x + motion.dx, pos.y + motion.dy)
+    sender ! ControlActor.ActuateMoveMsg(
+      pos, newPos, settings.Motor.defaultSpeed, 0.seconds, eventTime)
+    goto(Moving) using Angle(newTheta)
   }
 
   initialize()

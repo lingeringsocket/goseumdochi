@@ -34,7 +34,7 @@ class BodyFinderFsmSpec extends AkkaSpecification
         Props(classOf[BodyFinderFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
-      expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
+      expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
         "org.goseumdochi.vision.FineMotionDetector")))
 

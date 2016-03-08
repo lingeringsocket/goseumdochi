@@ -36,7 +36,7 @@ class ProjectiveOrientationFsmSpec extends AkkaSpecification
         Props(classOf[ProjectiveOrientationFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
-      expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
+      expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector")))
 
       expectQuiet
@@ -68,14 +68,21 @@ class ProjectiveOrientationFsmSpec extends AkkaSpecification
         classOf[ControlActor.ActuateImpulseMsg]).impulse
       thirdImpulse.speed must be closeTo(0.2 +/- 0.01)
       thirdImpulse.duration must be equalTo 1500.milliseconds
-      thirdImpulse.theta must be closeTo(4.08 +/- 0.01)
+      thirdImpulse.theta must be closeTo(0.94 +/- 0.01)
 
       fsm ! ControlActor.BodyMovedMsg(finalPos, TimePoint.ZERO)
 
-      val bodyMapping = expectMsgClass(
-        classOf[ControlActor.CalibratedMsg]).bodyMapping
+      val calibrationMsg = expectMsgClass(
+        classOf[ControlActor.CalibratedMsg])
+      val bodyMapping = calibrationMsg.bodyMapping
       bodyMapping.scale must be closeTo(333.3 +/- 0.1)
-      bodyMapping.thetaOffset must be closeTo(2.51 +/- 0.01)
+      bodyMapping.thetaOffset must be closeTo(-2.51 +/- 0.01)
+      calibrationMsg.xform must beAnInstanceOf[ProjectiveRetinalTransform]
+      val xform = calibrationMsg.xform.asInstanceOf[ProjectiveRetinalTransform]
+      xform.worldOrigin must be equalTo finalPos
+      xform.worldOrigin.x must be equalTo xform.retinaOrigin.x
+      xform.worldOrigin.y must be equalTo xform.retinaOrigin.y
+      xform.vSquash must be closeTo(2.0 +/- 0.1)
     }
   }
 }

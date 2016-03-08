@@ -43,7 +43,7 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
   object Vision
   {
     val subConf = conf.getConfig("vision")
-    val cameraClass = subConf.getString("camera-class")
+    val cameraClass = subConf.getString("camera-class-name")
     val remoteCameraUrl = subConf.getString("remote-camera-url")
     val throttlePeriod = getMillis(subConf, "throttle-period")
     val sensorDelay = getMillis(subConf, "sensor-delay")
@@ -54,6 +54,14 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     val subConf = conf.getConfig("control")
     val panicDelay = getMillis(subConf, "panic-delay")
     val visibilityCheckFreq = getMillis(subConf, "visibility-check-freq")
+  }
+
+  object Behavior
+  {
+    val subConf = conf.getConfig("behavior")
+    val className = subConf.getString("class-name")
+    val intrusionDetectorClassName =
+      subConf.getString("intrusion-detector-class-name")
   }
 
   object Motor

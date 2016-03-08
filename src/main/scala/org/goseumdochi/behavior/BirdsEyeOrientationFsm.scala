@@ -37,7 +37,7 @@ object BirdsEyeOrientationFsm
   // * MotionDetector.MotionDetectedMsg
 
   // sent messages
-  // * VisionActor.ActivateAnalyzersMsg
+  // * ControlActor.UseVisionAnalyzersMsg
   // * ControlActor.CalibratedMsg
   // * ControlActor.ActuateImpulseMsg
 
@@ -65,7 +65,7 @@ class BirdsEyeOrientationFsm()
 
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
+      sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className))
       goto(WaitingForStart)
     }
@@ -97,7 +97,8 @@ class BirdsEyeOrientationFsm()
         val bodyMapping = BodyMapping(
           actualMotion.distance / predictedMotion.distance,
           normalizeRadians(actualMotion.theta - predictedMotion.theta))
-        sender ! ControlActor.CalibratedMsg(bodyMapping, eventTime)
+        sender ! ControlActor.CalibratedMsg(
+          bodyMapping, IdentityRetinalTransform, eventTime)
         goto(Done)
       }
     }

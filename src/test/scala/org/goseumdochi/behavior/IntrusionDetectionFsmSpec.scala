@@ -23,6 +23,8 @@ import akka.actor._
 
 import MotionDetector._
 
+import scala.concurrent.duration._
+
 class IntrusionDetectionFsmSpec extends AkkaSpecification
 {
   "IntrusionDetectionFsm" should
@@ -34,7 +36,7 @@ class IntrusionDetectionFsmSpec extends AkkaSpecification
         Props(classOf[IntrusionDetectionFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
-      expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
+      expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
         "org.goseumdochi.vision.CoarseMotionDetector")))
 
@@ -48,18 +50,10 @@ class IntrusionDetectionFsmSpec extends AkkaSpecification
       move1.from must be equalTo(initialPos)
       move1.to must be equalTo(intruderPos)
       move1.speed must be equalTo(0.2)
-      move1.extraTime.toMillis must be equalTo 200
+      move1.extraTime must be equalTo 0.seconds
 
       val intermediatePos = PlanarPos(50.0, 50.0)
       fsm ! ControlActor.BodyMovedMsg(intermediatePos, TimePoint.ZERO)
-
-      val move2 = expectMsgClass(classOf[ControlActor.ActuateMoveMsg])
-      move2.from must be equalTo(intermediatePos)
-      move2.to must be equalTo(intruderPos)
-      move2.speed must be equalTo(0.2)
-      move2.extraTime.toMillis must be equalTo 200
-
-      fsm ! ControlActor.BodyMovedMsg(intruderPos, TimePoint.ZERO)
 
       expectQuiet
     }

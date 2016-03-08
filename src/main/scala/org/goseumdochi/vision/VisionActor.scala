@@ -26,6 +26,8 @@ import akka.routing._
 
 import scala.concurrent.duration._
 
+import java.awt.event._
+
 object VisionActor
 {
   // sent messages
@@ -39,7 +41,8 @@ object VisionActor
 
   // received messages
   final case class ActivateAnalyzersMsg(
-    analyzerClassNames : Seq[String])
+    analyzerClassNames : Seq[String],
+    xform : RetinalTransform)
   final case class HintBodyLocationMsg(pos : PlanarPos, eventTime : TimePoint)
       extends EventMsg
 }
@@ -64,7 +67,7 @@ class VisionActor(videoStream : VideoStream)
 
   private var hintBodyPos : Option[PlanarPos] = None
 
-  private var xform = IdentityRetinalTransformation
+  private var retinalTransform : RetinalTransform = IdentityRetinalTransform
 
   def receive =
   {
@@ -80,8 +83,8 @@ class VisionActor(videoStream : VideoStream)
         self ! GrabFrameMsg(if (analyze) thisTime else lastTime)
       }
     }
-    case ActivateAnalyzersMsg(analyzerClassNames) => {
-      val xform : RetinalTransformation = IdentityRetinalTransformation
+    case ActivateAnalyzersMsg(analyzerClassNames, xform) => {
+      retinalTransform = xform
       analyzers = analyzerClassNames.map(
         settings.instantiateObject(_, xform).
           asInstanceOf[VisionAnalyzer])
@@ -98,15 +101,14 @@ class VisionActor(videoStream : VideoStream)
   {
     val canvas = new CanvasFrame("Webcam")
     canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
-    /*
     canvas.getCanvas.addMouseListener(new MouseAdapter {
       override def mouseClicked(e : MouseEvent) {
         gossip(
-          MotionDetectedMsg(
-            PlanarPos(e.getX, e.getY), System.currentTimeMillis))
+          MotionDetector.MotionDetectedMsg(
+            retinalTransform.retinaToWorld(RetinalPos(e.getX, e.getY)),
+              TimePoint.now))
       }
     })
-     */
     canvas
   }
 
@@ -158,7 +160,7 @@ class VisionActor(videoStream : VideoStream)
       } else {
         hintBodyPos match {
           case Some(pos) => {
-            val center = OpenCvUtil.point(xform.worldToRetina(pos))
+            val center = OpenCvUtil.point(retinalTransform.worldToRetina(pos))
             cvCircle(img, center, 2, AbstractCvScalar.GREEN, 6, CV_AA, 0)
           }
           case _ => {}

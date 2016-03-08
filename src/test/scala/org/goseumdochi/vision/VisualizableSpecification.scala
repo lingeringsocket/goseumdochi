@@ -72,7 +72,7 @@ abstract class VisualizableSpecification(confFile : String = "simulation.conf")
 
   protected def visualize(
     img : IplImage, pos : PlanarPos,
-    xform : RetinalTransformation = IdentityRetinalTransformation)
+    xform : RetinalTransform = IdentityRetinalTransform)
   {
     visualize(img, xform.worldToRetina(pos))
   }

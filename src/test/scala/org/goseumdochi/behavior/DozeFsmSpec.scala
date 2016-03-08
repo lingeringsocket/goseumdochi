@@ -34,8 +34,8 @@ class DozeFsmSpec extends AkkaSpecification
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
 
-      expectMsg(ControlActor.ActuateLight(java.awt.Color.GREEN))
-      expectMsg(ControlActor.ActuateLight(java.awt.Color.BLUE))
+      expectMsg(ControlActor.ActuateLightMsg(java.awt.Color.GREEN))
+      expectMsg(ControlActor.ActuateLightMsg(java.awt.Color.BLUE))
     }
   }
 }

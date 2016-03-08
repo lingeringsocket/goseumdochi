@@ -34,7 +34,7 @@ class BirdsEyeOrientationFsmSpec extends AkkaSpecification
         Props(classOf[BirdsEyeOrientationFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
-      expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
+      expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector")))
 
       expectQuiet

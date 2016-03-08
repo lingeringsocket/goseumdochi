@@ -37,7 +37,7 @@ object BodyFinderFsm
   // * MotionDetector.MotionDetectedMsg
 
   // sent messages
-  // * VisionActor.ActivateAnalyzersMsg
+  // * ControlActor.UseVisionAnalyzersMsg
   // * VisionActor.HintBodyLocationMsg
   // * ControlActor.ActuateImpulseMsg
 
@@ -72,7 +72,7 @@ class BodyFinderFsm()
 
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
+      sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
         classOf[FineMotionDetector].getName))
       goto(WaitingForQuiet) using WithControl(

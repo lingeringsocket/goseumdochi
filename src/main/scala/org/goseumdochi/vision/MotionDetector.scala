@@ -31,7 +31,7 @@ object MotionDetector
 import MotionDetector._
 
 abstract class MotionDetector(
-  val settings : Settings, val xform : RetinalTransformation,
+  val settings : Settings, val xform : RetinalTransform,
   threshold : Int, under : Boolean = false)
     extends VisionAnalyzer
 {
@@ -94,10 +94,10 @@ abstract class MotionDetector(
   }
 }
 
-class CoarseMotionDetector(settings : Settings, xform : RetinalTransformation)
+class CoarseMotionDetector(settings : Settings, xform : RetinalTransform)
     extends MotionDetector(
       settings, xform, settings.MotionDetection.coarseThreshold)
 
-class FineMotionDetector(settings : Settings, xform : RetinalTransformation)
+class FineMotionDetector(settings : Settings, xform : RetinalTransform)
     extends MotionDetector(
       settings, xform, settings.MotionDetection.fineThreshold)

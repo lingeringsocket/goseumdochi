@@ -22,7 +22,7 @@ import org.bytedeco.javacpp.helper.opencv_core._
 class RampDetectorSpec extends VisualizableSpecification
 {
   private val rampDetector = new RampDetector(
-    settings, IdentityRetinalTransformation)
+    settings, IdentityRetinalTransform)
 
   private def visualize(img : IplImage, ramp : OrientedRamp)
   {

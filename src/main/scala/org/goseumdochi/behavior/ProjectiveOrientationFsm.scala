@@ -26,6 +26,28 @@ import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
 
+// FIXME:  real perspective
+case class ProjectiveRetinalTransform(
+  retinaOrigin : RetinalPos,
+  worldOrigin : PlanarPos,
+  vSquash : Double
+) extends RetinalTransform
+{
+  override def retinaToWorld(pos : RetinalPos) : PlanarPos =
+  {
+    PlanarPos(
+      worldOrigin.x + (pos.x - retinaOrigin.x),
+      worldOrigin.y + (pos.y - retinaOrigin.y)/vSquash)
+  }
+
+  override def worldToRetina(pos : PlanarPos) : RetinalPos =
+  {
+    RetinalPos(
+      retinaOrigin.x + (pos.x - worldOrigin.x),
+      retinaOrigin.y + vSquash*(pos.y - worldOrigin.y))
+  }
+}
+
 object ProjectiveOrientationFsm
 {
   sealed trait State
@@ -37,7 +59,7 @@ object ProjectiveOrientationFsm
   // * MotionDetector.MotionDetectedMsg
 
   // sent messages
-  // * VisionActor.ActivateAnalyzersMsg
+  // * ControlActor.UseVisionAnalyzersMsg
   // * ControlActor.CalibratedMsg
   // * ControlActor.ActuateImpulseMsg
 
@@ -72,7 +94,7 @@ class ProjectiveOrientationFsm()
 
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
+      sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className))
       goto(WaitingForStart)
     }
@@ -98,7 +120,7 @@ class ProjectiveOrientationFsm()
       if (motion.distance < 0.1) {
         stay
       } else if (abs(motion.theta) < SMALL_ANGLE) {
-        val newTheta = a.lastTheta + HALF_PI
+        val newTheta = a.lastTheta - HALF_PI
         val newImpulse = forwardImpulse.copy(theta = newTheta)
         val predictedMotion = predictMotion(forwardImpulse)
         val scale = motion.distance / predictedMotion.distance
@@ -129,17 +151,17 @@ class ProjectiveOrientationFsm()
     }
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), a : Alignment) => {
       val motion = polarMotion(a.lastPos, pos)
-      val SMALL_ANGLE = 0.1
       if (motion.distance < 0.1) {
         stay
       } else {
         val predictedMotion = predictMotion(forwardImpulse)
         val vscale = motion.distance / predictedMotion.distance
-        println("ANGLE = " + motion.theta)
-        println("HSCALE = " + a.scale)
-        println("VSCALE = " + vscale)
-        val bodyMapping = BodyMapping(a.scale, a.lastTheta)
-        sender ! ControlActor.CalibratedMsg(bodyMapping, eventTime)
+        val bodyMapping = BodyMapping(a.scale, -a.lastTheta)
+        sender ! ControlActor.CalibratedMsg(
+          bodyMapping,
+          ProjectiveRetinalTransform(
+            RetinalPos(pos.x, pos.y), pos, vscale / a.scale),
+          eventTime)
         goto(Done) using Empty
       }
     }

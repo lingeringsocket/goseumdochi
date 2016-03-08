@@ -19,7 +19,7 @@ import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
 
-trait RetinalTransformation
+trait RetinalTransform
 {
   def retinaToWorld(pos : RetinalPos) : PlanarPos
   def worldToRetina(pos : PlanarPos) : RetinalPos
@@ -34,14 +34,25 @@ trait VisionAnalyzer
 
   def settings : Settings
 
-  def xform : RetinalTransformation
+  def xform : RetinalTransform
 }
 
-case object IdentityRetinalTransformation extends RetinalTransformation
+case object IdentityRetinalTransform extends RetinalTransform
 {
   override def retinaToWorld(pos : RetinalPos) : PlanarPos =
     PlanarPos(pos.x, pos.y)
 
   override def worldToRetina(pos : PlanarPos) : RetinalPos =
     RetinalPos(pos.x, pos.y)
+}
+
+class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
+    extends VisionAnalyzer
+{
+  override def analyzeFrame(
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
+  {
+    None
+  }
 }

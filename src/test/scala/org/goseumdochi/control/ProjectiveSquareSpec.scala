@@ -26,13 +26,11 @@ import MoreMath._
 
 import scala.concurrent.duration._
 
-import ControlActor._
-
-class ControlActorSpec extends AkkaSpecification
+class ProjectiveSquareSpec extends AkkaSpecification("square-test.conf")
 {
-  "ControlActor" should
+  "ControlActor with ProjectiveOrientationFsm with SquareFsm" should
   {
-    "keep cool" in new AkkaExample
+    "go round in squares" in new AkkaExample
     {
       val actuator = new TestActuator
       val controlActor = system.actorOf(
@@ -53,8 +51,18 @@ class ControlActorSpec extends AkkaSpecification
 
       val orientationPos = PlanarPos(50.0, 20.0)
       val orientationTime = zeroTime + 17.seconds
-      val visibleTime = zeroTime + 18.seconds
-      val invisibleTime = zeroTime + 22.seconds
+
+      val backswingPos = PlanarPos(25.0, 20.0)
+      val backswingTime = zeroTime + 25.seconds
+
+      val alignedPos = PlanarPos(50.0, 20.0)
+      val alignedTime = zeroTime + 30.seconds
+
+      val startPos = PlanarPos(50.0, 10.0)
+      val startTime = zeroTime + 35.seconds
+
+      val nextPos = PlanarPos(60.0, 10.0)
+      val nextTime = zeroTime + 40.seconds
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
@@ -75,37 +83,62 @@ class ControlActorSpec extends AkkaSpecification
 
       expectQuiet
 
-      val orientationImpulse = actuator.retrieveImpulse.get
-      orientationImpulse must be equalTo(
-        PolarImpulse(0.2, 800.milliseconds, 0.0))
+      val firstImpulse = actuator.retrieveImpulse.get
+      firstImpulse must be equalTo(
+        PolarImpulse(0.2, 1500.milliseconds, 0.0))
       actuator.reset
 
       controlActor !
         BodyDetector.BodyDetectedMsg(orientationPos, orientationTime)
 
-      controlActor ! CheckVisibilityMsg(orientationTime)
+      expectQuiet
+
+      val secondImpulse = actuator.retrieveImpulse.get
+      secondImpulse.theta must be closeTo(2.83 +/- 0.01)
+      actuator.reset
 
       controlActor !
-        BodyDetector.BodyDetectedMsg(orientationPos, visibleTime)
+        BodyDetector.BodyDetectedMsg(backswingPos, backswingTime)
 
-      controlActor ! CheckVisibilityMsg(visibleTime)
+      expectQuiet
+
+      val thirdImpulse = actuator.retrieveImpulse.get
+      thirdImpulse.theta must be closeTo(-0.30 +/- 0.01)
+      actuator.reset
+
+      controlActor !
+        BodyDetector.BodyDetectedMsg(alignedPos, alignedTime)
+
+      expectQuiet
+
+      val fourthImpulse = actuator.retrieveImpulse.get
+      fourthImpulse.theta must be closeTo(-1.87 +/- 0.01)
+      actuator.reset
+
+      controlActor !
+        BodyDetector.BodyDetectedMsg(startPos, startTime)
 
       expectQuiet
 
       actuator.retrieveImpulse must beEmpty
 
+      controlActor !
+        BodyDetector.BodyDetectedMsg(startPos, startTime)
+
+      expectQuiet
+
+      val fifthImpulse = actuator.retrieveImpulse.get
+      fifthImpulse.theta must be closeTo(-0.30 +/- 0.01)
       actuator.reset
 
-      controlActor ! CheckVisibilityMsg(invisibleTime)
+      controlActor !
+        BodyDetector.BodyDetectedMsg(nextPos, nextTime)
 
       expectQuiet
 
-      val panicImpulse = actuator.retrieveImpulse.get
-      panicImpulse.speed must be closeTo(0.2 +/- 0.01)
-      panicImpulse.duration.toMillis must be equalTo 891
-      panicImpulse.theta must be closeTo(1.19 +/- 0.01)
-
-      expectQuiet
+      val sixthImpulse = actuator.retrieveImpulse.get
+      sixthImpulse.theta must be closeTo(-1.87 +/- 0.01)
+      actuator.reset
     }
   }
 }

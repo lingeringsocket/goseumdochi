@@ -41,15 +41,15 @@ class DozeFsm()
 
   when(Dozing) {
     case Event(_, Red) => {
-      sender ! ControlActor.ActuateLight(java.awt.Color.GREEN)
+      sender ! ControlActor.ActuateLightMsg(java.awt.Color.GREEN)
       goto(Dozing) using Green
     }
     case Event(_, Green) => {
-      sender ! ControlActor.ActuateLight(java.awt.Color.BLUE)
+      sender ! ControlActor.ActuateLightMsg(java.awt.Color.BLUE)
       goto(Dozing) using Blue
     }
     case Event(_, Blue) => {
-      sender ! ControlActor.ActuateLight(java.awt.Color.RED)
+      sender ! ControlActor.ActuateLightMsg(java.awt.Color.RED)
       goto(Dozing) using Red
     }
   }

@@ -38,7 +38,7 @@ object RampDetector
 
 import RampDetector._
 
-class RampDetector(val settings : Settings, val xform : RetinalTransformation)
+class RampDetector(val settings : Settings, val xform : RetinalTransform)
     extends VisionAnalyzer
 {
   override def analyzeFrame(

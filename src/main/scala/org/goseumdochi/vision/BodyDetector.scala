@@ -38,7 +38,7 @@ trait BodyDetector extends VisionAnalyzer
 }
 
 class FlashyBodyDetector(
-  val settings : Settings, val xform : RetinalTransformation)
+  val settings : Settings, val xform : RetinalTransform)
     extends BodyDetector
 {
   class BodyMotionDetector extends MotionDetector(
@@ -59,7 +59,7 @@ class FlashyBodyDetector(
 }
 
 class RoundBodyDetector(
-  val settings : Settings, val xform : RetinalTransformation)
+  val settings : Settings, val xform : RetinalTransform)
     extends BodyDetector
 {
   private val sensitivity = conf.getInt("sensitivity")

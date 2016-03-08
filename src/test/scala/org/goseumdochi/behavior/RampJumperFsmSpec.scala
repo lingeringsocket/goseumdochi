@@ -21,6 +21,8 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
+import scala.concurrent.duration._
+
 class RampJumperFsmSpec extends AkkaSpecification
 {
   "RampJumperFsm" should
@@ -32,7 +34,7 @@ class RampJumperFsmSpec extends AkkaSpecification
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
 
-      expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
+      expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
         "org.goseumdochi.vision.RampDetector")))
 
@@ -47,7 +49,7 @@ class RampJumperFsmSpec extends AkkaSpecification
       move1.to.x must be closeTo(100.0 +/- 0.1)
       move1.to.y must be closeTo(30.0 +/- 0.1)
       move1.speed must be equalTo(0.2)
-      move1.extraTime.toMillis must be equalTo 0
+      move1.extraTime must be equalTo 0.seconds
 
       val intermediatePos = PlanarPos(80.0, 25.0)
       fsm ! ControlActor.BodyMovedMsg(intermediatePos, TimePoint.ZERO)
@@ -57,7 +59,7 @@ class RampJumperFsmSpec extends AkkaSpecification
       move2.to.x must be closeTo(100.0 +/- 0.1)
       move2.to.y must be closeTo(30.0 +/- 0.1)
       move2.speed must be equalTo(0.2)
-      move2.extraTime.toMillis must be equalTo 200
+      move2.extraTime must be equalTo 200.milliseconds
 
       fsm ! ControlActor.BodyMovedMsg(move2.to, TimePoint.ZERO)
 
@@ -65,7 +67,7 @@ class RampJumperFsmSpec extends AkkaSpecification
       launch.from must be equalTo(move2.to)
       launch.to must be equalTo(ramp.center)
       launch.speed must be equalTo(1.0)
-      launch.extraTime.toMillis must be equalTo 1000
+      launch.extraTime must be equalTo 1.second
 
       expectQuiet
     }
