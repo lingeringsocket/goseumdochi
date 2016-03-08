@@ -27,7 +27,7 @@ import com.typesafe.config._
 
 import akka.actor._
 
-abstract class VisualizableSpecification(confFile : String = "simulation.conf")
+abstract class VisualizableSpecification(confFile : String = "test.conf")
     extends Specification
 {
   protected val actorSystem = configureSystem()

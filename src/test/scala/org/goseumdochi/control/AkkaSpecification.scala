@@ -22,7 +22,7 @@ import org.specs2.time.NoTimeConversions
 import akka.testkit._
 import scala.concurrent.duration._
 
-abstract class AkkaSpecification(confFile : String = "simulation.conf")
+abstract class AkkaSpecification(confFile : String = "test.conf")
     extends VisualizableSpecification(confFile) with NoTimeConversions
 {
   abstract class AkkaExample extends TestKit(actorSystem)
