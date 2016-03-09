@@ -92,8 +92,10 @@ class ControlActorSpec extends AkkaSpecification
 
       expectQuiet
 
-      actuator.retrieveImpulse must beEmpty
-
+      val centeringImpulse = actuator.retrieveImpulse.get
+      centeringImpulse.speed must be closeTo(0.2 +/- 0.01)
+      centeringImpulse.duration.toMillis must be equalTo 891
+      centeringImpulse.theta must be closeTo(1.57 +/- 0.01)
       actuator.reset
 
       controlActor ! CheckVisibilityMsg(invisibleTime)
@@ -101,9 +103,7 @@ class ControlActorSpec extends AkkaSpecification
       expectQuiet
 
       val panicImpulse = actuator.retrieveImpulse.get
-      panicImpulse.speed must be closeTo(0.2 +/- 0.01)
-      panicImpulse.duration.toMillis must be equalTo 891
-      panicImpulse.theta must be closeTo(1.57 +/- 0.01)
+      panicImpulse must be equalTo(centeringImpulse)
 
       expectQuiet
     }

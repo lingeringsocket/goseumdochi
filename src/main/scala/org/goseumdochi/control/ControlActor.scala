@@ -102,14 +102,13 @@ class ControlActor(
 
   private var lastSeenTime = TimePoint.ZERO
 
-  private var lastSeenPos : Option[PlanarPos] = None
+  private var lastSeenPos = PlanarPos(0, 0)
 
-  private var cornerOpt : Option[RetinalPos] = None
+  private var bottomRight = RetinalPos(100, 100)
 
   private val panicDelay = settings.Control.panicDelay
 
-  private val visibilityCheckFreq =
-    settings.Control.visibilityCheckFreq
+  private val visibilityCheckFreq = settings.Control.visibilityCheckFreq
 
   private val sensorDelay = Settings(context).Vision.sensorDelay
 
@@ -122,8 +121,8 @@ class ControlActor(
       bodyMappingOpt = Some(BodyMapping(bodyMapping.scale, 0.0))
       orienting = false
       val spinDuration = 500.milliseconds
-      movingUntil = eventTime + spinDuration + sensorDelay
       actuator.actuateTwirl(-bodyMapping.thetaOffset, spinDuration, true)
+      moveToCenter(lastSeenPos, eventTime + 1.second)
       behaviorActor ! CameraAcquiredMsg(eventTime)
       orientationActor ! PoisonPill.getInstance
       log.info("ORIENTATION COMPLETE")
@@ -144,7 +143,7 @@ class ControlActor(
       actuator.actuateTwirl(theta, duration, false)
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
-      cornerOpt = Some(pos)
+      bottomRight = pos
       localizationActor ! CameraAcquiredMsg(eventTime)
     }
     // note that this pattern needs to be matched BEFORE the
@@ -159,7 +158,7 @@ class ControlActor(
           behaviorActor ! BodyMovedMsg(pos, eventTime)
         }
       }
-      lastSeenPos = Some(pos)
+      lastSeenPos = pos
       lastSeenTime = eventTime
     }
     case objectDetected : VisionActor.ObjDetectedMsg => {
@@ -206,12 +205,7 @@ class ControlActor(
             } else {
               log.info("PANIC!")
               behaviorActor ! PanicAttackMsg(checkTime)
-              val from = lastSeenPos.get
-              val to = retinalTransform.retinaToWorld(
-                RetinalPos(corner.x / 2.0, corner.y / 2.0))
-              val impulse = bodyMapping.computeImpulse(
-                from, to, settings.Motor.defaultSpeed, 0.milliseconds)
-              actuateImpulse(impulse, checkTime)
+              moveToCenter(lastSeenPos, checkTime)
             }
           } else {
             // all is well
@@ -228,12 +222,20 @@ class ControlActor(
 
   private def bodyMapping = bodyMappingOpt.get
 
-  private def corner = cornerOpt.get
-
   private def actuateImpulse(impulse : PolarImpulse, eventTime : TimePoint)
   {
     movingUntil = eventTime + impulse.duration + sensorDelay
     actuator.actuateMotion(impulse)
+  }
+
+  private def moveToCenter(pos : PlanarPos, eventTime : TimePoint)
+  {
+    val from = pos
+    val to = retinalTransform.retinaToWorld(
+      RetinalPos(bottomRight.x / 2.0, bottomRight.y / 2.0))
+    val impulse = bodyMapping.computeImpulse(
+      from, to, settings.Motor.defaultSpeed, 0.milliseconds)
+    actuateImpulse(impulse, eventTime)
   }
 
   override def preStart()

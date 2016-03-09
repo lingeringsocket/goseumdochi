@@ -116,7 +116,7 @@ class ProjectiveOrientationFsm()
     }
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), a : Alignment) => {
       val motion = polarMotion(a.lastPos, pos)
-      val SMALL_ANGLE = 0.1
+      val SMALL_ANGLE = 0.2
       if (motion.distance < 0.1) {
         stay
       } else if (abs(motion.theta) < SMALL_ANGLE) {
