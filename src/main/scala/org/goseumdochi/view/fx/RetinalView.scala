@@ -24,9 +24,13 @@ import org.goseumdochi.view._
 import scalafx.Includes._
 import scalafx.application._
 import scalafx.animation._
+import scalafx.geometry._
 import scalafx.scene._
 import scalafx.scene.paint._
 import scalafx.scene.shape._
+import scalafx.scene.chart._
+import scalafx.util.StringConverter
+
 import javafx.event._
 import javafx.embed.swing.JFXPanel
 
@@ -42,7 +46,7 @@ class RetinalView(settings : Settings) extends PerceptualView
 {
   override def processHistory(events : Seq[PerceptualEvent])
   {
-    RetinalView.createTimeline(events)
+    RetinalView.createTimeline(events, settings.View.playbackRate)
     RetinalView.startVisualization()
   }
 
@@ -71,6 +75,14 @@ object RetinalView
     radius = 20
     fill = Color.LightBlue
     visible = false
+  }
+
+  private[fx] val timeKnob = new Rectangle {
+    x = 0
+    y = 0
+    width = 10
+    height = 10
+    fill = Color.Red
   }
 
   private[fx] var timeline : Option[Timeline] = None
@@ -128,16 +140,21 @@ object RetinalView
       Await.result(timelineCompletion.future, Duration.Inf))
   }
 
-  private def createTimeline(events : Seq[PerceptualEvent])
+  private def createTimeline(
+    events : Seq[PerceptualEvent], playbackRate : Double)
   {
+    val maxMillis = events.map(_.msg.eventTime.d.toMillis).max
     val newTimeline = new Timeline {
-      rate = 5.0
+      rate = playbackRate
       keyFrames = events.flatMap(filterEvent(_, false)).map(brp => {
-        at (scalafx.util.Duration(brp.eventTime.d.toMillis)) {
+        val millis = brp.eventTime.d.toMillis
+        at (scalafx.util.Duration(millis)) {
           Set(
             body.centerX -> brp.pos.x,
             body.centerY -> brp.pos.y,
-            body.visible -> true)
+            body.visible -> true,
+            timeKnob.x -> (millis.toDouble/maxMillis)*bottomRight.x
+          )
         }
       })
     }
@@ -150,16 +167,65 @@ object RetinalView
   }
 }
 
+// upside down y-axis hack comes from
+// http://stackoverflow.com/questions/18026706/chart-with-inverted-y-axis
+
 object RetinalViewWindow extends JFXApp
 {
+  private val retinaWidth = RetinalView.bottomRight.x
+
+  private val retinaHeight = RetinalView.bottomRight.y
+
   stage = new JFXApp.PrimaryStage {
     title.value = "Perceptual View (retinal frame of reference)"
-    width = RetinalView.bottomRight.x
-    height = RetinalView.bottomRight.y
+    width = retinaWidth
+    height = retinaHeight
     scene = new Scene {
       fill = Color.Black
-      content = RetinalView.body
+      content = Seq(
+        new NumberAxis {
+          side = Side.TOP
+          label = "Retina Pixels X"
+          lowerBound = 0
+          upperBound = retinaWidth
+          minWidth = retinaWidth
+          autoRanging = false
+          tickUnit = 100
+        },
+        new NumberAxis {
+          side = Side.LEFT
+          label = "Retina Pixels Y"
+          lowerBound = -retinaHeight
+          upperBound = 0
+          minHeight = retinaHeight
+          autoRanging = false
+          tickUnit = 100
+          tickLabelFormatter = StringConverter.toStringConverter(num =>
+            (-(num.intValue)).toString
+          )
+        },
+        RetinalView.body
+      ) ++ {
+        RetinalView.timeline.map(timeline =>
+          new Group {
+            translateY = retinaHeight - 100
+            children = Seq(
+              new NumberAxis {
+                side = Side.BOTTOM
+                label = "Milliseconds"
+                lowerBound = 0
+                upperBound = timeline.totalDuration.get.toMillis
+                minWidth = retinaWidth
+                autoRanging = false
+                tickUnit = 1000
+              },
+              RetinalView.timeKnob
+            )
+          }
+        )
+      }
     }
   }
+
   RetinalView.timeline.foreach(_.play)
 }

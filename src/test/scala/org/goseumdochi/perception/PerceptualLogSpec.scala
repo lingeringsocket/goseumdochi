@@ -34,8 +34,8 @@ class PerceptualLogSpec extends VisualizableSpecification
       first must be equalTo(
         PerceptualEvent(
           "first event",
-          "controlActor",
-          "behaviorActor",
+          ControlActor.CONTROL_ACTOR_NAME,
+          ControlActor.BEHAVIOR_ACTOR_NAME,
           ControlActor.BodyMovedMsg(
             PlanarPos(25.0, 10.0),
             TimePoint(TimeSpan(10, SECONDS)))))

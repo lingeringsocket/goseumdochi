@@ -29,8 +29,9 @@ import org.json4s.native._
 object PerceptualLog
 {
   implicit val formats =
-    Serialization.formats(FullTypeHints(List(classOf[EventMsg]))) +
-      TimePointSerializer
+    Serialization.formats(
+      FullTypeHints(List(classOf[EventMsg], classOf[RetinalTransform]))) +
+      TimeSpanSerializer + TimePointSerializer
 
   def read(filePath : String) : Seq[PerceptualEvent] =
     managed(Source.fromFile(filePath)).acquireAndGet(src => {
@@ -67,6 +68,7 @@ class PerceptualLog(filePath : String) extends PerceptualProcessor
       pw.println(",")
     }
     pw.println(PerceptualLog.write(event))
+    pw.flush
   }
 
   override def close()
@@ -97,5 +99,29 @@ object TimePointSerializer extends Serializer[TimePoint]
     case x: TimePoint =>
       import JsonDSL._
       ("millis" -> x.d.toMillis)
+  }
+}
+
+object TimeSpanSerializer extends Serializer[TimeSpan]
+{
+  private val TimeSpanClass = classOf[TimeSpan]
+
+  def deserialize(implicit format: Formats)
+      : PartialFunction[(TypeInfo, JValue), TimeSpan] =
+  {
+    case (TypeInfo(TimeSpanClass, _), json) => json match {
+      case JObject(JField("millis", JInt(millis)) :: _) =>
+        TimeSpan(millis.toLong, MILLISECONDS)
+      case x => throw new MappingException(
+        "Can't convert " + x + " to TimeSpan")
+    }
+  }
+
+  def serialize(implicit formats: Formats)
+      : PartialFunction[Any, JValue] =
+  {
+    case x: TimeSpan =>
+      import JsonDSL._
+      ("millis" -> x.toMillis)
   }
 }

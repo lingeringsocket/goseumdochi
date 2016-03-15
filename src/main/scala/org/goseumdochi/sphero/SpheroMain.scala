@@ -82,7 +82,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
         actuator,
         Props(classOf[VisionActor], videoStream),
         true)
-      val controlActor = system.actorOf(props, "controlActor")
+      val controlActor = system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)
     } catch {
       case ex : Throwable => {
         system.terminate

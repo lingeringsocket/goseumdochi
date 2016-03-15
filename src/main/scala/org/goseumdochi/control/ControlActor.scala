@@ -66,6 +66,16 @@ object ControlActor
 
   // pass-through messages
   // any kind of VisionActor.ObjDetectedMsg
+
+  final val CONTROL_ACTOR_NAME = "controlActor"
+
+  final val VISION_ACTOR_NAME = "visionActor"
+
+  final val LOCALIZATION_ACTOR_NAME = "localizationActor"
+
+  final val ORIENTATION_ACTOR_NAME = "orientationActor"
+
+  final val BEHAVIOR_ACTOR_NAME = "behaviorActor"
 }
 
 class ControlActor(
@@ -82,16 +92,17 @@ class ControlActor(
   private val settings = Settings(context)
 
   private val visionActor = context.actorOf(
-    visionProps, "visionActor")
+    visionProps,
+    VISION_ACTOR_NAME)
   private val localizationActor = context.actorOf(
     Props(Class.forName(settings.Orientation.localizationClassName)),
-    "localizationActor")
+    LOCALIZATION_ACTOR_NAME)
   private val orientationActor = context.actorOf(
     Props(Class.forName(settings.Orientation.className)),
-    "orientationActor")
+    ORIENTATION_ACTOR_NAME)
   private val behaviorActor = context.actorOf(
     Props(Class.forName(settings.Behavior.className)),
-    "behaviorActor")
+    BEHAVIOR_ACTOR_NAME)
 
   private var localizing = true
 
@@ -124,9 +135,11 @@ class ControlActor(
 
   override def receive = LoggingReceive({
     case eventMsg : EventMsg => {
-      perception.processEvent(
-        PerceptualEvent(
-          "", getActorString(sender), getActorString(self), eventMsg))
+      if (sender != self) {
+        perception.processEvent(
+          PerceptualEvent(
+            "", getActorString(sender), getActorString(self), eventMsg))
+      }
       receiveInput(eventMsg)
     }
   })

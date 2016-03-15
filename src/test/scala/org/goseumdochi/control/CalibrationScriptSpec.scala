@@ -13,43 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.behavior
+package org.goseumdochi.control
 
-import org.goseumdochi.common._
-import org.goseumdochi.control._
-
-import akka.actor._
-
-object DozeFsm
+class CalibrationScriptSpec extends ScriptedSpecification("test.conf")
 {
-  sealed trait State
-  sealed trait Data
-
-  // states
-  case object Dozing extends State
-
-  // data
-  case object Empty extends Data
-}
-import DozeFsm._
-
-class DozeFsm()
-    extends BehaviorFsm[State, Data]
-{
-  startWith(Dozing, Empty)
-
-  when(Dozing) {
-    case Event(msg : EventMsg, _) => {
-      stay
+  "calibration script" should
+  {
+    "invoke actuator as expected" in new AkkaExample
+    {
+      runScript("/scripted/doze.log")
     }
   }
-
-  whenUnhandled {
-    case Event(msg : ControlActor.PanicAttackMsg, _) => {
-      goto(Dozing)
-    }
-    case event => handleUnknown(event)
-  }
-
-  initialize()
 }

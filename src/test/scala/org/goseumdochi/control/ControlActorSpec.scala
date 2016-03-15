@@ -34,14 +34,14 @@ class ControlActorSpec extends AkkaSpecification
   {
     "keep cool" in new AkkaExample
     {
-      val actuator = new TestActuator(system)
+      val actuator = new TestActuator(system, true)
       val controlActor = system.actorOf(
         Props(
           classOf[ControlActor],
           actuator,
           Props(classOf[NullActor]),
           false),
-        "controlActor")
+        ControlActor.CONTROL_ACTOR_NAME)
 
       val zeroTime = TimePoint.ZERO
 
@@ -91,7 +91,6 @@ class ControlActorSpec extends AkkaSpecification
       actuator.expectColor
 
       controlActor ! CheckVisibilityMsg(invisibleTime)
-      actuator.expectColor
       actuator.expectColor
 
       val panicImpulse = actuator.expectImpulse

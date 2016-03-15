@@ -32,14 +32,14 @@ class ProjectiveSquareSpec extends AkkaSpecification("square-test.conf")
   {
     "go round in squares" in new AkkaExample
     {
-      val actuator = new TestActuator(system)
+      val actuator = new TestActuator(system, true)
       val controlActor = system.actorOf(
         Props(
           classOf[ControlActor],
           actuator,
           Props(classOf[NullActor]),
           false),
-        "controlActor")
+        ControlActor.CONTROL_ACTOR_NAME)
 
       val zeroTime = TimePoint.ZERO
 

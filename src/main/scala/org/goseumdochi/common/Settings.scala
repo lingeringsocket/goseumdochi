@@ -75,6 +75,7 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     val subConf = conf.getConfig("view")
     val visualizeRetinal = subConf.getBoolean("visualize-retinal")
     val className = subConf.getString("class-name")
+    val playbackRate = subConf.getDouble("playback-rate")
   }
 
   object Motor

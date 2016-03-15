@@ -56,7 +56,7 @@ object SimulationMain extends App
       true)
     val config = ConfigFactory.load("simulation.conf")
     val system = ActorSystem("SimulationActors", config)
-    system.actorOf(props, "controlActor")
+    system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)
     Await.result(system.whenTerminated, Duration.Inf)
   }
 }

@@ -20,7 +20,8 @@ import org.goseumdochi.common._
 import akka.actor._
 import akka.testkit._
 
-class TestActuator(system : ActorSystem) extends Actuator
+class TestActuator(system : ActorSystem, includeHeading : Boolean)
+    extends Actuator
 {
   val probe = TestProbe()(system)
 
@@ -37,7 +38,9 @@ class TestActuator(system : ActorSystem) extends Actuator
   override def actuateTwirl(
     theta : Double, duration : TimeSpan, newHeading : Boolean)
   {
-    probe.ref ! ControlActor.ActuateTwirlMsg(theta, duration, TimePoint.ZERO)
+    if (includeHeading || !newHeading) {
+      probe.ref ! ControlActor.ActuateTwirlMsg(theta, duration, TimePoint.ZERO)
+    }
   }
 
   def expectImpulse() =
