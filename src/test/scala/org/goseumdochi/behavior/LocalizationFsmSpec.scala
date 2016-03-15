@@ -22,20 +22,22 @@ import org.goseumdochi.vision._
 import akka.actor._
 
 import scala.math._
+import MoreMath._
 
-class BirdsEyeCalibrationFsmSpec extends AkkaSpecification
+class LocalizationFsmSpec extends AkkaSpecification
 {
-  "BirdsEyeCalibrationFsm" should
+  "LocalizationFsm" should
   {
-    "calibrate body mapping" in new AkkaExample
+    "find body" in new AkkaExample
     {
       val fsm = system.actorOf(
-        Props(classOf[BirdsEyeCalibrationFsm]))
+        Props(classOf[LocalizationFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
-      expectMsg(VisionActor.ActivateAnalyzersMsg(Seq(
+      expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
-        "org.goseumdochi.vision.FineMotionDetector")))
+        "org.goseumdochi.vision.FineMotionDetector"),
+        TimePoint.ZERO))
 
       expectQuiet
 
@@ -43,16 +45,9 @@ class BirdsEyeCalibrationFsmSpec extends AkkaSpecification
         classOf[ControlActor.ActuateImpulseMsg]).impulse
       backwardImpulse.speed must be closeTo(0.2 +/- 0.01)
       backwardImpulse.duration.toMillis must be equalTo 800
-      backwardImpulse.theta must be closeTo(Pi +/- 0.01)
+      backwardImpulse.theta must be closeTo(PI +/- 0.01)
 
-      val initialPos = PlanarPos(0, 0)
-      val finalPos = PlanarPos(100, 30)
-
-      fsm ! MotionDetector.MotionDetectedMsg(initialPos, TimePoint.ZERO)
-
-      expectMsg(VisionActor.HintBodyLocationMsg(initialPos, TimePoint.ZERO))
-
-      fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
+      expectQuiet
 
       val forwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
@@ -60,12 +55,13 @@ class BirdsEyeCalibrationFsmSpec extends AkkaSpecification
       forwardImpulse.duration.toMillis must be equalTo 800
       forwardImpulse.theta must be closeTo(0.0 +/- 0.01)
 
-      fsm ! ControlActor.BodyMovedMsg(finalPos, TimePoint.ZERO)
+      val finalPos = PlanarPos(100, 30)
 
-      val bodyMapping = expectMsgClass(
-        classOf[ControlActor.CalibratedMsg]).bodyMapping
-      bodyMapping.scale must be closeTo(652.5 +/- 0.1)
-      bodyMapping.thetaOffset must be closeTo(0.29 +/- 0.01)
+      fsm ! MotionDetector.MotionDetectedMsg(finalPos, TimePoint.ZERO)
+
+      expectMsg(VisionActor.HintBodyLocationMsg(finalPos, TimePoint.ZERO))
+
+      expectQuiet
     }
   }
 }

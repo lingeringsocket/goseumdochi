@@ -22,6 +22,8 @@ import org.goseumdochi.behavior._
 import akka.actor._
 
 import scala.math._
+import MoreMath._
+
 import scala.concurrent.duration._
 
 import ControlActor._
@@ -32,72 +34,67 @@ class ControlActorSpec extends AkkaSpecification
   {
     "keep cool" in new AkkaExample
     {
-      val actuator = new TestActuator
+      val actuator = new TestActuator(system, true)
       val controlActor = system.actorOf(
         Props(
           classOf[ControlActor],
           actuator,
           Props(classOf[NullActor]),
-          Props(classOf[DozeFsm]),
           false),
-        "controlActor")
+        ControlActor.CONTROL_ACTOR_NAME)
 
       val zeroTime = TimePoint.ZERO
 
       val initialPos = PlanarPos(25.0, 10.0)
       val initialTime = zeroTime + 1.second
-      val corner = PlanarPos(100.0, 100.0)
+      val corner = RetinalPos(100.0, 100.0)
 
       val bodyFoundTime = zeroTime + 10.seconds
 
-      val calibrationPos = PlanarPos(50.0, 20.0)
-      val calibrationTime = zeroTime + 17.seconds
+      val orientationPos = PlanarPos(50.0, 20.0)
+      val orientationTime = zeroTime + 17.seconds
       val visibleTime = zeroTime + 18.seconds
       val invisibleTime = zeroTime + 22.seconds
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
-      expectQuiet
-      expectQuiet
+      val backwardImpulse = actuator.expectImpulse
+      backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, PI))
 
-      val backwardImpulse = actuator.retrieveImpulse().get
-      backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, Pi))
-      actuator.reset
+      controlActor ! VisionActor.HintBodyLocationMsg(initialPos, initialTime)
+
+      expectQuiet
 
       controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)
       controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
 
-      expectQuiet
-
-      val calibrationImpulse = actuator.retrieveImpulse().get
-      calibrationImpulse must be equalTo(
+      val orientationImpulse = actuator.expectImpulse
+      orientationImpulse must be equalTo(
         PolarImpulse(0.2, 800.milliseconds, 0.0))
-      actuator.reset
 
       controlActor !
-        BodyDetector.BodyDetectedMsg(calibrationPos, calibrationTime)
+        BodyDetector.BodyDetectedMsg(orientationPos, orientationTime)
 
-      controlActor ! CheckVisibilityMsg(calibrationTime)
+      actuator.expectTwirlMsg.theta must be closeTo(-0.38 +/- 0.01)
+      val centeringImpulse = actuator.expectImpulse
+      centeringImpulse.speed must be closeTo(0.2 +/- 0.01)
+      centeringImpulse.duration.toMillis must be equalTo 891
+      centeringImpulse.theta must be closeTo(1.57 +/- 0.01)
+
+      controlActor ! CheckVisibilityMsg(orientationTime)
+      actuator.expectColor
 
       controlActor !
-        BodyDetector.BodyDetectedMsg(calibrationPos, visibleTime)
+        BodyDetector.BodyDetectedMsg(orientationPos, visibleTime)
 
       controlActor ! CheckVisibilityMsg(visibleTime)
-
-      expectQuiet
-
-      actuator.retrieveImpulse() must beEmpty
-
-      actuator.reset
+      actuator.expectColor
 
       controlActor ! CheckVisibilityMsg(invisibleTime)
+      actuator.expectColor
 
-      expectQuiet
-
-      val panicImpulse = actuator.retrieveImpulse().get
-      panicImpulse.speed must be closeTo(0.2 +/- 0.01)
-      panicImpulse.duration.toMillis must be equalTo 891
-      panicImpulse.theta  must be closeTo(1.19 +/- 0.01)
+      val panicImpulse = actuator.expectImpulse
+      panicImpulse must be equalTo(centeringImpulse)
 
       expectQuiet
     }

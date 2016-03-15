@@ -36,7 +36,7 @@ object IntrusionDetectionFsm
   // * MotionDetector.MotionDetectedMsg
 
   // sent messages
-  // * VisionActor.ActivateAnalyzersMsg
+  // * ControlActor.UseVisionAnalyzersMsg
   // * ControlActor.ActuateMoveMsg
 
   // states
@@ -61,10 +61,11 @@ class IntrusionDetectionFsm()
   startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(msg : ControlActor.CameraAcquiredMsg, _) => {
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
+    case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
+      sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
-        classOf[CoarseMotionDetector].getName))
+        settings.Behavior.intrusionDetectorClassName),
+        eventTime)
       goto(WaitingForIntruder)
     }
   }
@@ -83,15 +84,10 @@ class IntrusionDetectionFsm()
       ControlActor.BodyMovedMsg(pos, eventTime),
       IntruderAt(intruderPos)) =>
     {
-      val offset = polarMotion(pos, intruderPos)
-      if (offset.distance < 30.0) {
-        goto(WaitingForIntruder) using Empty
-      } else {
-        sender ! ControlActor.ActuateMoveMsg(
-          pos, intruderPos, settings.Motor.defaultSpeed,
-          200.milliseconds, eventTime)
-        stay
-      }
+      sender ! ControlActor.ActuateMoveMsg(
+        pos, intruderPos, settings.Motor.defaultSpeed,
+        0.seconds, eventTime)
+      goto(WaitingForIntruder) using Empty
     }
     case Event(MotionDetectedMsg(pos, _), _) => {
       stay

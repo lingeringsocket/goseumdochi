@@ -37,16 +37,17 @@ trait BodyDetector extends VisionAnalyzer
   protected val conf = settings.BodyRecognition.subConf
 }
 
-class FlashyBodyDetector(val settings : Settings)
+class FlashyBodyDetector(
+  val settings : Settings, val xform : RetinalTransform)
     extends BodyDetector
 {
   class BodyMotionDetector extends MotionDetector(
-    settings, settings.MotionDetection.bodyThreshold, true)
+    settings, xform, settings.MotionDetection.bodyThreshold, true)
 
   private val motionDetector = new BodyMotionDetector
 
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage,
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
     motionDetector.detectMotion(prevGray, gray).map(
@@ -57,7 +58,8 @@ class FlashyBodyDetector(val settings : Settings)
   }
 }
 
-class RoundBodyDetector(val settings : Settings)
+class RoundBodyDetector(
+  val settings : Settings, val xform : RetinalTransform)
     extends BodyDetector
 {
   private val sensitivity = conf.getInt("sensitivity")
@@ -67,7 +69,7 @@ class RoundBodyDetector(val settings : Settings)
   private var maxRadius = conf.getInt("max-radius")
 
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage,
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
     hintBodyPos.flatMap(
@@ -117,7 +119,7 @@ class RoundBodyDetector(val settings : Settings)
     val point = new CvPoint2D32f
     point.x(circle.x)
     point.y(circle.y)
-    val result = Some(PlanarPos(point.x, point.y))
+    val result = Some(RetinalPos(point.x, point.y))
     val center = cvPointFrom32f(point)
     val radius = Math.round(circle.z)
     minRadius = radius - 8
@@ -128,6 +130,6 @@ class RoundBodyDetector(val settings : Settings)
     cvCircle(img, center, radius, AbstractCvScalar.RED, 6, CV_AA, 0)
 
     mem.release
-    result
+    result.map(xform.retinaToWorld(_))
   }
 }

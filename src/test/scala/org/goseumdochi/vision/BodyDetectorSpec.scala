@@ -21,7 +21,10 @@ import org.bytedeco.javacpp.opencv_highgui._
 
 class BodyDetectorSpec extends VisualizableSpecification
 {
-  private val bodyDetector = new RoundBodyDetector(settings)
+  private val roundBodyDetector =
+    new RoundBodyDetector(settings, IdentityRetinalTransform)
+  private val flashyBodyDetector =
+    new FlashyBodyDetector(settings, IdentityRetinalTransform)
 
   "BodyDetector" should
   {
@@ -30,7 +33,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       val hintPos = PlanarPos(500, 500)
       val img = cvLoadImage("data/empty.jpg")
       val gray = OpenCvUtil.grayscale(img)
-      val posOpt = bodyDetector.detectBody(img, gray, hintPos)
+      val posOpt = roundBodyDetector.detectBody(img, gray, hintPos)
       posOpt must beEmpty
     }
 
@@ -39,7 +42,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       val hintPos = PlanarPos(0, 0)
       val img = cvLoadImage("data/table1.jpg")
       val gray = OpenCvUtil.grayscale(img)
-      val posOpt = bodyDetector.detectBody(img, gray, hintPos)
+      val posOpt = roundBodyDetector.detectBody(img, gray, hintPos)
       posOpt must not beEmpty
 
       val pos = posOpt.get
@@ -56,7 +59,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       val img = cvLoadImage("data/baseline1.jpg")
       val gray = OpenCvUtil.grayscale(img)
       val hintPos = PlanarPos(500, 500)
-      val posOpt = bodyDetector.detectBody(img, gray, hintPos)
+      val posOpt = roundBodyDetector.detectBody(img, gray, hintPos)
       posOpt must not beEmpty
 
       val pos = posOpt.get
@@ -64,6 +67,22 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       pos.x must be closeTo(569.0 +/- 0.1)
       pos.y must be closeTo(471.0 +/- 0.1)
+    }
+
+    "detect flashy body" in
+    {
+      val img1 = cvLoadImage("data/blinkoff.jpg")
+      val img2 = cvLoadImage("data/blinkorange.jpg")
+      val gray1 = OpenCvUtil.grayscale(img1)
+      val gray2 = OpenCvUtil.grayscale(img2)
+      val msgOpt = flashyBodyDetector.analyzeFrame(
+        img2, img1, gray2, gray1, TimePoint.ZERO, None)
+      msgOpt must not beEmpty
+      val pos = msgOpt.head.pos
+      visualize(img2, pos)
+
+      pos.x must be closeTo(267.5 +/- 0.1)
+      pos.y must be closeTo(363.0 +/- 0.1)
     }
   }
 }

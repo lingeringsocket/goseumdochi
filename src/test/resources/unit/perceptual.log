@@ -1,0 +1,33 @@
+[
+{
+  "description":"first event",
+  "sender":"controlActor",
+  "receiver":"behaviorActor",
+  "msg":{
+    "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
+    "pos":{
+      "x":25.0,
+      "y":10.0
+    },
+    "eventTime":{
+      "millis":10000
+    }
+  }
+}
+,
+{
+  "description":"second event",
+  "sender":"controlActor",
+  "receiver":"behaviorActor",
+  "msg":{
+    "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
+    "pos":{
+      "x":50.0,
+      "y":20.0
+    },
+    "eventTime":{
+      "millis":17000
+    }
+  }
+}
+]

@@ -35,7 +35,7 @@ object RampJumperFsm
   // * RampDetector.RampDetectedMsg
 
   // sent messages
-  // * VisionActor.ActivateAnalyzersMsg
+  // * ControlActor.UseVisionAnalyzersMsg
   // * ControlActor.ActuateMoveMsg
 
   // states
@@ -62,10 +62,11 @@ class RampJumperFsm()
   startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(msg : ControlActor.CameraAcquiredMsg, _) => {
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
+    case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
+      sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
-        classOf[RampDetector].getName))
+        classOf[RampDetector].getName),
+        eventTime)
       goto(WaitingForRamp)
     }
   }

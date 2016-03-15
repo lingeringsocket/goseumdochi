@@ -17,6 +17,7 @@ package org.goseumdochi.control
 
 import org.goseumdochi.common._
 import org.goseumdochi.vision._
+import org.goseumdochi.perception._
 
 import akka.actor._
 import akka.routing._
@@ -27,6 +28,7 @@ import scala.concurrent.duration._
 object ControlActor
 {
   // sent messages
+  // VisionActor.ActivateAnalyzersMsg
   final case class CameraAcquiredMsg(eventTime : TimePoint)
       extends EventMsg
   final case class BodyMovedMsg(pos : PlanarPos, eventTime : TimePoint)
@@ -41,7 +43,9 @@ object ControlActor
   // received messages
   // VisionActor.DimensionsKnownMsg
   final case class CalibratedMsg(
-    bodyMapping : BodyMapping, eventTime : TimePoint)
+    bodyMapping : BodyMapping,
+    xform : RetinalTransform,
+    eventTime : TimePoint)
       extends EventMsg
   final case class ActuateImpulseMsg(
     impulse : PolarImpulse, eventTime : TimePoint)
@@ -51,64 +55,117 @@ object ControlActor
     speed : Double, extraTime : TimeSpan, eventTime : TimePoint)
       extends EventMsg
   final case class ActuateTwirlMsg(
-    degrees : Int, duration : TimeSpan, eventTime : TimePoint)
+    theta : Double, duration : TimeSpan, eventTime : TimePoint)
       extends EventMsg
-  final case class ActuateLight(
-    color : java.awt.Color)
+  final case class ActuateLightMsg(
+    color : java.awt.Color, eventTime : TimePoint)
+      extends EventMsg
+  final case class UseVisionAnalyzersMsg(
+    analyzerClassNames : Seq[String], eventTime : TimePoint)
+      extends EventMsg
 
   // pass-through messages
-  // VisionActor.ActivateAnalyzersMsg
   // any kind of VisionActor.ObjDetectedMsg
+
+  final val CONTROL_ACTOR_NAME = "controlActor"
+
+  final val VISION_ACTOR_NAME = "visionActor"
+
+  final val LOCALIZATION_ACTOR_NAME = "localizationActor"
+
+  final val ORIENTATION_ACTOR_NAME = "orientationActor"
+
+  final val BEHAVIOR_ACTOR_NAME = "behaviorActor"
 }
 
 class ControlActor(
   actuator : Actuator,
   visionProps : Props,
-  behaviorProps : Props,
   monitorVisibility : Boolean)
     extends Actor
 {
   import ControlActor._
   import context.dispatcher
 
+  private val log = Logging(context.system, this)
+
   private val settings = Settings(context)
 
   private val visionActor = context.actorOf(
-    visionProps, "visionActor")
-  private val calibrationActor = context.actorOf(
-    Props(Class.forName(settings.Calibration.className)),
-    "calibrationActor")
+    visionProps,
+    VISION_ACTOR_NAME)
+  private val localizationActor = context.actorOf(
+    Props(Class.forName(settings.Orientation.localizationClassName)),
+    LOCALIZATION_ACTOR_NAME)
+  private val orientationActor = context.actorOf(
+    Props(Class.forName(settings.Orientation.className)),
+    ORIENTATION_ACTOR_NAME)
   private val behaviorActor = context.actorOf(
-    behaviorProps, "behaviorActor")
+    Props(Class.forName(settings.Behavior.className)),
+    BEHAVIOR_ACTOR_NAME)
 
-  private var calibrating = true
+  private var localizing = true
+
+  private var orienting = true
 
   private var movingUntil = TimePoint.ZERO
+
+  private var retinalTransform : RetinalTransform =
+    IdentityRetinalTransform
 
   private var bodyMappingOpt : Option[BodyMapping] = None
 
   private var lastSeenTime = TimePoint.ZERO
 
-  private var lastSeenPos : Option[PlanarPos] = None
+  private var lastSeenPos = PlanarPos(0, 0)
 
-  private var cornerOpt : Option[PlanarPos] = None
+  private var bottomRight = RetinalPos(100, 100)
 
   private val panicDelay = settings.Control.panicDelay
 
-  private val visibilityCheckFreq =
-    settings.Control.visibilityCheckFreq
+  private val visibilityCheckFreq = settings.Control.visibilityCheckFreq
+
+  private val sensorDelay = Settings(context).Vision.sensorDelay
 
   private val random = scala.util.Random
 
-  def receive = LoggingReceive(
-  {
-    case CalibratedMsg(bodyMapping, eventTime) => {
-      bodyMappingOpt = Some(bodyMapping)
-      calibrating = false
-      behaviorActor ! CameraAcquiredMsg(eventTime)
-      calibrationActor ! PoisonPill.getInstance
+  private val perception = new PlanarPerception(settings)
+
+  private def getActorString(ref : ActorRef) = ref.path.name
+
+  override def receive = LoggingReceive({
+    case eventMsg : EventMsg => {
+      if (sender != self) {
+        perception.processEvent(
+          PerceptualEvent(
+            "", getActorString(sender), getActorString(self), eventMsg))
+      }
+      receiveInput(eventMsg)
     }
-    case ActuateLight(color : java.awt.Color) => {
+  })
+
+  private def sendOutput(receiver : ActorRef, msg : EventMsg) =
+  {
+    perception.processEvent(
+      PerceptualEvent(
+        "", getActorString(self), getActorString(receiver), msg))
+    receiver ! msg
+  }
+
+  private def receiveInput(eventMsg : EventMsg) = eventMsg match
+  {
+    case CalibratedMsg(bodyMapping, xform, eventTime) => {
+      retinalTransform = xform
+      bodyMappingOpt = Some(BodyMapping(bodyMapping.scale, 0.0))
+      orienting = false
+      val spinDuration = 500.milliseconds
+      actuator.actuateTwirl(-bodyMapping.thetaOffset, spinDuration, true)
+      moveToCenter(lastSeenPos, eventTime + 1.second)
+      sendOutput(behaviorActor, CameraAcquiredMsg(eventTime))
+      orientationActor ! PoisonPill.getInstance
+      log.info("ORIENTATION COMPLETE")
+    }
+    case ActuateLightMsg(color : java.awt.Color, eventTime) => {
       actuator.actuateLight(color)
     }
     case ActuateImpulseMsg(impulse, eventTime) => {
@@ -120,42 +177,60 @@ class ControlActor(
       // the way as well?
       actuateImpulse(impulse, eventTime)
     }
-    case ActuateTwirlMsg(degrees, duration, eventTime) => {
-      actuator.actuateTwirl(degrees, duration)
+    case ActuateTwirlMsg(theta, duration, eventTime) => {
+      actuator.actuateTwirl(theta, duration, false)
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
-      cornerOpt = Some(pos)
-      calibrationActor ! CameraAcquiredMsg(eventTime)
+      bottomRight = pos
+      sendOutput(localizationActor, CameraAcquiredMsg(eventTime))
     }
     // note that this pattern needs to be matched BEFORE the
     // generic ObjDetectedMsg case
     case BodyDetector.BodyDetectedMsg(pos, eventTime) => {
+      val moveMsg = BodyMovedMsg(pos, eventTime)
       if (eventTime > movingUntil) {
-        if (calibrating) {
-          calibrationActor ! BodyMovedMsg(pos, eventTime)
+        if (localizing) {
+          sendOutput(localizationActor, moveMsg)
+        } else if (orienting) {
+          sendOutput(orientationActor, moveMsg)
         } else {
-          behaviorActor ! BodyMovedMsg(pos, eventTime)
+          sendOutput(behaviorActor, moveMsg)
         }
       }
-      lastSeenPos = Some(pos)
+      lastSeenPos = pos
       lastSeenTime = eventTime
     }
     case objectDetected : VisionActor.ObjDetectedMsg => {
-      if (calibrating) {
-        calibrationActor ! objectDetected
+      if (localizing) {
+        sendOutput(localizationActor, objectDetected)
+      } else if (orienting) {
+        sendOutput(orientationActor, objectDetected)
       } else if (objectDetected.eventTime > movingUntil) {
-        behaviorActor ! objectDetected
+        sendOutput(behaviorActor, objectDetected)
       }
     }
-    case msg : VisionActor.ActivateAnalyzersMsg => {
-      visionActor ! msg
+    case UseVisionAnalyzersMsg(analyzers, eventTime) => {
+      visionActor ! VisionActor.ActivateAnalyzersMsg(
+        analyzers, retinalTransform)
     }
-    case msg : VisionActor.HintBodyLocationMsg => {
-      visionActor ! msg
+    case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
+      if (localizing) {
+        localizing = false
+        sendOutput(orientationActor, CameraAcquiredMsg(eventTime))
+        localizationActor ! PoisonPill.getInstance
+        log.info("BODY LOCATED")
+      }
+      sendOutput(visionActor, VisionActor.HintBodyLocationMsg(pos, eventTime))
     }
     case CheckVisibilityMsg(checkTime) => {
-      val randomColor = new java.awt.Color(
-        random.nextInt(256), random.nextInt(256), random.nextInt(256))
+      val randomColor = {
+        if (random.nextBoolean) {
+          new java.awt.Color(
+            random.nextInt(256), random.nextInt(256), random.nextInt(256))
+        } else {
+          java.awt.Color.BLACK
+        }
+      }
       actuator.actuateLight(randomColor)
       if (checkTime < movingUntil) {
         // still moving
@@ -164,15 +239,12 @@ class ControlActor(
           // never seen
         } else {
           if ((checkTime - lastSeenTime) > panicDelay) {
-            if (calibrating) {
+            if (orienting) {
               // not much we can do yet
             } else {
-              behaviorActor ! PanicAttackMsg(checkTime)
-              val from = lastSeenPos.get
-              val to = PlanarPos(corner.x / 2.0, corner.y / 2.0)
-              val impulse = bodyMapping.computeImpulse(
-                from, to, settings.Motor.defaultSpeed, 0.milliseconds)
-              actuateImpulse(impulse, checkTime)
+              log.info("PANIC!")
+              sendOutput(behaviorActor, PanicAttackMsg(checkTime))
+              moveToCenter(lastSeenPos, checkTime)
             }
           } else {
             // all is well
@@ -185,24 +257,32 @@ class ControlActor(
         }
       }
     }
-  })
+    case _ =>
+  }
 
   private def bodyMapping = bodyMappingOpt.get
 
-  private def corner = cornerOpt.get
-
   private def actuateImpulse(impulse : PolarImpulse, eventTime : TimePoint)
   {
-    val sensorDelay = Settings(context).Vision.sensorDelay
     movingUntil = eventTime + impulse.duration + sensorDelay
     actuator.actuateMotion(impulse)
   }
 
+  private def moveToCenter(pos : PlanarPos, eventTime : TimePoint)
+  {
+    val from = pos
+    val to = retinalTransform.retinaToWorld(
+      RetinalPos(bottomRight.x / 2.0, bottomRight.y / 2.0))
+    val impulse = bodyMapping.computeImpulse(
+      from, to, settings.Motor.defaultSpeed, 0.milliseconds)
+    actuateImpulse(impulse, eventTime)
+  }
+
   override def preStart()
   {
-    actuator.actuateLight(java.awt.Color.CYAN)
     visionActor ! Listen(self)
     if (monitorVisibility) {
+      actuator.actuateLight(java.awt.Color.CYAN)
       context.system.scheduler.scheduleOnce(visibilityCheckFreq) {
         self ! CheckVisibilityMsg(TimePoint.now)
       }
@@ -211,5 +291,10 @@ class ControlActor(
 
   override def postRestart(reason: Throwable)
   {
+  }
+
+  override def postStop()
+  {
+    perception.end()
   }
 }

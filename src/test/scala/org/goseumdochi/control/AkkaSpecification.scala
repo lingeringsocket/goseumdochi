@@ -20,16 +20,20 @@ import org.goseumdochi.vision._
 import org.specs2.mutable._
 import org.specs2.time.NoTimeConversions
 import akka.testkit._
+import scala.concurrent._
 import scala.concurrent.duration._
 
-abstract class AkkaSpecification(confFile : String = "simulation.conf")
+abstract class AkkaSpecification(confFile : String = "test.conf")
     extends VisualizableSpecification(confFile) with NoTimeConversions
 {
   abstract class AkkaExample extends TestKit(actorSystem)
       with After
       with ImplicitSender
   {
-    def after = system.terminate()
+    def after = {
+      system.terminate()
+      Await.result(system.whenTerminated, Duration.Inf)
+    }
 
     protected def expectQuiet() = expectNoMsg(100.millis)
   }

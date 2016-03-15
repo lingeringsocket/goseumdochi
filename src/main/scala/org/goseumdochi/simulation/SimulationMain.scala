@@ -53,11 +53,10 @@ object SimulationMain extends App
       classOf[ControlActor],
       actuator,
       Props(classOf[VisionActor], videoStream),
-      Props(classOf[DozeFsm]),
       true)
     val config = ConfigFactory.load("simulation.conf")
     val system = ActorSystem("SimulationActors", config)
-    system.actorOf(props, "controlActor")
+    system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)
     Await.result(system.whenTerminated, Duration.Inf)
   }
 }

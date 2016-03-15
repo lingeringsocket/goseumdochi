@@ -15,13 +15,17 @@
 
 package org.goseumdochi.vision
 
+import org.goseumdochi.common._
+
 import org.bytedeco.javacpp.opencv_highgui._
 
 class MotionDetectorSpec extends VisualizableSpecification
 {
-  private val coarseDetector = new CoarseMotionDetector(settings)
+  private val coarseDetector = new CoarseMotionDetector(
+    settings, IdentityRetinalTransform)
 
-  private val fineDetector = new FineMotionDetector(settings)
+  private val fineDetector = new FineMotionDetector(
+    settings, IdentityRetinalTransform)
 
   private def loadImage(filename : String) =
     OpenCvUtil.grayscale(cvLoadImage(filename))

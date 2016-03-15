@@ -22,9 +22,22 @@ import org.bytedeco.javacpp.opencv_core._
 trait VisionAnalyzer
 {
   def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage,
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
       : Iterable[Any]
 
   def settings : Settings
+
+  def xform : RetinalTransform
+}
+
+class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
+    extends VisionAnalyzer
+{
+  override def analyzeFrame(
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
+  {
+    None
+  }
 }

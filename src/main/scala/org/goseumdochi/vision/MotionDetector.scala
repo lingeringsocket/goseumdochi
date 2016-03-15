@@ -31,16 +31,17 @@ object MotionDetector
 import MotionDetector._
 
 abstract class MotionDetector(
-  val settings : Settings, threshold : Int, under : Boolean = false)
+  val settings : Settings, val xform : RetinalTransform,
+  threshold : Int, under : Boolean = false)
     extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, gray : IplImage, prevGray : IplImage,
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
   {
     detectMotion(prevGray, gray).map(
       pos => {
-        val center = OpenCvUtil.point(pos)
+        val center = OpenCvUtil.point(xform.worldToRetina(pos))
         cvCircle(img, center, 2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
         MotionDetectedMsg(pos, frameTime)
       }
@@ -64,7 +65,7 @@ abstract class MotionDetector(
     try {
       while (contour != null && !contour.isNull) {
         if (contour.elem_size > 0) {
-          val box = cvMinAreaRect2(contour, storage);
+          val box = cvMinAreaRect2(contour, storage)
           if (box != null) {
             val size = box.size
             // FIXME:  return the largest object instead of the first
@@ -79,11 +80,11 @@ abstract class MotionDetector(
             }
             if (detected) {
               val center = box.center
-              return Some(PlanarPos(center.x, center.y))
+              return Some(xform.retinaToWorld(RetinalPos(center.x, center.y)))
             }
           }
         }
-        contour = contour.h_next();
+        contour = contour.h_next()
       }
       return None
     } finally {
@@ -93,8 +94,10 @@ abstract class MotionDetector(
   }
 }
 
-class CoarseMotionDetector(settings : Settings)
-    extends MotionDetector(settings, settings.MotionDetection.coarseThreshold)
+class CoarseMotionDetector(settings : Settings, xform : RetinalTransform)
+    extends MotionDetector(
+      settings, xform, settings.MotionDetection.coarseThreshold)
 
-class FineMotionDetector(settings : Settings)
-    extends MotionDetector(settings, settings.MotionDetection.fineThreshold)
+class FineMotionDetector(settings : Settings, xform : RetinalTransform)
+    extends MotionDetector(
+      settings, xform, settings.MotionDetection.fineThreshold)

@@ -17,39 +17,38 @@ package org.goseumdochi.control
 
 import org.goseumdochi.common._
 
-class TestActuator extends Actuator
+import akka.actor._
+import akka.testkit._
+
+class TestActuator(system : ActorSystem, includeHeading : Boolean)
+    extends Actuator
 {
-  private var lastImpulse : Option[PolarImpulse] = None
-
-  private var lastColor : Option[java.awt.Color] = None
-
-  private var lastTwirl : Option[TimeSpan] = None
+  val probe = TestProbe()(system)
 
   override def actuateMotion(impulse : PolarImpulse)
   {
-    lastImpulse = Some(impulse)
+    probe.ref ! ControlActor.ActuateImpulseMsg(impulse, TimePoint.ZERO)
   }
 
   override def actuateLight(color : java.awt.Color)
   {
-    lastColor = Some(color)
+    probe.ref ! ControlActor.ActuateLightMsg(color, TimePoint.ZERO)
   }
 
-  override def actuateTwirl(degrees : Int, duration : TimeSpan)
+  override def actuateTwirl(
+    theta : Double, duration : TimeSpan, newHeading : Boolean)
   {
-    lastTwirl = Some(duration)
+    if (includeHeading || !newHeading) {
+      probe.ref ! ControlActor.ActuateTwirlMsg(theta, duration, TimePoint.ZERO)
+    }
   }
 
-  def reset()
-  {
-    lastImpulse = None
-    lastColor = None
-    lastTwirl = None
-  }
+  def expectImpulse() =
+    probe.expectMsgClass(classOf[ControlActor.ActuateImpulseMsg]).impulse
 
-  def retrieveImpulse() : Option[PolarImpulse] = lastImpulse
+  def expectColor() =
+    probe.expectMsgClass(classOf[ControlActor.ActuateLightMsg]).color
 
-  def retrieveColor() : Option[java.awt.Color] = lastColor
-
-  def retrieveTwirl() : Option[TimeSpan] = lastTwirl
+  def expectTwirlMsg() =
+    probe.expectMsgClass(classOf[ControlActor.ActuateTwirlMsg])
 }

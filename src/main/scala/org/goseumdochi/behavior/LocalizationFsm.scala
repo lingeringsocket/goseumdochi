@@ -26,7 +26,7 @@ import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
 
-object BirdsEyeCalibrationFsm
+object LocalizationFsm
 {
   sealed trait State
   sealed trait Data
@@ -37,102 +37,76 @@ object BirdsEyeCalibrationFsm
   // * MotionDetector.MotionDetectedMsg
 
   // sent messages
-  // * VisionActor.ActivateAnalyzersMsg
+  // * ControlActor.UseVisionAnalyzersMsg
   // * VisionActor.HintBodyLocationMsg
-  // * ControlActor.CalibratedMsg
   // * ControlActor.ActuateImpulseMsg
 
   // states
   case object Blind extends State
   case object WaitingForQuiet extends State
   case object FindingBody extends State
-  case object WaitingForStart extends State
-  case object WaitingForEnd extends State
   case object Done extends State
 
   // data
   case object Empty extends Data
   final case class WithControl(
-    controlActor : ActorRef, eventTime : TimePoint) extends Data
-  final case class StartPoint(pos : PlanarPos) extends Data
+    controlActor : ActorRef, eventTime : TimePoint, forward : Boolean)
+      extends Data
 }
-import BirdsEyeCalibrationFsm._
+import LocalizationFsm._
 
-class BirdsEyeCalibrationFsm()
+class LocalizationFsm()
     extends BehaviorFsm[State, Data]
 {
   private val settings = Settings(context)
 
-  private val quietPeriod = settings.Calibration.quietPeriod
+  private val quietPeriod = settings.Orientation.quietPeriod
 
   private val forwardImpulse =
     PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, 0)
 
   private val backwardImpulse =
-    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, Pi)
+    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, PI)
 
   startWith(Blind, Empty)
 
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
-      sender ! VisionActor.ActivateAnalyzersMsg(Seq(
+      sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
-        classOf[FineMotionDetector].getName))
-      goto(WaitingForQuiet) using WithControl(sender, eventTime + quietPeriod)
+        classOf[FineMotionDetector].getName),
+        eventTime)
+      goto(WaitingForQuiet) using WithControl(
+        sender, eventTime + quietPeriod, false)
     }
   }
 
   when(WaitingForQuiet, stateTimeout = quietPeriod) {
-    case Event(StateTimeout, WithControl(controlActor, eventTime)) => {
+    case Event(StateTimeout, WithControl(controlActor, eventTime, _)) => {
       controlActor ! ControlActor.ActuateImpulseMsg(
         backwardImpulse, eventTime)
-      goto(FindingBody)
+      goto(FindingBody) using WithControl(
+        controlActor, eventTime + quietPeriod, true)
     }
     case _ => {
       stay
     }
   }
 
-  // FIXME:  add a StateTimeout for moving around more aggressively
-  when(FindingBody) {
+  when(FindingBody, stateTimeout = quietPeriod) {
     case Event(MotionDetector.MotionDetectedMsg(pos, eventTime), _) => {
       sender ! VisionActor.HintBodyLocationMsg(pos, eventTime)
-      goto(WaitingForStart)
+      goto(Done)
     }
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
-      goto(WaitingForStart)
+      goto(Done)
     }
-  }
-
-  when(WaitingForStart) {
-    case Event(msg : MotionDetector.MotionDetectedMsg, _) => {
-      stay
-    }
-    case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
-      sender ! ControlActor.ActuateImpulseMsg(forwardImpulse, eventTime)
-      goto(WaitingForEnd) using StartPoint(pos)
-    }
-  }
-
-  when(WaitingForEnd) {
-    case Event(msg : MotionDetector.MotionDetectedMsg, _) => {
-      stay
-    }
-    case Event(
-      ControlActor.BodyMovedMsg(endPos, eventTime),
-      StartPoint(startPos)) =>
-    {
-      val predictedMotion = predictMotion(forwardImpulse)
-      val actualMotion = polarMotion(startPos, endPos)
-      if (actualMotion.distance < 0.1) {
-        stay
-      } else {
-        val bodyMapping = BodyMapping(
-          actualMotion.distance / predictedMotion.distance,
-          normalizeRadians(actualMotion.theta - predictedMotion.theta))
-        sender ! ControlActor.CalibratedMsg(bodyMapping, eventTime)
-        goto(Done)
-      }
+    case Event(StateTimeout, WithControl(controlActor, eventTime, forward)) => {
+      // we should probably try increasing the motion duration
+      // in case it was initially too small to be detected
+      controlActor ! ControlActor.ActuateImpulseMsg(
+        if (forward) { forwardImpulse } else { backwardImpulse }, eventTime)
+      stay using WithControl(controlActor, eventTime + quietPeriod, !forward)
     }
   }
 

@@ -15,6 +15,7 @@
 
 package org.goseumdochi.behavior
 
+import org.goseumdochi.common._
 import org.goseumdochi.control._
 
 import akka.actor._
@@ -28,35 +29,24 @@ object DozeFsm
   case object Dozing extends State
 
   // data
-  case object Red extends Data
-  case object Green extends Data
-  case object Blue extends Data
+  case object Empty extends Data
 }
 import DozeFsm._
 
 class DozeFsm()
     extends BehaviorFsm[State, Data]
 {
-  startWith(Dozing, Red)
+  startWith(Dozing, Empty)
 
   when(Dozing) {
-    case Event(_, Red) => {
-      sender ! ControlActor.ActuateLight(java.awt.Color.GREEN)
-      goto(Dozing) using Green
-    }
-    case Event(_, Green) => {
-      sender ! ControlActor.ActuateLight(java.awt.Color.BLUE)
-      goto(Dozing) using Blue
-    }
-    case Event(_, Blue) => {
-      sender ! ControlActor.ActuateLight(java.awt.Color.RED)
-      goto(Dozing) using Red
+    case Event(msg : EventMsg, _) => {
+      stay
     }
   }
 
   whenUnhandled {
     case Event(msg : ControlActor.PanicAttackMsg, _) => {
-      goto(Dozing) using Red
+      goto(Dozing)
     }
     case event => handleUnknown(event)
   }

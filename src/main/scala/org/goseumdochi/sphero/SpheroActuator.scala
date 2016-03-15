@@ -19,6 +19,7 @@ import org.goseumdochi.common._
 import org.goseumdochi.control._
 
 import scala.math._
+import MoreMath._
 
 import se.nicklasgavelin.sphero._
 import se.nicklasgavelin.sphero.command._
@@ -33,7 +34,7 @@ class SpheroActuator(robot : Robot) extends Actuator
     val macroDef = Array.ofDim[Byte](10)
     // first command:  ROLL2
     macroDef(0) = 0x1D.toByte
-    val degrees = (360.0*impulse.theta / (2*Pi)).toInt
+    val degrees = (360.0*normalizeRadiansPositive(impulse.theta) / TWO_PI).toInt
     val heading = (degrees % 360).toInt
     val velocity = Value.clamp(impulse.speed.toFloat, 0.0D, 1.0D).toFloat
     val millis = impulse.duration.toMillis.toInt
@@ -54,8 +55,18 @@ class SpheroActuator(robot : Robot) extends Actuator
       new RunMacroCommand(255))
   }
 
-  override def actuateTwirl(degrees : Int, duration : TimeSpan)
+  override def actuateTwirl(
+    theta : Double, duration : TimeSpan, newHeading : Boolean)
   {
+    if (newHeading) {
+      val spin = PolarImpulse(0.0, duration, theta)
+      actuateMotion(spin)
+      Thread.sleep(duration.toMillis*2)
+      robot.sendCommand(new CalibrateCommand(0))
+      return
+    }
+    val degrees = (360.0*theta / TWO_PI).toInt
+    val heading = degrees.toInt
     // kill motor on exit
     val macroFlags = SaveTemporaryMacroCommand.MacroFlagMotorControl
     val macroDef = Array.ofDim[Byte](15)
@@ -66,8 +77,8 @@ class SpheroActuator(robot : Robot) extends Actuator
     // second command:  ROTATE OVER TIME
     val millis = duration.toMillis.toInt
     macroDef(3) = 0x1A
-    macroDef(4) = (degrees >> 8).toByte
-    macroDef(5) = degrees.toByte
+    macroDef(4) = (heading >> 8).toByte
+    macroDef(5) = heading.toByte
     macroDef(6) = (millis >> 8).toByte
     macroDef(7) = millis.toByte
     // third command:  DELAY

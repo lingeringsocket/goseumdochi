@@ -43,7 +43,7 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
   object Vision
   {
     val subConf = conf.getConfig("vision")
-    val cameraClass = subConf.getString("camera-class")
+    val cameraClass = subConf.getString("camera-class-name")
     val remoteCameraUrl = subConf.getString("remote-camera-url")
     val throttlePeriod = getMillis(subConf, "throttle-period")
     val sensorDelay = getMillis(subConf, "sensor-delay")
@@ -56,6 +56,28 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     val visibilityCheckFreq = getMillis(subConf, "visibility-check-freq")
   }
 
+  object Behavior
+  {
+    val subConf = conf.getConfig("behavior")
+    val className = subConf.getString("class-name")
+    val intrusionDetectorClassName =
+      subConf.getString("intrusion-detector-class-name")
+  }
+
+  object Perception
+  {
+    val subConf = conf.getConfig("perception")
+    val logFile = subConf.getString("log-file")
+  }
+
+  object View
+  {
+    val subConf = conf.getConfig("view")
+    val visualizeRetinal = subConf.getBoolean("visualize-retinal")
+    val className = subConf.getString("class-name")
+    val playbackRate = subConf.getDouble("playback-rate")
+  }
+
   object Motor
   {
     val subConf = conf.getConfig("motor")
@@ -63,10 +85,11 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     val fullSpeed = subConf.getDouble("full-speed")
   }
 
-  object Calibration
+  object Orientation
   {
-    val subConf = conf.getConfig("calibration")
+    val subConf = conf.getConfig("orientation")
     val className = subConf.getString("class-name")
+    val localizationClassName = subConf.getString("localization-class-name")
     val quietPeriod = getMillis(subConf, "quiet-period")
   }
 
@@ -87,11 +110,13 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
   object Test
   {
     val subConf = conf.getConfig("test")
+    val active = subConf.getBoolean("active")
     val visualize = subConf.getBoolean("visualize")
   }
 
-  def instantiateObject(className : String) =
-    Class.forName(className).getConstructor(this.getClass).newInstance(this)
+  def instantiateObject(className : String, args : AnyRef*) =
+    Class.forName(className).getConstructors.head.
+      newInstance((Seq(this) ++ args) : _*)
 }
 
 object Settings extends ExtensionId[Settings] with ExtensionIdProvider

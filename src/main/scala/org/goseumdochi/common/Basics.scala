@@ -34,7 +34,9 @@ case class TimePoint(d : TimeSpan)
 
 case object TimePoint
 {
-  def now = TimePoint(TimeSpan(System.currentTimeMillis, MILLISECONDS))
+  val bias = System.currentTimeMillis
+
+  def now = TimePoint(TimeSpan(System.currentTimeMillis - bias, MILLISECONDS))
 
   final val ZERO = TimePoint(TimeSpan(0, MILLISECONDS))
 }
@@ -44,10 +46,28 @@ trait EventMsg
   def eventTime : TimePoint
 }
 
+trait PlanarVector
+{
+  def x : Double
+  def y : Double
+  def construct(x : Double, y : Double) : PlanarVector
+}
+
 case class PlanarPos(
   x : Double,
   y : Double
-)
+) extends PlanarVector
+{
+  override def construct(x : Double, y : Double) : PlanarPos = PlanarPos(x, y)
+}
+
+case class RetinalPos(
+  x : Double,
+  y : Double
+) extends PlanarVector
+{
+  override def construct(x : Double, y : Double) : RetinalPos = RetinalPos(x, y)
+}
 
 case class PolarImpulse(
   speed : Double,
@@ -76,7 +96,11 @@ case class LinearMotionModel(
 
 object MoreMath
 {
-  final val TWO_PI = 2*Pi
+  final val PI = Pi
+
+  final val TWO_PI = 2.0*Pi
+
+  final val HALF_PI = Pi/2.0
 
   def sqr(n : Int) = (n*n)
 
@@ -86,21 +110,31 @@ object MoreMath
 
   @tailrec def normalizeRadians(theta : Double) : Double =
   {
-    if (theta < 0) {
+    if (theta <= -PI) {
       normalizeRadians(theta + TWO_PI)
-    } else if (theta >= TWO_PI) {
+    } else if (theta > PI) {
       normalizeRadians(theta - TWO_PI)
     } else {
       theta
     }
   }
 
-  def midpoint(p1 : PlanarPos, p2 : PlanarPos) =
+  def normalizeRadiansPositive(theta : Double) : Double =
   {
-    PlanarPos((p1.x + p2.x) / 2, (p1.y + p2.y) / 2)
+    val normalized = normalizeRadians(theta)
+    if (normalized < 0) {
+      normalized + TWO_PI
+    } else {
+      normalized
+    }
   }
 
-  def polarMotion(p1 : PlanarPos, p2 : PlanarPos) =
+  def midpoint[PV <: PlanarVector](p1 : PV, p2 : PV) : PV =
+  {
+    p1.construct((p1.x + p2.x) / 2, (p1.y + p2.y) / 2).asInstanceOf[PV]
+  }
+
+  def polarMotion(p1 : PlanarVector, p2 : PlanarVector) =
   {
     val x = p2.x - p1.x
     val y = p2.y - p1.y
@@ -113,4 +147,19 @@ object MoreMath
     PolarVector(
       impulse.speed * impulse.duration.toMillis / 1000.0,
       impulse.theta)
+}
+
+trait RetinalTransform
+{
+  def retinaToWorld(pos : RetinalPos) : PlanarPos
+  def worldToRetina(pos : PlanarPos) : RetinalPos
+}
+
+case object IdentityRetinalTransform extends RetinalTransform
+{
+  override def retinaToWorld(pos : RetinalPos) : PlanarPos =
+    PlanarPos(pos.x, pos.y)
+
+  override def worldToRetina(pos : PlanarPos) : RetinalPos =
+    RetinalPos(pos.x, pos.y)
 }
