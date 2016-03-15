@@ -38,7 +38,8 @@ class IntrusionDetectionFsmSpec extends AkkaSpecification
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
-        "org.goseumdochi.vision.CoarseMotionDetector")))
+        "org.goseumdochi.vision.CoarseMotionDetector"),
+        TimePoint.ZERO))
 
       val initialPos = PlanarPos(0, 0)
       val intruderPos = PlanarPos(100, 100)

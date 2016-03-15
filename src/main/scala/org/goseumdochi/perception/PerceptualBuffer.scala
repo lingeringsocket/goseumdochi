@@ -13,31 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.vision
+package org.goseumdochi.perception
 
 import org.goseumdochi.common._
 
-import org.bytedeco.javacpp.opencv_core._
+import scala.collection._
 
-trait VisionAnalyzer
+class PerceptualBuffer(playbackProcessor : PerceptualProcessor)
+    extends PerceptualProcessor
 {
-  def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
-      : Iterable[Any]
+  private val buffer = new mutable.ArrayBuffer[PerceptualEvent]
 
-  def settings : Settings
-
-  def xform : RetinalTransform
-}
-
-class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
-    extends VisionAnalyzer
-{
-  override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
+  override def processHistory(
+    events : Seq[PerceptualEvent])
   {
-    None
+    buffer ++= events
+  }
+
+  override def processEvent(event : PerceptualEvent)
+  {
+    buffer += event
+  }
+
+  override def close()
+  {
+    playbackProcessor.processHistory(buffer)
+    playbackProcessor.close
   }
 }

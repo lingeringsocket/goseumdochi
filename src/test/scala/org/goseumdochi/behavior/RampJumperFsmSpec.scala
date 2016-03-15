@@ -36,7 +36,8 @@ class RampJumperFsmSpec extends AkkaSpecification
 
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
-        "org.goseumdochi.vision.RampDetector")))
+        "org.goseumdochi.vision.RampDetector"),
+        TimePoint.ZERO))
 
       val initialPos = PlanarPos(0, 0)
       val ramp = OrientedRamp(PlanarPos(100, 100), PlanarPos(100, 90))

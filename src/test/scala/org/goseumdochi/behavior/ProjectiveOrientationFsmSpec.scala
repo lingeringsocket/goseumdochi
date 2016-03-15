@@ -37,7 +37,8 @@ class ProjectiveOrientationFsmSpec extends AkkaSpecification
 
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
-        "org.goseumdochi.vision.RoundBodyDetector")))
+        "org.goseumdochi.vision.RoundBodyDetector"),
+        TimePoint.ZERO))
 
       expectQuiet
 

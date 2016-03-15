@@ -13,31 +13,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.vision
+package org.goseumdochi.perception
 
 import org.goseumdochi.common._
 
-import org.bytedeco.javacpp.opencv_core._
-
-trait VisionAnalyzer
+case class PerceptualEvent(
+  description : String,
+  sender : String,
+  receiver : String,
+  msg : EventMsg)
 {
-  def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
-      : Iterable[Any]
-
-  def settings : Settings
-
-  def xform : RetinalTransform
 }
 
-class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
-    extends VisionAnalyzer
+trait PerceptualProcessor
 {
-  override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
-  {
-    None
-  }
+  def processHistory(
+    events : Seq[PerceptualEvent])
+
+  def processEvent(event : PerceptualEvent)
+
+  def close()
+}
+
+object NullPerceptualProcessor extends PerceptualProcessor
+{
+  override def processHistory(
+    events : Seq[PerceptualEvent]) {}
+
+  override def processEvent(event : PerceptualEvent) {}
+
+  override def close() {}
 }

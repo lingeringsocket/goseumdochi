@@ -32,7 +32,7 @@ class ProjectiveSquareSpec extends AkkaSpecification("square-test.conf")
   {
     "go round in squares" in new AkkaExample
     {
-      val actuator = new TestActuator
+      val actuator = new TestActuator(system)
       val controlActor = system.actorOf(
         Props(
           classOf[ControlActor],
@@ -67,13 +67,8 @@ class ProjectiveSquareSpec extends AkkaSpecification("square-test.conf")
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
-      expectQuiet
-      expectQuiet
-      expectQuiet
-
-      val backwardImpulse = actuator.retrieveImpulse.get
+      val backwardImpulse = actuator.expectImpulse
       backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, PI))
-      actuator.reset
 
       controlActor ! VisionActor.HintBodyLocationMsg(initialPos, initialTime)
 
@@ -82,69 +77,49 @@ class ProjectiveSquareSpec extends AkkaSpecification("square-test.conf")
       controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)
       controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
 
-      expectQuiet
-
-      val firstImpulse = actuator.retrieveImpulse.get
+      val firstImpulse = actuator.expectImpulse
       firstImpulse must be equalTo(
         PolarImpulse(0.2, 1500.milliseconds, 0.0))
-      actuator.reset
 
       controlActor !
         BodyDetector.BodyDetectedMsg(orientationPos, orientationTime)
 
-      expectQuiet
-
-      val secondImpulse = actuator.retrieveImpulse.get
+      val secondImpulse = actuator.expectImpulse
       secondImpulse.theta must be closeTo(2.83 +/- 0.01)
-      actuator.reset
 
       controlActor !
         BodyDetector.BodyDetectedMsg(backswingPos, backswingTime)
 
-      expectQuiet
-
-      val thirdImpulse = actuator.retrieveImpulse.get
+      val thirdImpulse = actuator.expectImpulse
       thirdImpulse.theta must be closeTo(-0.30 +/- 0.01)
-      actuator.reset
 
       controlActor !
         BodyDetector.BodyDetectedMsg(alignedPos, alignedTime)
 
-      expectQuiet
-
-      val fourthImpulse = actuator.retrieveImpulse.get
+      val fourthImpulse = actuator.expectImpulse
       fourthImpulse.theta must be closeTo(-1.87 +/- 0.01)
-      actuator.reset
 
       controlActor !
         BodyDetector.BodyDetectedMsg(startPos, startTime)
 
-      expectQuiet
+      actuator.expectTwirlMsg.theta must be closeTo(-0.30 +/- 0.01)
 
-      actuator.retrieveTwirl.get must be closeTo(-0.3 +/- 0.1)
-      val centeringImpulse = actuator.retrieveImpulse.get
+      val centeringImpulse = actuator.expectImpulse
       centeringImpulse.speed must be equalTo 0.2
       centeringImpulse.duration must be equalTo 6.seconds
       centeringImpulse.theta must be closeTo(1.57 +/- 0.01)
-      actuator.reset
 
       controlActor !
         BodyDetector.BodyDetectedMsg(startPos, twirlTime)
 
-      expectQuiet
-
-      val fifthImpulse = actuator.retrieveImpulse.get
+      val fifthImpulse = actuator.expectImpulse
       fifthImpulse.theta must be closeTo(0.0 +/- 0.01)
-      actuator.reset
 
       controlActor !
         BodyDetector.BodyDetectedMsg(nextPos, nextTime)
 
-      expectQuiet
-
-      val sixthImpulse = actuator.retrieveImpulse.get
+      val sixthImpulse = actuator.expectImpulse
       sixthImpulse.theta must be closeTo(-1.57 +/- 0.01)
-      actuator.reset
     }
   }
 }

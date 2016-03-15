@@ -13,31 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.vision
+package org.goseumdochi.view
 
 import org.goseumdochi.common._
+import org.goseumdochi.perception._
 
-import org.bytedeco.javacpp.opencv_core._
-
-trait VisionAnalyzer
+trait PerceptualView extends PerceptualProcessor
 {
-  def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
-      : Iterable[Any]
-
-  def settings : Settings
-
-  def xform : RetinalTransform
-}
-
-class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
-    extends VisionAnalyzer
-{
-  override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
-  {
-    None
-  }
 }

@@ -95,7 +95,8 @@ class ProjectiveOrientationFsm()
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
-        settings.BodyRecognition.className))
+        settings.BodyRecognition.className),
+        eventTime)
       goto(WaitingForStart)
     }
   }

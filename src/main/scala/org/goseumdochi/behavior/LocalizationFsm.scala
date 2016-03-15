@@ -74,7 +74,8 @@ class LocalizationFsm()
     case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
-        classOf[FineMotionDetector].getName))
+        classOf[FineMotionDetector].getName),
+        eventTime)
       goto(WaitingForQuiet) using WithControl(
         sender, eventTime + quietPeriod, false)
     }

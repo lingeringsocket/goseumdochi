@@ -15,6 +15,8 @@
 
 package org.goseumdochi.vision
 
+import org.goseumdochi.common._
+
 import org.bytedeco.javacpp.opencv_highgui._
 
 class MotionDetectorSpec extends VisualizableSpecification

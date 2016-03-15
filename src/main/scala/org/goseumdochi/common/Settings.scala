@@ -64,6 +64,19 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
       subConf.getString("intrusion-detector-class-name")
   }
 
+  object Perception
+  {
+    val subConf = conf.getConfig("perception")
+    val logFile = subConf.getString("log-file")
+  }
+
+  object View
+  {
+    val subConf = conf.getConfig("view")
+    val visualizeRetinal = subConf.getBoolean("visualize-retinal")
+    val className = subConf.getString("class-name")
+  }
+
   object Motor
   {
     val subConf = conf.getConfig("motor")
@@ -96,6 +109,7 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
   object Test
   {
     val subConf = conf.getConfig("test")
+    val active = subConf.getBoolean("active")
     val visualize = subConf.getBoolean("visualize")
   }
 

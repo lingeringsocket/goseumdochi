@@ -34,7 +34,7 @@ class ControlActorSpec extends AkkaSpecification
   {
     "keep cool" in new AkkaExample
     {
-      val actuator = new TestActuator
+      val actuator = new TestActuator(system)
       val controlActor = system.actorOf(
         Props(
           classOf[ControlActor],
@@ -58,13 +58,8 @@ class ControlActorSpec extends AkkaSpecification
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
-      expectQuiet
-      expectQuiet
-      expectQuiet
-
-      val backwardImpulse = actuator.retrieveImpulse.get
+      val backwardImpulse = actuator.expectImpulse
       backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, PI))
-      actuator.reset
 
       controlActor ! VisionActor.HintBodyLocationMsg(initialPos, initialTime)
 
@@ -73,36 +68,33 @@ class ControlActorSpec extends AkkaSpecification
       controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)
       controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
 
-      expectQuiet
-
-      val orientationImpulse = actuator.retrieveImpulse.get
+      val orientationImpulse = actuator.expectImpulse
       orientationImpulse must be equalTo(
         PolarImpulse(0.2, 800.milliseconds, 0.0))
-      actuator.reset
 
       controlActor !
         BodyDetector.BodyDetectedMsg(orientationPos, orientationTime)
 
+      actuator.expectTwirlMsg.theta must be closeTo(-0.38 +/- 0.01)
+      val centeringImpulse = actuator.expectImpulse
+      centeringImpulse.speed must be closeTo(0.2 +/- 0.01)
+      centeringImpulse.duration.toMillis must be equalTo 891
+      centeringImpulse.theta must be closeTo(1.57 +/- 0.01)
+
       controlActor ! CheckVisibilityMsg(orientationTime)
+      actuator.expectColor
 
       controlActor !
         BodyDetector.BodyDetectedMsg(orientationPos, visibleTime)
 
       controlActor ! CheckVisibilityMsg(visibleTime)
-
-      expectQuiet
-
-      val centeringImpulse = actuator.retrieveImpulse.get
-      centeringImpulse.speed must be closeTo(0.2 +/- 0.01)
-      centeringImpulse.duration.toMillis must be equalTo 891
-      centeringImpulse.theta must be closeTo(1.57 +/- 0.01)
-      actuator.reset
+      actuator.expectColor
 
       controlActor ! CheckVisibilityMsg(invisibleTime)
+      actuator.expectColor
+      actuator.expectColor
 
-      expectQuiet
-
-      val panicImpulse = actuator.retrieveImpulse.get
+      val panicImpulse = actuator.expectImpulse
       panicImpulse must be equalTo(centeringImpulse)
 
       expectQuiet

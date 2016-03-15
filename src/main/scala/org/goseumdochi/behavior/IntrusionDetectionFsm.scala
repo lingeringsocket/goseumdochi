@@ -61,10 +61,11 @@ class IntrusionDetectionFsm()
   startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(msg : ControlActor.CameraAcquiredMsg, _) => {
+    case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
-        settings.Behavior.intrusionDetectorClassName))
+        settings.Behavior.intrusionDetectorClassName),
+        eventTime)
       goto(WaitingForIntruder)
     }
   }

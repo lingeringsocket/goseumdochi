@@ -13,31 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.vision
+package org.goseumdochi.perception
 
 import org.goseumdochi.common._
+import org.goseumdochi.vision._
+import org.goseumdochi.control._
 
-import org.bytedeco.javacpp.opencv_core._
+import scala.concurrent.duration._
 
-trait VisionAnalyzer
+class PerceptualLogSpec extends VisualizableSpecification
 {
-  def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
-      : Iterable[Any]
-
-  def settings : Settings
-
-  def xform : RetinalTransform
-}
-
-class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
-    extends VisionAnalyzer
-{
-  override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
+  "PerceptualLog" should
   {
-    None
+    "read log" in
+    {
+      val path = getClass.getResource("/unit/perceptual.log").getPath
+      val seq = PerceptualLog.read(path)
+      seq.size must be equalTo(2)
+      val first = seq.head
+      first must be equalTo(
+        PerceptualEvent(
+          "first event",
+          "controlActor",
+          "behaviorActor",
+          ControlActor.BodyMovedMsg(
+            PlanarPos(25.0, 10.0),
+            TimePoint(TimeSpan(10, SECONDS)))))
+    }
   }
 }

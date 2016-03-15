@@ -15,6 +15,7 @@
 
 package org.goseumdochi.behavior
 
+import org.goseumdochi.common._
 import org.goseumdochi.control._
 
 import akka.actor._
@@ -40,16 +41,16 @@ class DozeFsm()
   startWith(Dozing, Red)
 
   when(Dozing) {
-    case Event(_, Red) => {
-      sender ! ControlActor.ActuateLightMsg(java.awt.Color.GREEN)
+    case Event(msg : EventMsg, Red) => {
+      sender ! ControlActor.ActuateLightMsg(java.awt.Color.GREEN, msg.eventTime)
       goto(Dozing) using Green
     }
-    case Event(_, Green) => {
-      sender ! ControlActor.ActuateLightMsg(java.awt.Color.BLUE)
+    case Event(msg : EventMsg, Green) => {
+      sender ! ControlActor.ActuateLightMsg(java.awt.Color.BLUE, msg.eventTime)
       goto(Dozing) using Blue
     }
-    case Event(_, Blue) => {
-      sender ! ControlActor.ActuateLightMsg(java.awt.Color.RED)
+    case Event(msg : EventMsg, Blue) => {
+      sender ! ControlActor.ActuateLightMsg(java.awt.Color.RED, msg.eventTime)
       goto(Dozing) using Red
     }
   }
