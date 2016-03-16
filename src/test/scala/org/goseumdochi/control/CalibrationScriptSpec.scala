@@ -16,13 +16,20 @@
 package org.goseumdochi.control
 
 class CalibrationScriptSpec
-    extends ScriptedSpecification("projective-test.conf")
+    extends ScriptedSpecification
 {
-  "orientation script" should
+  isolated
+
+  "script" should
   {
-    "invoke actuator as expected" in new AkkaExample
+    "orient and then doze" in new AkkaExample("projective-test.conf")
     {
-      runScript("/scripted/doze.log")
+      runScript(system, "/scripted/doze.json")
+    }
+
+    "orient and then draw squares" in new AkkaExample("square-test.conf")
+    {
+      runScript(system, "/scripted/square.json")
     }
   }
 }

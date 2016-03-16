@@ -82,7 +82,7 @@ import ProjectiveOrientationFsm._
 class ProjectiveOrientationFsm()
     extends BehaviorFsm[State, Data]
 {
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   private val forwardImpulse =
     PolarImpulse(settings.Motor.defaultSpeed, 1500.milliseconds, 0)

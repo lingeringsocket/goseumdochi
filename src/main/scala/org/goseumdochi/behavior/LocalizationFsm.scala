@@ -58,7 +58,7 @@ import LocalizationFsm._
 class LocalizationFsm()
     extends BehaviorFsm[State, Data]
 {
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   private val quietPeriod = settings.Orientation.quietPeriod
 

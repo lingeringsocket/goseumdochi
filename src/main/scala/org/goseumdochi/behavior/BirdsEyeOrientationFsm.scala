@@ -56,7 +56,7 @@ import BirdsEyeOrientationFsm._
 class BirdsEyeOrientationFsm()
     extends BehaviorFsm[State, Data]
 {
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   private val forwardImpulse =
     PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, 0)

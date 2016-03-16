@@ -15,6 +15,7 @@
 
 package org.goseumdochi.control
 
+import org.goseumdochi.common._
 import org.goseumdochi.vision._
 
 import org.specs2.mutable._
@@ -24,16 +25,16 @@ import scala.concurrent._
 import scala.concurrent.duration._
 
 abstract class AkkaSpecification(confFile : String = "test.conf")
-    extends VisualizableSpecification(confFile) with NoTimeConversions
+    extends VisualizableSpecification(confFile)
+    with NoTimeConversions
 {
-  abstract class AkkaExample extends TestKit(actorSystem)
+  abstract class AkkaExample(overrideConf : String = "")
+      extends VisualizableActorExample(overrideConf)
       with After
       with ImplicitSender
   {
-    def after = {
-      system.terminate()
-      Await.result(system.whenTerminated, Duration.Inf)
-    }
+    def after =
+      TestKit.shutdownActorSystem(system, Duration.Inf, true)
 
     protected def expectQuiet() = expectNoMsg(100.millis)
   }

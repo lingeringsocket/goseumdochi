@@ -28,7 +28,7 @@ import java.awt.event._
 object CaptureMain extends App
 {
   val config = ConfigFactory.load()
-  val settings = new Settings(config, null)
+  val settings = Settings(config)
 
   captureFrameOnClick()
 

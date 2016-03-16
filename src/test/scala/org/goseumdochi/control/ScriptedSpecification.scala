@@ -21,11 +21,11 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-abstract class ScriptedSpecification(
-  confFile : String)
-    extends AkkaSpecification(confFile)
+abstract class ScriptedSpecification
+    extends AkkaSpecification
 {
   protected def runScript(
+    actorSystem : ActorSystem,
     scriptResource : String) =
   {
     val path = getClass.getResource(scriptResource).getPath

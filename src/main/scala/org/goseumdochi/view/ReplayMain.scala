@@ -23,7 +23,7 @@ import com.typesafe.config._
 object ReplayMain extends App
 {
   val config = ConfigFactory.load()
-  val settings = new Settings(config, null)
+  val settings = Settings(config)
 
   replay()
 

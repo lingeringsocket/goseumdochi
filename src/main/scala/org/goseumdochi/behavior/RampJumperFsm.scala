@@ -57,7 +57,7 @@ import RampDetector._
 class RampJumperFsm()
     extends BehaviorFsm[State, Data]
 {
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   startWith(Blind, Empty)
 

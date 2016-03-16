@@ -56,7 +56,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
     }
     val system = ActorSystem("SpheroActors", config)
     systemOpt = Some(system)
-    val settings = Settings(system)
+    val settings = ActorSettings(system)
 
     val id = settings.Sphero.bluetoothId
     if (id.isEmpty) {

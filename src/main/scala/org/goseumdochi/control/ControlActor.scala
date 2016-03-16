@@ -89,7 +89,7 @@ class ControlActor(
 
   private val log = Logging(context.system, this)
 
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   private val visionActor = context.actorOf(
     visionProps,
@@ -125,7 +125,7 @@ class ControlActor(
 
   private val visibilityCheckFreq = settings.Control.visibilityCheckFreq
 
-  private val sensorDelay = Settings(context).Vision.sensorDelay
+  private val sensorDelay = settings.Vision.sensorDelay
 
   private val random = scala.util.Random
 
