@@ -119,7 +119,7 @@ class ProjectiveSquareSpec extends AkkaSpecification("square-test.conf")
         BodyDetector.BodyDetectedMsg(nextPos, nextTime)
 
       val sixthImpulse = actuator.expectImpulse
-      sixthImpulse.theta must be closeTo(-1.57 +/- 0.01)
+      sixthImpulse.theta must be closeTo(1.57 +/- 0.01)
     }
   }
 }

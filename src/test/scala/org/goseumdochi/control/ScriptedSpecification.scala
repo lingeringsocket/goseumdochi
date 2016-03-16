@@ -23,7 +23,7 @@ import akka.actor._
 
 abstract class ScriptedSpecification(
   confFile : String)
-    extends AkkaSpecification
+    extends AkkaSpecification(confFile)
 {
   protected def runScript(
     scriptResource : String) =
@@ -40,30 +40,28 @@ abstract class ScriptedSpecification(
         false),
       ControlActor.CONTROL_ACTOR_NAME)
     seq.map(event => {
-      if (event.sender != ControlActor.CONTROL_ACTOR_NAME) {
-        event.msg match {
-          case _ : ControlActor.ActuateImpulseMsg |
-              _ : ControlActor.ActuateMoveMsg =>
-            {
-              // FIXME:  verify details for all actuate messages
-              actuator.expectImpulse
-            }
-          case _ : ControlActor.ActuateTwirlMsg =>
-            {
-              actuator.expectTwirlMsg
-            }
-          case _ : ControlActor.ActuateLightMsg =>
-            {
-              actuator.expectColor
-            }
-          case _ : VisionActor.DimensionsKnownMsg |
-              _ : VisionActor.HintBodyLocationMsg |
-              _ : VisionActor.ObjDetectedMsg =>
-            {
-              controlActor ! event.msg
-            }
-          case _ =>
-        }
+      event.msg match {
+        case _ : ControlActor.ActuateImpulseMsg |
+            _ : ControlActor.ActuateMoveMsg =>
+          {
+            // FIXME:  verify details for all actuate messages
+            actuator.expectImpulse
+          }
+        case _ : ControlActor.ActuateTwirlMsg =>
+          {
+            actuator.expectTwirlMsg
+          }
+        case _ : ControlActor.ActuateLightMsg =>
+          {
+            actuator.expectColor
+          }
+        case _ : VisionActor.DimensionsKnownMsg |
+            _ : VisionActor.HintBodyLocationMsg |
+            _ : VisionActor.ObjDetectedMsg =>
+          {
+            controlActor ! event.msg
+          }
+        case _ =>
       }
     })
   }

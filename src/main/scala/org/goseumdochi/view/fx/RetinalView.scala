@@ -138,6 +138,7 @@ object RetinalView
   {
     timeline.foreach(t =>
       Await.result(timelineCompletion.future, Duration.Inf))
+    Platform.exit
   }
 
   private def createTimeline(

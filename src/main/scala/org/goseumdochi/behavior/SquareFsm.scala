@@ -71,7 +71,7 @@ class SquareFsm()
 
   when(Moving) {
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), Angle(theta)) => {
-      val newTheta = normalizeRadians(theta - HALF_PI)
+      val newTheta = normalizeRadians(theta + HALF_PI)
       actuateMove(pos, newTheta, eventTime)
     }
   }

@@ -18,6 +18,7 @@ package org.goseumdochi.perception
 import org.goseumdochi.common._
 import org.goseumdochi.vision._
 import org.goseumdochi.control._
+import org.goseumdochi.behavior._
 
 import scala.concurrent.duration._
 
@@ -29,7 +30,7 @@ class PerceptualLogSpec extends VisualizableSpecification
     {
       val path = getClass.getResource("/unit/perceptual.log").getPath
       val seq = PerceptualLog.read(path)
-      seq.size must be equalTo(2)
+      seq.size must be equalTo(3)
       val first = seq.head
       first must be equalTo(
         PerceptualEvent(
@@ -39,6 +40,12 @@ class PerceptualLogSpec extends VisualizableSpecification
           ControlActor.BodyMovedMsg(
             PlanarPos(25.0, 10.0),
             TimePoint(TimeSpan(10, SECONDS)))))
+      val second = seq(1)
+      second.msg must beAnInstanceOf[ControlActor.CalibratedMsg]
+      val msg = second.msg.asInstanceOf[ControlActor.CalibratedMsg]
+      msg.xform must beAnInstanceOf[ProjectiveRetinalTransform]
+      msg.xform.asInstanceOf[ProjectiveRetinalTransform].vSquash must
+        be closeTo(0.5615731621894507 +/- 0.0001)
     }
   }
 }

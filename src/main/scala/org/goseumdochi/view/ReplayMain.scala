@@ -13,16 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.control
+package org.goseumdochi.view
 
-class CalibrationScriptSpec
-    extends ScriptedSpecification("projective-test.conf")
+import org.goseumdochi.common._
+import org.goseumdochi.perception._
+
+import com.typesafe.config._
+
+object ReplayMain extends App
 {
-  "orientation script" should
+  val config = ConfigFactory.load()
+  val settings = new Settings(config, null)
+
+  replay()
+
+  def replay()
   {
-    "invoke actuator as expected" in new AkkaExample
-    {
-      runScript("/scripted/doze.log")
+    val path = args.headOption.getOrElse(
+      getClass.getResource("/demo/quick.json").getPath)
+    val seq = PerceptualLog.read(path)
+    val view = settings.instantiateObject(settings.View.className).
+      asInstanceOf[PerceptualProcessor]
+    try {
+      view.processHistory(seq)
+    } finally {
+      view.close
     }
   }
 }

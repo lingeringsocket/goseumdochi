@@ -275,7 +275,7 @@ class ControlActor(
       RetinalPos(bottomRight.x / 2.0, bottomRight.y / 2.0))
     val impulse = bodyMapping.computeImpulse(
       from, to, settings.Motor.defaultSpeed, 0.milliseconds)
-    actuateImpulse(impulse, eventTime)
+    sendOutput(self, ActuateImpulseMsg(impulse, eventTime))
   }
 
   override def preStart()

@@ -22,7 +22,8 @@ object ConsoleMain extends App
   private val runMap = ListMap(
     "sphero" -> "org.goseumdochi.sphero.SpheroMain",
     "simulation" -> "org.goseumdochi.simulation.SimulationMain",
-    "capture" -> "org.goseumdochi.vision.CaptureMain")
+    "capture" -> "org.goseumdochi.vision.CaptureMain",
+    "replay" -> "org.goseumdochi.view.ReplayMain")
 
   if (args.isEmpty) {
     usage()
@@ -43,6 +44,8 @@ object ConsoleMain extends App
     System.err.println("Usage:")
     System.err.println(
       "    sbt 'run sphero custom.conf'")
+    System.err.println(
+      "    sbt 'run replay /path/to/event-log.json'")
     runMap.foreach({
       case (command, className) => {
         System.err.println(
