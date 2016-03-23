@@ -21,7 +21,6 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-import scala.math._
 import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._

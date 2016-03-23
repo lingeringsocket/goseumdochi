@@ -15,21 +15,17 @@
 
 package org.goseumdochi.control
 
-class CalibrationScriptSpec
-    extends ScriptedSpecification
+class ProjectiveControlSpec
+    extends ScriptedControlSpecification
 {
-  isolated
-
-  "script" should
+  "scripted controller" should
   {
-    "orient and then doze" in new AkkaExample("projective-test.conf")
-    {
-      runScript(system, "/scripted/doze.json")
-    }
+    "orient and then doze" in ScriptedControlExample(
+      "/scripted/doze.json",
+      "projective-test.conf")
 
-    "orient and then draw squares" in new AkkaExample("square-test.conf")
-    {
-      runScript(system, "/scripted/square.json")
-    }
+    "orient and then draw squares" in ScriptedControlExample(
+      "/scripted/square.json",
+      "square-test.conf")
   }
 }

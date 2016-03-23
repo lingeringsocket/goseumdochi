@@ -15,8 +15,6 @@
 
 package org.goseumdochi.perception
 
-import org.goseumdochi.common._
-
 class PerceptualTee(processors : Iterable[PerceptualProcessor])
     extends PerceptualProcessor
 {

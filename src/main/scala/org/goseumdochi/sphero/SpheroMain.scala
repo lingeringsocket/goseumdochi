@@ -18,7 +18,6 @@ package org.goseumdochi.sphero
 import org.goseumdochi.common._
 import org.goseumdochi.control._
 import org.goseumdochi.vision._
-import org.goseumdochi.behavior._
 
 import se.nicklasgavelin.bluetooth._
 import se.nicklasgavelin.sphero._

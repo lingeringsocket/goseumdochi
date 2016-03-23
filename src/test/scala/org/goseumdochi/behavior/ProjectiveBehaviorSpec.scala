@@ -15,39 +15,26 @@
 
 package org.goseumdochi.behavior
 
-import org.goseumdochi.common._
 import org.goseumdochi.control._
 
-object DozeFsm
+class ProjectiveBehaviorSpec
+    extends ScriptedBehaviorSpecification("projective-test.conf")
 {
-  sealed trait State
-  sealed trait Data
+  "scripted behavior" should
+  {
+    "perform projective orientation" in ScriptedBehaviorExample(
+      "/scripted/doze.json",
+      classOf[ProjectiveOrientationFsm],
+      ControlActor.ORIENTATION_ACTOR_NAME)
 
-  // states
-  case object Dozing extends State
+    "impersonate a mountain" in ScriptedBehaviorExample(
+      "/scripted/doze.json",
+      classOf[DozeFsm])
 
-  // data
-  case object Empty extends Data
-}
-import DozeFsm._
-
-class DozeFsm()
-    extends BehaviorFsm[State, Data]
-{
-  startWith(Dozing, Empty)
-
-  when(Dozing) {
-    case Event(msg : EventMsg, _) => {
-      stay
-    }
+    "go round in squares" in ScriptedBehaviorExample(
+      "/scripted/square.json",
+      classOf[SquareFsm],
+      ControlActor.BEHAVIOR_ACTOR_NAME,
+      "square-test.conf")
   }
-
-  whenUnhandled {
-    case Event(msg : ControlActor.PanicAttackMsg, _) => {
-      goto(Dozing)
-    }
-    case event => handleUnknown(event)
-  }
-
-  initialize()
 }

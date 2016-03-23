@@ -17,12 +17,8 @@ package org.goseumdochi.behavior
 
 import org.goseumdochi.common._
 import org.goseumdochi.control._
-import org.goseumdochi.vision._
 
 import akka.actor._
-
-import scala.math._
-import MoreMath._
 
 import scala.concurrent.duration._
 
@@ -40,7 +36,7 @@ class ProjectiveOrientationFsmSpec extends AkkaSpecification
         "org.goseumdochi.vision.RoundBodyDetector"),
         TimePoint.ZERO))
 
-      expectQuiet
+      expectQuiescence
 
       val initialPos = PlanarPos(0, 0)
       val secondPos = PlanarPos(50, 50)

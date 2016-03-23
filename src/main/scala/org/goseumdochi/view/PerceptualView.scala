@@ -15,7 +15,6 @@
 
 package org.goseumdochi.view
 
-import org.goseumdochi.common._
 import org.goseumdochi.perception._
 
 trait PerceptualView extends PerceptualProcessor

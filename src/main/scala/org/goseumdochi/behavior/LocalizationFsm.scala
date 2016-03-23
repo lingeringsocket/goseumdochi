@@ -21,7 +21,6 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-import scala.math._
 import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
@@ -62,6 +61,14 @@ class LocalizationFsm()
 
   private val quietPeriod = settings.Orientation.quietPeriod
 
+  private val adjustedTimeout = {
+    if (settings.Test.active) {
+      settings.Test.quiescencePeriod*2
+    } else {
+      quietPeriod
+    }
+  }
+
   private val forwardImpulse =
     PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, 0)
 
@@ -81,7 +88,7 @@ class LocalizationFsm()
     }
   }
 
-  when(WaitingForQuiet, stateTimeout = quietPeriod) {
+  when(WaitingForQuiet, stateTimeout = adjustedTimeout) {
     case Event(StateTimeout, WithControl(controlActor, eventTime, _)) => {
       controlActor ! ControlActor.ActuateImpulseMsg(
         backwardImpulse, eventTime)
@@ -94,9 +101,16 @@ class LocalizationFsm()
   }
 
   when(FindingBody, stateTimeout = quietPeriod) {
-    case Event(MotionDetector.MotionDetectedMsg(pos, eventTime), _) => {
-      sender ! VisionActor.HintBodyLocationMsg(pos, eventTime)
-      goto(Done)
+    case Event(
+      MotionDetector.MotionDetectedMsg(pos, eventTime),
+      WithControl(_, waitExpiration, _)) =>
+    {
+      if (eventTime >= waitExpiration) {
+        sender ! VisionActor.HintBodyLocationMsg(pos, eventTime)
+        goto(Done)
+      } else {
+        stay
+      }
     }
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
       goto(Done)

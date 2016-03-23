@@ -18,7 +18,6 @@ package org.goseumdochi.sphero
 import org.goseumdochi.common._
 import org.goseumdochi.control._
 
-import scala.math._
 import MoreMath._
 
 import se.nicklasgavelin.sphero._

@@ -21,8 +21,6 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-import org.goseumdochi.common.MoreMath._
-
 import scala.concurrent.duration._
 
 object IntrusionDetectionFsm

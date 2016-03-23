@@ -28,6 +28,8 @@ import com.typesafe.config._
 import akka.actor._
 import akka.testkit._
 
+import java.util.concurrent.atomic._
+
 abstract class VisualizableSpecification(confFile : String = "test.conf")
     extends Specification
 {
@@ -52,9 +54,6 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
       ConfigFactory.load(actualConf)
     }
   }
-
-  protected def configureSystem(overrideConf : String) =
-    ActorSystem("TestActors", loadConfig(overrideConf))
 
   protected def visualize(img : IplImage)
   {
@@ -101,9 +100,19 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
     }
   }
 
+  protected def configureSystem(overrideConf : String) =
+    ActorSystem(
+      "TestActors_" + VisualizableSpecification.suffixGenerator.incrementAndGet,
+      loadConfig(overrideConf))
+
   abstract class VisualizableActorExample(overrideConf : String)
       extends TestKit(configureSystem(overrideConf))
   {
     protected val settings = ActorSettings(system)
   }
+}
+
+object VisualizableSpecification
+{
+  private val suffixGenerator = new AtomicLong
 }

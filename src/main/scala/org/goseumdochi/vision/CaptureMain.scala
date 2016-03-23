@@ -18,7 +18,6 @@ package org.goseumdochi.vision
 import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_highgui._
-import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacv._
 
 import com.typesafe.config._

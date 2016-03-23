@@ -15,8 +15,6 @@
 
 package org.goseumdochi.perception
 
-import org.goseumdochi.common._
-
 import scala.collection._
 
 class PerceptualBuffer(playbackProcessor : PerceptualProcessor)

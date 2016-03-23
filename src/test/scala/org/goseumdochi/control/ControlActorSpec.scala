@@ -17,11 +17,9 @@ package org.goseumdochi.control
 
 import org.goseumdochi.common._
 import org.goseumdochi.vision._
-import org.goseumdochi.behavior._
 
 import akka.actor._
 
-import scala.math._
 import MoreMath._
 
 import scala.concurrent.duration._
@@ -63,7 +61,7 @@ class ControlActorSpec extends AkkaSpecification
 
       controlActor ! VisionActor.HintBodyLocationMsg(initialPos, initialTime)
 
-      expectQuiet
+      expectQuiescence
 
       controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)
       controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
@@ -96,7 +94,7 @@ class ControlActorSpec extends AkkaSpecification
       val panicImpulse = actuator.expectImpulse
       panicImpulse must be equalTo(centeringImpulse)
 
-      expectQuiet
+      expectQuiescence
     }
   }
 }

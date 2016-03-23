@@ -111,6 +111,7 @@ class Settings(rootConf : Config)
     val subConf = conf.getConfig("test")
     val active = subConf.getBoolean("active")
     val visualize = subConf.getBoolean("visualize")
+    val quiescencePeriod = getMillis(subConf, "quiescence-period")
   }
 
   def instantiateObject(className : String, args : AnyRef*) =

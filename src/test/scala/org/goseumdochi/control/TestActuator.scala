@@ -51,4 +51,7 @@ class TestActuator(system : ActorSystem, includeHeading : Boolean)
 
   def expectTwirlMsg() =
     probe.expectMsgClass(classOf[ControlActor.ActuateTwirlMsg])
+
+  def expectImpulseMsg() =
+    probe.expectMsgClass(classOf[ControlActor.ActuateImpulseMsg])
 }
