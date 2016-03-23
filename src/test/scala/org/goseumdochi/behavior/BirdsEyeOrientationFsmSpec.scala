@@ -17,12 +17,8 @@ package org.goseumdochi.behavior
 
 import org.goseumdochi.common._
 import org.goseumdochi.control._
-import org.goseumdochi.vision._
 
 import akka.actor._
-
-import scala.math._
-import MoreMath._
 
 class BirdsEyeOrientationFsmSpec extends AkkaSpecification
 {
@@ -38,7 +34,7 @@ class BirdsEyeOrientationFsmSpec extends AkkaSpecification
         "org.goseumdochi.vision.RoundBodyDetector"),
         TimePoint.ZERO))
 
-      expectQuiet
+      expectQuiescence
 
       val initialPos = PlanarPos(0, 0)
       val finalPos = PlanarPos(100, 30)

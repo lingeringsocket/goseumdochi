@@ -17,7 +17,6 @@ package org.goseumdochi.simulation
 
 import org.goseumdochi.control._
 import org.goseumdochi.vision._
-import org.goseumdochi.behavior._
 
 import akka.actor._
 

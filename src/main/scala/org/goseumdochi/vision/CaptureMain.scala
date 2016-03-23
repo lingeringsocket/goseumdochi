@@ -18,7 +18,6 @@ package org.goseumdochi.vision
 import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_highgui._
-import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacv._
 
 import com.typesafe.config._
@@ -28,7 +27,7 @@ import java.awt.event._
 object CaptureMain extends App
 {
   val config = ConfigFactory.load()
-  val settings = new Settings(config, null)
+  val settings = Settings(config)
 
   captureFrameOnClick()
 

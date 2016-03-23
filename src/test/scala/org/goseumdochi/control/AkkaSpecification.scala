@@ -18,23 +18,24 @@ package org.goseumdochi.control
 import org.goseumdochi.vision._
 
 import org.specs2.mutable._
-import org.specs2.time.NoTimeConversions
 import akka.testkit._
-import scala.concurrent._
 import scala.concurrent.duration._
 
 abstract class AkkaSpecification(confFile : String = "test.conf")
-    extends VisualizableSpecification(confFile) with NoTimeConversions
+    extends VisualizableSpecification(confFile)
 {
-  abstract class AkkaExample extends TestKit(actorSystem)
+  abstract class AkkaExample(overrideConf : String = "")
+      extends VisualizableActorExample(overrideConf)
       with After
       with ImplicitSender
   {
-    def after = {
-      system.terminate()
-      Await.result(system.whenTerminated, Duration.Inf)
-    }
+    def after =
+      TestKit.shutdownActorSystem(system, Duration.Inf, true)
 
-    protected def expectQuiet() = expectNoMsg(100.millis)
+    protected def expectQuiescence() =
+      expectNoMsg(settings.Test.quiescencePeriod)
+
+    protected def expectQuiescence(probe : TestProbe) =
+      probe.expectNoMsg(settings.Test.quiescencePeriod)
   }
 }

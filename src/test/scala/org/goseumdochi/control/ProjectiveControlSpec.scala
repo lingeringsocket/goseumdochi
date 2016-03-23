@@ -15,13 +15,17 @@
 
 package org.goseumdochi.control
 
-class CalibrationScriptSpec extends ScriptedSpecification("test.conf")
+class ProjectiveControlSpec
+    extends ScriptedControlSpecification
 {
-  "calibration script" should
+  "scripted controller" should
   {
-    "invoke actuator as expected" in new AkkaExample
-    {
-      runScript("/scripted/doze.log")
-    }
+    "orient and then doze" in ScriptedControlExample(
+      "/scripted/doze.json",
+      "projective-test.conf")
+
+    "orient and then draw squares" in ScriptedControlExample(
+      "/scripted/square.json",
+      "square-test.conf")
   }
 }

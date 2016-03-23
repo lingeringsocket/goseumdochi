@@ -20,8 +20,7 @@ import com.typesafe.config._
 import java.util.concurrent._
 import scala.concurrent.duration._
 
-class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
-    extends Extension
+class Settings(rootConf : Config)
 {
   private val conf = rootConf.getConfig("goseumdochi")
 
@@ -112,6 +111,7 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
     val subConf = conf.getConfig("test")
     val active = subConf.getBoolean("active")
     val visualize = subConf.getBoolean("visualize")
+    val quiescencePeriod = getMillis(subConf, "quiescence-period")
   }
 
   def instantiateObject(className : String, args : AnyRef*) =
@@ -119,17 +119,28 @@ class Settings(rootConf : Config, extendedSystem : ExtendedActorSystem)
       newInstance((Seq(this) ++ args) : _*)
 }
 
-object Settings extends ExtensionId[Settings] with ExtensionIdProvider
+object Settings
 {
-  override def lookup = Settings
-
-  override def createExtension(system : ExtendedActorSystem) =
-    new Settings(system.settings.config, system)
-
-  def apply(context : ActorContext) : Settings = apply(context.system)
+  def apply(config : Config) = new Settings(config)
 
   def complainMissing(path : String)
   {
     throw new ConfigException.Missing(path)
   }
+}
+
+class ActorSettings(rootConf : Config, extendedSystem : ExtendedActorSystem)
+    extends Settings(rootConf)
+    with Extension
+{
+}
+
+object ActorSettings extends ExtensionId[ActorSettings] with ExtensionIdProvider
+{
+  override def lookup = ActorSettings
+
+  override def createExtension(system : ExtendedActorSystem) =
+    new ActorSettings(system.settings.config, system)
+
+  def apply(context : ActorContext) : ActorSettings = apply(context.system)
 }

@@ -50,7 +50,7 @@ import SquareFsm._
 class SquareFsm()
     extends BehaviorFsm[State, Data]
 {
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   startWith(Blind, Empty)
 
@@ -71,7 +71,7 @@ class SquareFsm()
 
   when(Moving) {
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), Angle(theta)) => {
-      val newTheta = normalizeRadians(theta - HALF_PI)
+      val newTheta = normalizeRadians(theta + HALF_PI)
       actuateMove(pos, newTheta, eventTime)
     }
   }

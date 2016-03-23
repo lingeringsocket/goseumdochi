@@ -70,7 +70,7 @@ class RampJumperFsmSpec extends AkkaSpecification
       launch.speed must be equalTo(1.0)
       launch.extraTime must be equalTo 1.second
 
-      expectQuiet
+      expectQuiescence
     }
   }
 }

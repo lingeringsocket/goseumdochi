@@ -51,7 +51,7 @@ import VisionActor._
 class VisionActor(videoStream : VideoStream)
     extends Actor with Listeners
 {
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   private val throttlePeriod = settings.Vision.throttlePeriod
 

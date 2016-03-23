@@ -26,24 +26,32 @@ import org.bytedeco.javacv._
 import com.typesafe.config._
 
 import akka.actor._
+import akka.testkit._
+
+import java.util.concurrent.atomic._
 
 abstract class VisualizableSpecification(confFile : String = "test.conf")
     extends Specification
 {
-  protected val actorSystem = configureSystem()
+  protected val settings = Settings(loadConfig(confFile))
 
-  protected val settings = Settings(actorSystem)
+  protected def shouldVisualize = settings.Test.visualize
 
   private var canvas : Option[CanvasFrame] = None
 
-  protected def configureSystem() =
+  protected def loadConfig(overrideConf : String) =
   {
-    val systemName = "TestActors"
-    if (confFile.isEmpty) {
-      ActorSystem(systemName)
+    val actualConf = {
+      if (overrideConf.isEmpty) {
+        confFile
+      } else {
+        overrideConf
+      }
+    }
+    if (actualConf.isEmpty) {
+      ConfigFactory.load
     } else {
-      val config = ConfigFactory.load(confFile)
-      ActorSystem(systemName, config)
+      ConfigFactory.load(actualConf)
     }
   }
 
@@ -52,9 +60,9 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
     if (!shouldVisualize) {
       return
     }
-    val canvas = loadCanvas
-    canvas.showImage(OpenCvUtil.convert(img))
-    while (canvas.waitKey(-1) == null) {
+    val c = loadCanvas
+    c.showImage(OpenCvUtil.convert(img))
+    while (c.waitKey(-1) == null) {
     }
   }
 
@@ -92,5 +100,19 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
     }
   }
 
-  protected def shouldVisualize = settings.Test.visualize
+  protected def configureSystem(overrideConf : String) =
+    ActorSystem(
+      "TestActors_" + VisualizableSpecification.suffixGenerator.incrementAndGet,
+      loadConfig(overrideConf))
+
+  abstract class VisualizableActorExample(overrideConf : String)
+      extends TestKit(configureSystem(overrideConf))
+  {
+    protected val settings = ActorSettings(system)
+  }
+}
+
+object VisualizableSpecification
+{
+  private val suffixGenerator = new AtomicLong
 }

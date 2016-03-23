@@ -21,7 +21,6 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-import scala.math._
 import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
@@ -56,7 +55,7 @@ import BirdsEyeOrientationFsm._
 class BirdsEyeOrientationFsm()
     extends BehaviorFsm[State, Data]
 {
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   private val forwardImpulse =
     PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, 0)

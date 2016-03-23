@@ -89,7 +89,7 @@ class ControlActor(
 
   private val log = Logging(context.system, this)
 
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   private val visionActor = context.actorOf(
     visionProps,
@@ -125,7 +125,7 @@ class ControlActor(
 
   private val visibilityCheckFreq = settings.Control.visibilityCheckFreq
 
-  private val sensorDelay = Settings(context).Vision.sensorDelay
+  private val sensorDelay = settings.Vision.sensorDelay
 
   private val random = scala.util.Random
 
@@ -275,7 +275,7 @@ class ControlActor(
       RetinalPos(bottomRight.x / 2.0, bottomRight.y / 2.0))
     val impulse = bodyMapping.computeImpulse(
       from, to, settings.Motor.defaultSpeed, 0.milliseconds)
-    actuateImpulse(impulse, eventTime)
+    sendOutput(self, ActuateImpulseMsg(impulse, eventTime))
   }
 
   override def preStart()

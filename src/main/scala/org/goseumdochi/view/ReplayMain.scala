@@ -15,8 +15,29 @@
 
 package org.goseumdochi.view
 
+import org.goseumdochi.common._
 import org.goseumdochi.perception._
 
-trait PerceptualView extends PerceptualProcessor
+import com.typesafe.config._
+
+object ReplayMain extends App
 {
+  val config = ConfigFactory.load()
+  val settings = Settings(config)
+
+  replay()
+
+  def replay()
+  {
+    val path = args.headOption.getOrElse(
+      getClass.getResource("/demo/quick.json").getPath)
+    val seq = PerceptualLog.read(path)
+    val view = settings.instantiateObject(settings.View.className).
+      asInstanceOf[PerceptualProcessor]
+    try {
+      view.processHistory(seq)
+    } finally {
+      view.close
+    }
+  }
 }

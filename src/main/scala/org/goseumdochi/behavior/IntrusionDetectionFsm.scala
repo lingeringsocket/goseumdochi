@@ -21,8 +21,6 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-import org.goseumdochi.common.MoreMath._
-
 import scala.concurrent.duration._
 
 object IntrusionDetectionFsm
@@ -56,7 +54,7 @@ import MotionDetector._
 class IntrusionDetectionFsm()
     extends BehaviorFsm[State, Data]
 {
-  private val settings = Settings(context)
+  private val settings = ActorSettings(context)
 
   startWith(Blind, Empty)
 

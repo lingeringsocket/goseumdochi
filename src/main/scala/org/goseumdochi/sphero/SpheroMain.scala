@@ -18,7 +18,6 @@ package org.goseumdochi.sphero
 import org.goseumdochi.common._
 import org.goseumdochi.control._
 import org.goseumdochi.vision._
-import org.goseumdochi.behavior._
 
 import se.nicklasgavelin.bluetooth._
 import se.nicklasgavelin.sphero._
@@ -56,7 +55,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
     }
     val system = ActorSystem("SpheroActors", config)
     systemOpt = Some(system)
-    val settings = Settings(system)
+    val settings = ActorSettings(system)
 
     val id = settings.Sphero.bluetoothId
     if (id.isEmpty) {

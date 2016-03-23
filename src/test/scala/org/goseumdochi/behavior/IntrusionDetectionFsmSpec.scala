@@ -56,7 +56,7 @@ class IntrusionDetectionFsmSpec extends AkkaSpecification
       val intermediatePos = PlanarPos(50.0, 50.0)
       fsm ! ControlActor.BodyMovedMsg(intermediatePos, TimePoint.ZERO)
 
-      expectQuiet
+      expectQuiescence
     }
   }
 }

@@ -138,6 +138,7 @@ object RetinalView
   {
     timeline.foreach(t =>
       Await.result(timelineCompletion.future, Duration.Inf))
+    Platform.exit
   }
 
   private def createTimeline(
@@ -146,12 +147,15 @@ object RetinalView
     val maxMillis = events.map(_.msg.eventTime.d.toMillis).max
     val newTimeline = new Timeline {
       rate = playbackRate
+      var nextInterpolator = Interpolator.DISCRETE
       keyFrames = events.flatMap(filterEvent(_, false)).map(brp => {
         val millis = brp.eventTime.d.toMillis
+        val interpolator = nextInterpolator
+        nextInterpolator = Interpolator.LINEAR
         at (scalafx.util.Duration(millis)) {
           Set(
-            body.centerX -> brp.pos.x,
-            body.centerY -> brp.pos.y,
+            body.centerX -> brp.pos.x tween interpolator,
+            body.centerY -> brp.pos.y tween interpolator,
             body.visible -> true,
             timeKnob.x -> (millis.toDouble/maxMillis)*bottomRight.x
           )
@@ -212,12 +216,12 @@ object RetinalViewWindow extends JFXApp
             children = Seq(
               new NumberAxis {
                 side = Side.BOTTOM
-                label = "Milliseconds"
+                label = "Seconds"
                 lowerBound = 0
-                upperBound = timeline.totalDuration.get.toMillis
+                upperBound = timeline.totalDuration.get.toSeconds
                 minWidth = retinaWidth
                 autoRanging = false
-                tickUnit = 1000
+                tickUnit = 10
               },
               RetinalView.timeKnob
             )

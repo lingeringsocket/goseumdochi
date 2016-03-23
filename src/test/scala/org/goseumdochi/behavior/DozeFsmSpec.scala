@@ -34,7 +34,7 @@ class DozeFsmSpec extends AkkaSpecification
       fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
       fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
 
-      expectQuiet
+      expectQuiescence
     }
   }
 }

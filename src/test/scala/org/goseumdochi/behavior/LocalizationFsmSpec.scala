@@ -21,8 +21,9 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-import scala.math._
 import MoreMath._
+
+import scala.concurrent.duration._
 
 class LocalizationFsmSpec extends AkkaSpecification
 {
@@ -39,7 +40,7 @@ class LocalizationFsmSpec extends AkkaSpecification
         "org.goseumdochi.vision.FineMotionDetector"),
         TimePoint.ZERO))
 
-      expectQuiet
+      expectQuiescence
 
       val backwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
@@ -47,7 +48,7 @@ class LocalizationFsmSpec extends AkkaSpecification
       backwardImpulse.duration.toMillis must be equalTo 800
       backwardImpulse.theta must be closeTo(PI +/- 0.01)
 
-      expectQuiet
+      expectQuiescence
 
       val forwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
@@ -57,11 +58,13 @@ class LocalizationFsmSpec extends AkkaSpecification
 
       val finalPos = PlanarPos(100, 30)
 
-      fsm ! MotionDetector.MotionDetectedMsg(finalPos, TimePoint.ZERO)
+      val finalTime = TimePoint.ZERO + 5.seconds
 
-      expectMsg(VisionActor.HintBodyLocationMsg(finalPos, TimePoint.ZERO))
+      fsm ! MotionDetector.MotionDetectedMsg(finalPos, finalTime)
 
-      expectQuiet
+      expectMsg(VisionActor.HintBodyLocationMsg(finalPos, finalTime))
+
+      expectQuiescence
     }
   }
 }
