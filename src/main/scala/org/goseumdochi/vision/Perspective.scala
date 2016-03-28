@@ -17,12 +17,10 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
-// nearCenter corresponds to world origin
-// farRight corresponds to (worldDist, 0) in world coordinates
-
 case class Perspective(
   nearCenter : RetinalPos,
   farCenter : RetinalPos,
+  distantCenter : RetinalPos,
   nearRight : RetinalPos,
   farRight : RetinalPos,
   worldDist : Double)
@@ -50,34 +48,36 @@ case class Perspective(
 
   def horizontalScale = worldDist / (nearRight.x - nearCenter.x)
 
+  private val yn = nearCenter.y
+  private val yf = farCenter.y
+  private val y2f = distantCenter.y
+  private val paramC = 2*worldDist*(y2f - yf) / (y2f - 2*yf + yn)
+  private val paramD = yf - (paramC / worldDist) * (yf - yn)
+  private val paramE = -yn*paramC
+
   def vanishingPoint : RetinalPos =
     intersection((nearCenter, farCenter), (nearRight, farRight))
 
   def nearProjection(p : RetinalPos) : RetinalPos =
     intersection((nearCenter, nearRight), (vanishingPoint, p))
 
-  def verticalFar = (farCenter.y - vanishingPoint.y)
-
-  def verticalNear = (nearCenter.y - vanishingPoint.y)
-
-  def verticalB = worldDist*verticalFar / (verticalNear - verticalFar)
-
-  def verticalA = verticalB*verticalNear
-
   def retinaToWorld(p : RetinalPos) : PlanarPos =
   {
     val np = nearProjection(p)
     val x = horizontalScale * (np.x - nearCenter.x)
-    val y = verticalA/(p.y - vanishingPoint.y) - verticalB
+    val y = (paramE + paramC*p.y) / (p.y - paramD)
     PlanarPos(x, y)
   }
 
   def worldToRetina(p : PlanarPos) : RetinalPos =
   {
-    val y = vanishingPoint.y + verticalA / (verticalB + p.y)
+    val y = (paramD*p.y + paramE) / (p.y - paramC)
     val yCenter = RetinalPos(nearCenter.x, y)
     val yRight = RetinalPos(nearRight.x, y)
+    // FIXME:  I think this needs to take into account horizontal perspective
+    // too?
     val xProj = RetinalPos(nearCenter.x + (p.x / horizontalScale), nearCenter.y)
     intersection((vanishingPoint, xProj),(yCenter, yRight))
   }
 }
+

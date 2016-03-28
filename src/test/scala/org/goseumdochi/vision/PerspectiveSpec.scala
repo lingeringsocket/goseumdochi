@@ -11,18 +11,20 @@ class PerspectiveSpec extends VisualizableSpecification
 
   private val farCenter = RetinalPos(560, 436)
 
+  private val distantCenter = RetinalPos(565, 274)
+
   private val nearRight = RetinalPos(1005, 739)
 
   private val farRight = RetinalPos(840, 436)
 
   private val distantRight = RetinalPos(759, 274)
 
-  private val distantRightExpected = RetinalPos(765.4, 299.1)
+  private val distantRightExpected = RetinalPos(751.7, 274.0)
 
   private val worldMeter = 100.0
 
   private val perspective = Perspective(
-    nearCenter, farCenter, nearRight, farRight, worldMeter)
+    nearCenter, farCenter, distantCenter, nearRight, farRight, worldMeter)
 
   def beRoughlyX(p2 : RetinalPos) = beCloseTo(p2.x +/- 0.1) ^^ {
     p1 : RetinalPos => p1.x
