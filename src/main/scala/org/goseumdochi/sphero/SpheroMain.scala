@@ -67,15 +67,21 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
       system.terminate
       return
     }
+    var robotOpt : Option[Robot] = None
     try {
       if (settings.Bluetooth.debug) {
         com.intel.bluetooth.DebugLog.setDebugEnabled(true)
       }
-      val robot = connectToRobot(id)
+      robotOpt = Some(connectToRobot(id))
       val videoStream =
         settings.instantiateObject(settings.Vision.cameraClass).
           asInstanceOf[VideoStream]
-      val actuator = new SpheroActuator(robot)
+      // pull and discard one frame as a test to make sure we have a
+      // good connection
+      videoStream.beforeNext
+      videoStream.nextFrame
+      videoStream.afterNext
+      val actuator = new SpheroActuator(robotOpt.get)
       val props = Props(
         classOf[ControlActor],
         actuator,
@@ -84,11 +90,20 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
       val controlActor = system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)
     } catch {
       case ex : Throwable => {
+        System.err.println("EXCEPTION:  " + ex)
+        ex.printStackTrace
         system.terminate
-        throw ex
       }
+    } finally {
+      println("Close retina window to quit")
+      Await.result(system.whenTerminated, Duration.Inf)
+      systemOpt = None
+      robotOpt.foreach(_.disconnect)
+      println("Shutdown complete")
+      // sphero+bluetooth shutdown may cause a hang, so use a hard stop
+      System.runFinalization
+      Runtime.getRuntime.halt(0)
     }
-    Await.result(system.whenTerminated, Duration.Inf)
   }
 
   private def connectToRobot(id : String) : Robot =

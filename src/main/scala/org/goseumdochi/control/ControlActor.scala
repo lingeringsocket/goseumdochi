@@ -204,6 +204,9 @@ class ControlActor(
       orientationActor ! PoisonPill.getInstance
       writeOrientation(settings, calibratedMsg)
       log.info("ORIENTATION COMPLETE")
+      if (!settings.Test.active) {
+        context.system.terminate
+      }
     }
     case ActuateLightMsg(color : java.awt.Color, eventTime) => {
       actuator.actuateLight(color)
