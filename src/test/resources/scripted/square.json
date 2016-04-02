@@ -10,7 +10,7 @@
       "y":768.0
     },
     "eventTime":{
-      "millis":3053
+      "millis":5247
     }
   }
 }
@@ -21,8 +21,12 @@
   "receiver":"localizationActor",
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$CameraAcquiredMsg",
+    "bottomRight":{
+      "x":1024.0,
+      "y":768.0
+    },
     "eventTime":{
-      "millis":3053
+      "millis":5247
     }
   }
 }
@@ -38,7 +42,7 @@
       "org.goseumdochi.vision.FineMotionDetector"
     ],
     "eventTime":{
-      "millis":3053
+      "millis":5247
     }
   }
 }
@@ -50,14 +54,14 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
     "impulse":{
-      "speed":0.2,
+      "speed":0.5,
       "duration":{
-        "millis":800
+        "millis":500
       },
       "theta":3.141592653589793
     },
     "eventTime":{
-      "millis":6053
+      "millis":8247
     }
   }
 }
@@ -69,11 +73,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":607.4852905273438,
-      "y":502.6911926269531
+      "x":-0.6359708238065553,
+      "y":-0.30908682538663923
     },
     "eventTime":{
-      "millis":6605
+      "millis":10306
     }
   }
 }
@@ -85,11 +89,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.MotionDetector$MotionDetectedMsg",
     "pos":{
-      "x":49.810829162597656,
-      "y":654.1350708007812
+      "x":-0.48835677585066606,
+      "y":-0.3725720356798834
     },
     "eventTime":{
-      "millis":6605
+      "millis":10306
     }
   }
 }
@@ -101,11 +105,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.MotionDetector$MotionDetectedMsg",
     "pos":{
-      "x":49.810829162597656,
-      "y":654.1350708007812
+      "x":-0.48835677585066606,
+      "y":-0.3725720356798834
     },
     "eventTime":{
-      "millis":6605
+      "millis":10306
     }
   }
 }
@@ -117,11 +121,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.VisionActor$HintBodyLocationMsg",
     "pos":{
-      "x":49.810829162597656,
-      "y":654.1350708007812
+      "x":-0.48835677585066606,
+      "y":-0.3725720356798834
     },
     "eventTime":{
-      "millis":6605
+      "millis":10306
     }
   }
 }
@@ -129,11 +133,15 @@
 {
   "description":"",
   "sender":"controlActor",
-  "receiver":"orientationActor",
+  "receiver":"behaviorActor",
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$CameraAcquiredMsg",
+    "bottomRight":{
+      "x":1024.0,
+      "y":768.0
+    },
     "eventTime":{
-      "millis":6605
+      "millis":10306
     }
   }
 }
@@ -145,366 +153,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.VisionActor$HintBodyLocationMsg",
     "pos":{
-      "x":49.810829162597656,
-      "y":654.1350708007812
+      "x":-0.48835677585066606,
+      "y":-0.3725720356798834
     },
     "eventTime":{
-      "millis":6605
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"orientationActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$UseVisionAnalyzersMsg",
-    "analyzerClassNames":[
-      "org.goseumdochi.vision.FlashyBodyDetector"
-    ],
-    "eventTime":{
-      "millis":6605
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":37.399986267089844,
-      "y":665.2000122070312
-    },
-    "eventTime":{
-      "millis":8894
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":700.0,
-      "y":181.0
-    },
-    "eventTime":{
-      "millis":11180
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"controlActor",
-  "receiver":"orientationActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
-    "pos":{
-      "x":700.0,
-      "y":181.0
-    },
-    "eventTime":{
-      "millis":11180
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"orientationActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
-    "impulse":{
-      "speed":0.2,
-      "duration":{
-        "millis":1500
-      },
-      "theta":0.0
-    },
-    "eventTime":{
-      "millis":11180
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":580.0000610351562,
-      "y":583.0000610351562
-    },
-    "eventTime":{
-      "millis":13421
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":565.0,
-      "y":623.0
-    },
-    "eventTime":{
-      "millis":15830
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"controlActor",
-  "receiver":"orientationActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
-    "pos":{
-      "x":565.0,
-      "y":623.0
-    },
-    "eventTime":{
-      "millis":15830
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"orientationActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
-    "impulse":{
-      "speed":0.2,
-      "duration":{
-        "millis":1500
-      },
-      "theta":-2.1221002695301774
-    },
-    "eventTime":{
-      "millis":15830
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":755.0,
-      "y":622.5
-    },
-    "eventTime":{
-      "millis":17976
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":754.75,
-      "y":622.25
-    },
-    "eventTime":{
-      "millis":20330
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":837.0,
-      "y":586.0
-    },
-    "eventTime":{
-      "millis":23024
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"controlActor",
-  "receiver":"orientationActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
-    "pos":{
-      "x":837.0,
-      "y":586.0
-    },
-    "eventTime":{
-      "millis":23024
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"orientationActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
-    "impulse":{
-      "speed":0.2,
-      "duration":{
-        "millis":1500
-      },
-      "theta":-3.5576970201456795
-    },
-    "eventTime":{
-      "millis":23024
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":818.5001220703125,
-      "y":610.5000610351562
-    },
-    "eventTime":{
-      "millis":25346
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":759.3284301757812,
-      "y":444.9881591796875
-    },
-    "eventTime":{
-      "millis":27410
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":750.6640625,
-      "y":415.84796142578125
-    },
-    "eventTime":{
-      "millis":34311
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"controlActor",
-  "receiver":"orientationActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
-    "pos":{
-      "x":750.6640625,
-      "y":415.84796142578125
-    },
-    "eventTime":{
-      "millis":34311
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"orientationActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$CalibratedMsg",
-    "bodyMapping":{
-      "scale":915.016696872552,
-      "thetaOffset":1.986900693350783
-    },
-    "xform":{
-      "jsonClass":"org.goseumdochi.behavior.ProjectiveRetinalTransform",
-      "retinaOrigin":{
-        "x":750.6640625,
-        "y":415.84796142578125
-      },
-      "worldOrigin":{
-        "x":750.6640625,
-        "y":415.84796142578125
-      },
-      "vSquash":0.6950785468058245
-    },
-    "eventTime":{
-      "millis":34311
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"controlActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
-    "impulse":{
-      "speed":0.2,
-      "duration":{
-        "millis":1327
-      },
-      "theta":-2.9519183706143735
-    },
-    "eventTime":{
-      "millis":35311
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"controlActor",
-  "receiver":"behaviorActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$CameraAcquiredMsg",
-    "eventTime":{
-      "millis":34311
+      "millis":10306
     }
   }
 }
@@ -519,7 +172,7 @@
       "org.goseumdochi.vision.FlashyBodyDetector"
     ],
     "eventTime":{
-      "millis":34311
+      "millis":10306
     }
   }
 }
@@ -531,11 +184,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":749.2500610351562,
-      "y":427.935947233984
+      "x":-0.6359708238065553,
+      "y":-0.30908682538663923
     },
     "eventTime":{
-      "millis":36793
+      "millis":11705
     }
   }
 }
@@ -547,27 +200,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":721.2500610351562,
-      "y":422.90054509693925
+      "x":-0.27063760094816725,
+      "y":-0.3386467759170307
     },
     "eventTime":{
-      "millis":39068
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":596.0,
-      "y":418.9440698931023
-    },
-    "eventTime":{
-      "millis":41366
+      "millis":20612
     }
   }
 }
@@ -579,11 +216,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
-      "x":596.0,
-      "y":418.9440698931023
+      "x":-0.27063760094816725,
+      "y":-0.3386467759170307
     },
     "eventTime":{
-      "millis":41366
+      "millis":20612
     }
   }
 }
@@ -595,14 +232,14 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
     "impulse":{
-      "speed":0.2,
+      "speed":0.5,
       "duration":{
-        "millis":1500
+        "millis":500
       },
       "theta":0.0
     },
     "eventTime":{
-      "millis":41366
+      "millis":20612
     }
   }
 }
@@ -614,11 +251,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":763.2500610351562,
-      "y":429.37463355885393
+      "x":-0.27046459866360706,
+      "y":-0.3370455037252217
     },
     "eventTime":{
-      "millis":43857
+      "millis":22607
     }
   }
 }
@@ -630,11 +267,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":764.5,
-      "y":398.0831181824884
+      "x":-0.02908233924708476,
+      "y":-0.37604388166515834
     },
     "eventTime":{
-      "millis":46187
+      "millis":26324
     }
   }
 }
@@ -646,11 +283,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
-      "x":764.5,
-      "y":398.0831181824884
+      "x":-0.02908233924708476,
+      "y":-0.37604388166515834
     },
     "eventTime":{
-      "millis":46187
+      "millis":26324
     }
   }
 }
@@ -662,14 +299,14 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
     "impulse":{
-      "speed":0.2,
+      "speed":0.5,
       "duration":{
-        "millis":1500
+        "millis":500
       },
       "theta":1.5707963267948966
     },
     "eventTime":{
-      "millis":46187
+      "millis":26324
     }
   }
 }
@@ -681,11 +318,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":889.273681640625,
-      "y":589.0166562153036
+      "x":-0.029845226098474516,
+      "y":-0.3407849619866071
     },
     "eventTime":{
-      "millis":48570
+      "millis":29851
     }
   }
 }
@@ -697,11 +334,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":907.7000732421875,
-      "y":661.5065491419939
+      "x":0.04785986087893113,
+      "y":-0.14163822525597267
     },
     "eventTime":{
-      "millis":50917
+      "millis":34166
     }
   }
 }
@@ -713,11 +350,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
-      "x":907.7000732421875,
-      "y":661.5065491419939
+      "x":0.04785986087893113,
+      "y":-0.14163822525597267
     },
     "eventTime":{
-      "millis":50917
+      "millis":34166
     }
   }
 }
@@ -729,14 +366,14 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
     "impulse":{
-      "speed":0.2,
+      "speed":0.5,
       "duration":{
-        "millis":1500
+        "millis":500
       },
       "theta":3.141592653589793
     },
     "eventTime":{
-      "millis":50917
+      "millis":34166
     }
   }
 }
@@ -748,11 +385,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":680.5,
-      "y":706.6813348670873
+      "x":-0.25161187768202536,
+      "y":-0.11204215576238984
     },
     "eventTime":{
-      "millis":53324
+      "millis":38554
     }
   }
 }
@@ -764,11 +401,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":680.5200805664062,
-      "y":705.7605545446639
+      "x":-0.2678522904267143,
+      "y":-0.07818766866444389
     },
     "eventTime":{
-      "millis":55769
+      "millis":40988
     }
   }
 }
@@ -780,11 +417,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
-      "x":680.5200805664062,
-      "y":705.7605545446639
+      "x":-0.2678522904267143,
+      "y":-0.07818766866444389
     },
     "eventTime":{
-      "millis":55769
+      "millis":40988
     }
   }
 }
@@ -796,14 +433,14 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
     "impulse":{
-      "speed":0.2,
+      "speed":0.5,
       "duration":{
-        "millis":1500
+        "millis":500
       },
       "theta":-1.5707963267948966
     },
     "eventTime":{
-      "millis":55769
+      "millis":40988
     }
   }
 }
@@ -815,11 +452,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":656.0000610351562,
-      "y":672.8722940430888
+      "x":-0.3110680429594257,
+      "y":-0.3722057008446111
     },
     "eventTime":{
-      "millis":58095
+      "millis":43303
     }
   }
 }
@@ -831,11 +468,27 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":600.0,
-      "y":458.5079877322476
+      "x":-0.30429238009359805,
+      "y":-0.37000821692686925
     },
     "eventTime":{
-      "millis":60513
+      "millis":45317
+    }
+  }
+}
+,
+{
+  "description":"",
+  "sender":"visionActor",
+  "receiver":"controlActor",
+  "msg":{
+    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
+    "pos":{
+      "x":-0.3273122110508017,
+      "y":-0.37769492848992386
+    },
+    "eventTime":{
+      "millis":47731
     }
   }
 }
@@ -847,11 +500,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
-      "x":600.0,
-      "y":458.5079877322476
+      "x":-0.3273122110508017,
+      "y":-0.37769492848992386
     },
     "eventTime":{
-      "millis":60513
+      "millis":47731
     }
   }
 }
@@ -863,14 +516,14 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
     "impulse":{
-      "speed":0.2,
+      "speed":0.5,
       "duration":{
-        "millis":1500
+        "millis":500
       },
       "theta":0.0
     },
     "eventTime":{
-      "millis":60513
+      "millis":47731
     }
   }
 }
@@ -882,11 +535,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":773.0001220703125,
-      "y":429.7343051400714
+      "x":-0.31088013361688965,
+      "y":-0.3721938529452652
     },
     "eventTime":{
-      "millis":62896
+      "millis":49729
     }
   }
 }
@@ -898,27 +551,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":802.0,
-      "y":421.8214425428422
+      "x":-0.0026967318416094292,
+      "y":-0.42594458438287147
     },
     "eventTime":{
-      "millis":64926
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":808.4625244140625,
-      "y":385.2910682292169
-    },
-    "eventTime":{
-      "millis":77502
+      "millis":56460
     }
   }
 }
@@ -930,11 +567,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
-      "x":808.4625244140625,
-      "y":385.2910682292169
+      "x":-0.0026967318416094292,
+      "y":-0.42594458438287147
     },
     "eventTime":{
-      "millis":77502
+      "millis":56460
     }
   }
 }
@@ -946,14 +583,14 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
     "impulse":{
-      "speed":0.2,
+      "speed":0.5,
       "duration":{
-        "millis":1500
+        "millis":500
       },
       "theta":1.5707963267948966
     },
     "eventTime":{
-      "millis":77502
+      "millis":56460
     }
   }
 }
@@ -965,11 +602,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":926.5,
-      "y":626.8342438368065
+      "x":0.07182524811011522,
+      "y":-0.12540124634305777
     },
     "eventTime":{
-      "millis":80259
+      "millis":58492
     }
   }
 }
@@ -981,11 +618,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":938.5,
-      "y":680.7849810194288
+      "x":0.06725674504423419,
+      "y":-0.16605349012404425
     },
     "eventTime":{
-      "millis":83075
+      "millis":64884
     }
   }
 }
@@ -997,11 +634,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
-      "x":938.5,
-      "y":680.7849810194288
+      "x":0.06725674504423419,
+      "y":-0.16605349012404425
     },
     "eventTime":{
-      "millis":83075
+      "millis":64884
     }
   }
 }
@@ -1013,14 +650,14 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
     "impulse":{
-      "speed":0.2,
+      "speed":0.5,
       "duration":{
-        "millis":1500
+        "millis":500
       },
       "theta":3.141592653589793
     },
     "eventTime":{
-      "millis":83075
+      "millis":64884
     }
   }
 }
@@ -1032,11 +669,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":705.5,
-      "y":703.0846190549125
+      "x":0.07989290255595707,
+      "y":-0.133491452608968
     },
     "eventTime":{
-      "millis":85801
+      "millis":67236
     }
   }
 }
@@ -1048,11 +685,27 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":688.3268432617188,
-      "y":706.1557015455132
+      "x":-0.19310001221331924,
+      "y":-0.12898999523582658
     },
     "eventTime":{
-      "millis":88082
+      "millis":69208
+    }
+  }
+}
+,
+{
+  "description":"",
+  "sender":"visionActor",
+  "receiver":"controlActor",
+  "msg":{
+    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
+    "pos":{
+      "x":-0.19310001221331924,
+      "y":-0.12898999523582658
+    },
+    "eventTime":{
+      "millis":71555
     }
   }
 }
@@ -1064,11 +717,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
-      "x":688.3268432617188,
-      "y":706.1557015455132
+      "x":-0.19310001221331924,
+      "y":-0.12898999523582658
     },
     "eventTime":{
-      "millis":88082
+      "millis":71555
     }
   }
 }
@@ -1080,14 +733,14 @@
   "msg":{
     "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
     "impulse":{
-      "speed":0.2,
+      "speed":0.5,
       "duration":{
-        "millis":1500
+        "millis":500
       },
       "theta":-1.5707963267948966
     },
     "eventTime":{
-      "millis":88082
+      "millis":71555
     }
   }
 }
@@ -1099,78 +752,11 @@
   "msg":{
     "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
     "pos":{
-      "x":696.2500610351562,
-      "y":704.1637216090096
+      "x":-0.2439819244516186,
+      "y":-0.36454575270580514
     },
     "eventTime":{
-      "millis":90551
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":624.8836059570312,
-      "y":477.00398464277856
-    },
-    "eventTime":{
-      "millis":92898
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"controlActor",
-  "receiver":"behaviorActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
-    "pos":{
-      "x":624.8836059570312,
-      "y":477.00398464277856
-    },
-    "eventTime":{
-      "millis":92898
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"behaviorActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$ActuateImpulseMsg",
-    "impulse":{
-      "speed":0.2,
-      "duration":{
-        "millis":1500
-      },
-      "theta":0.0
-    },
-    "eventTime":{
-      "millis":92898
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":622.9556274414062,
-      "y":442.50571963885415
-    },
-    "eventTime":{
-      "millis":95260
+      "millis":73999
     }
   }
 }

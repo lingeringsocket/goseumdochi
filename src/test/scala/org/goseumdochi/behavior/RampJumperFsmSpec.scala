@@ -32,7 +32,7 @@ class RampJumperFsmSpec extends AkkaSpecification
       val fsm = system.actorOf(
         Props(classOf[RampJumperFsm]))
 
-      fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
+      fsm ! ControlActor.CameraAcquiredMsg(DEFAULT_DIMS, TimePoint.ZERO)
 
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
@@ -49,7 +49,7 @@ class RampJumperFsmSpec extends AkkaSpecification
       move1.from must be equalTo(initialPos)
       move1.to.x must be closeTo(100.0 +/- 0.1)
       move1.to.y must be closeTo(30.0 +/- 0.1)
-      move1.speed must be equalTo(0.2)
+      move1.speed must be equalTo(0.5)
       move1.extraTime must be equalTo 0.seconds
 
       val intermediatePos = PlanarPos(80.0, 25.0)
@@ -59,7 +59,7 @@ class RampJumperFsmSpec extends AkkaSpecification
       move2.from must be equalTo(intermediatePos)
       move2.to.x must be closeTo(100.0 +/- 0.1)
       move2.to.y must be closeTo(30.0 +/- 0.1)
-      move2.speed must be equalTo(0.2)
+      move2.speed must be equalTo(0.5)
       move2.extraTime must be equalTo 200.milliseconds
 
       fsm ! ControlActor.BodyMovedMsg(move2.to, TimePoint.ZERO)

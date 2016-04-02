@@ -67,7 +67,7 @@ class VisionActor(videoStream : VideoStream)
 
   private var hintBodyPos : Option[PlanarPos] = None
 
-  private var retinalTransform : RetinalTransform = IdentityRetinalTransform
+  private var retinalTransform : RetinalTransform = FlipRetinalTransform
 
   def receive =
   {

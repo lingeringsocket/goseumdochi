@@ -15,8 +15,6 @@
 
 package org.goseumdochi.vision
 
-import org.goseumdochi.common._
-
 import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
@@ -24,7 +22,7 @@ import org.bytedeco.javacpp.helper.opencv_core._
 class RampDetectorSpec extends VisualizableSpecification
 {
   private val rampDetector = new RampDetector(
-    settings, IdentityRetinalTransform)
+    settings, FlipRetinalTransform)
 
   private def visualize(img : IplImage, ramp : OrientedRamp)
   {
@@ -62,10 +60,10 @@ class RampDetectorSpec extends VisualizableSpecification
       visualize(img, ramp)
 
       ramp.center.x must be closeTo(584.5 +/- 0.1)
-      ramp.center.y must be closeTo(313.0 +/- 0.1)
+      ramp.center.y must be closeTo(-313.0 +/- 0.1)
 
       ramp.entry.x must be closeTo(623.5 +/- 0.1)
-      ramp.entry.y must be closeTo(298.5 +/- 0.1)
+      ramp.entry.y must be closeTo(-298.5 +/- 0.1)
     }
   }
 }

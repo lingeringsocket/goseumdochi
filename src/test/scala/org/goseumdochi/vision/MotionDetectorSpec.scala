@@ -15,17 +15,15 @@
 
 package org.goseumdochi.vision
 
-import org.goseumdochi.common._
-
 import org.bytedeco.javacpp.opencv_highgui._
 
 class MotionDetectorSpec extends VisualizableSpecification
 {
   private val coarseDetector = new CoarseMotionDetector(
-    settings, IdentityRetinalTransform)
+    settings, FlipRetinalTransform)
 
   private val fineDetector = new FineMotionDetector(
-    settings, IdentityRetinalTransform)
+    settings, FlipRetinalTransform)
 
   private def loadImage(filename : String) =
     OpenCvUtil.grayscale(cvLoadImage(filename))
@@ -56,7 +54,7 @@ class MotionDetectorSpec extends VisualizableSpecification
       visualize(afterImg, pos)
 
       pos.x must be closeTo(424.3 +/- 0.1)
-      pos.y must be closeTo(152.0 +/- 0.1)
+      pos.y must be closeTo(-152.0 +/- 0.1)
     }
 
     "detect fine motion" in
@@ -74,7 +72,7 @@ class MotionDetectorSpec extends VisualizableSpecification
       visualize(afterImg, pos)
 
       pos.x must be closeTo(386.5 +/- 0.1)
-      pos.y must be closeTo(438.0 +/- 0.1)
+      pos.y must be closeTo(-438.0 +/- 0.1)
     }
   }
 }

@@ -31,11 +31,10 @@ class IntrusionDetectionFsmSpec extends AkkaSpecification
   {
     "maneuver to intruder" in new AkkaExample
     {
-
       val fsm = system.actorOf(
         Props(classOf[IntrusionDetectionFsm]))
 
-      fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
+      fsm ! ControlActor.CameraAcquiredMsg(DEFAULT_DIMS, TimePoint.ZERO)
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
         "org.goseumdochi.vision.CoarseMotionDetector"),
@@ -50,7 +49,7 @@ class IntrusionDetectionFsmSpec extends AkkaSpecification
       val move1 = expectMsgClass(classOf[ControlActor.ActuateMoveMsg])
       move1.from must be equalTo(initialPos)
       move1.to must be equalTo(intruderPos)
-      move1.speed must be equalTo(0.2)
+      move1.speed must be equalTo(0.5)
       move1.extraTime must be equalTo 0.seconds
 
       val intermediatePos = PlanarPos(50.0, 50.0)

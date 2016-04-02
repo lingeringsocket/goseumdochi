@@ -13,19 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.control
+package org.goseumdochi.behavior
 
-class ProjectiveControlSpec
-    extends ScriptedControlSpecification
+import org.goseumdochi.control._
+
+class PerspectiveBehaviorSpec
+    extends ScriptedBehaviorSpecification("perspective-test.conf")
 {
-  "scripted controller" should
+  "scripted behavior" should
   {
-    "orient and then doze" in ScriptedControlExample(
-      "/scripted/doze.json",
-      "projective-test.conf")
+    "perform perspective orientation" in ScriptedBehaviorExample(
+      "/scripted/measure.json",
+      classOf[PerspectiveOrientationFsm],
+      ControlActor.ORIENTATION_ACTOR_NAME,
+      "perspective-orientation-test.conf")
 
-    "orient and then draw squares" in ScriptedControlExample(
+    "impersonate a mountain" in ScriptedBehaviorExample(
+      "/scripted/doze.json",
+      classOf[DozeFsm])
+
+    "go round in squares" in ScriptedBehaviorExample(
       "/scripted/square.json",
+      classOf[SquareFsm],
+      ControlActor.BEHAVIOR_ACTOR_NAME,
       "square-test.conf")
   }
 }

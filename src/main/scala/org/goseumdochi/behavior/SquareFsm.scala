@@ -55,7 +55,7 @@ class SquareFsm()
   startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
+    case Event(ControlActor.CameraAcquiredMsg(_, eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className),
         eventTime)
@@ -87,7 +87,7 @@ class SquareFsm()
     pos : PlanarPos, newTheta : Double, eventTime : TimePoint) =
   {
     val impulse = PolarImpulse(
-      settings.Motor.defaultSpeed, 1500.milliseconds, newTheta)
+      0.5, 500.milliseconds, newTheta)
     sender ! ControlActor.ActuateImpulseMsg(impulse, eventTime)
     goto(Moving) using Angle(newTheta)
   }

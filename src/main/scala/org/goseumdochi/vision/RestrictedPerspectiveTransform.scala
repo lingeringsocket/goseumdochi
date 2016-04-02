@@ -17,13 +17,22 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
-case class Perspective(
+// This transform implements a restricted subset of the general perspective
+// transform.  It infers the transform parameters from a known
+// point configuration, with the following assumptions:
+// * input points are coplanar (all on the "floor")
+// * camera is stationary and unrotated ("up" points away from the floor)
+// * camera is above the floor looking downward at an arbitrary angle
+//   (the extreme case of a worm's-eye view probably won't work well here)
+// Should probably get rid of this and use OpenCV's findHomography instead.
+case class RestrictedPerspectiveTransform(
   nearCenter : RetinalPos,
   farCenter : RetinalPos,
   distantCenter : RetinalPos,
   nearRight : RetinalPos,
   farRight : RetinalPos,
   worldDist : Double)
+    extends RetinalTransform
 {
   // from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
   private def intersection(
@@ -46,36 +55,37 @@ case class Perspective(
     RetinalPos(x, y)
   }
 
-  def horizontalScale = worldDist / (nearRight.x - nearCenter.x)
+  private val horizontalScale = worldDist / (nearRight.x - nearCenter.x)
 
-  private val yn = nearCenter.y
-  private val yf = farCenter.y
-  private val y2f = distantCenter.y
-  private val paramC = 2*worldDist*(y2f - yf) / (y2f - 2*yf + yn)
+  private val nearRightOrtho = RetinalPos(nearRight.x, nearCenter.y)
+
+  private def yn = nearCenter.y
+  private def yf = farCenter.y
+  private def y2f = distantCenter.y
+  private val paramC = 2*worldDist*(y2f - yf) / (yn + y2f - 2*yf)
   private val paramD = yf - (paramC / worldDist) * (yf - yn)
   private val paramE = -yn*paramC
 
-  def vanishingPoint : RetinalPos =
+  final val vanishingPoint : RetinalPos =
     intersection((nearCenter, farCenter), (nearRight, farRight))
 
-  def nearProjection(p : RetinalPos) : RetinalPos =
-    intersection((nearCenter, nearRight), (vanishingPoint, p))
+  private def nearProjection(p : RetinalPos) : RetinalPos =
+    intersection((nearCenter, nearRightOrtho), (vanishingPoint, p))
 
-  def retinaToWorld(p : RetinalPos) : PlanarPos =
+  override def retinaToWorld(p : RetinalPos) : PlanarPos =
   {
     val np = nearProjection(p)
     val x = horizontalScale * (np.x - nearCenter.x)
     val y = (paramE + paramC*p.y) / (p.y - paramD)
-    PlanarPos(x, y)
+    PlanarPos(x, -y)
   }
 
-  def worldToRetina(p : PlanarPos) : RetinalPos =
+  override def worldToRetina(p : PlanarPos) : RetinalPos =
   {
-    val y = (paramD*p.y + paramE) / (p.y - paramC)
+    val py = -p.y
+    val y = (paramD*py + paramE) / (py - paramC)
     val yCenter = RetinalPos(nearCenter.x, y)
     val yRight = RetinalPos(nearRight.x, y)
-    // FIXME:  I think this needs to take into account horizontal perspective
-    // too?
     val xProj = RetinalPos(nearCenter.x + (p.x / horizontalScale), nearCenter.y)
     intersection((vanishingPoint, xProj),(yCenter, yRight))
   }

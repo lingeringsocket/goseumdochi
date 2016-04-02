@@ -63,6 +63,7 @@ abstract class ScriptedControlSpecification
         seq foreach {
           event => processEvent(event, actuator, controlActor)
         }
+        expectQuiescence
       }
     }
 

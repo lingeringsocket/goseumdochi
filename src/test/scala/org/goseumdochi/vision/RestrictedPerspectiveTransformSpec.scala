@@ -20,7 +20,7 @@ import org.goseumdochi.common.MoreMath._
 
 import org.bytedeco.javacpp.opencv_highgui._
 
-class PerspectiveSpec extends VisualizableSpecification
+class RestrictedPerspectiveTransformSpec extends VisualizableSpecification
 {
   private val nearCenter = RetinalPos(555, 739)
 
@@ -38,18 +38,8 @@ class PerspectiveSpec extends VisualizableSpecification
 
   private val worldMeter = 100.0
 
-  private val perspective = Perspective(
+  private val perspective = RestrictedPerspectiveTransform(
     nearCenter, farCenter, distantCenter, nearRight, farRight, worldMeter)
-
-  def beRoughlyX(p2 : RetinalPos) = beCloseTo(p2.x +/- 0.1) ^^ {
-    p1 : RetinalPos => p1.x
-  }
-
-  def beRoughlyY(p2 : RetinalPos) = beCloseTo(p2.y +/- 0.1) ^^ {
-    p1 : RetinalPos => p1.y
-  }
-
-  def beRoughly(p2 : RetinalPos) = beRoughlyX(p2) and beRoughlyY(p2)
 
   def worldDistance(p1 : RetinalPos, p2 : RetinalPos) =
   {
@@ -59,7 +49,7 @@ class PerspectiveSpec extends VisualizableSpecification
     motion.distance
   }
 
-  "Perspective" should
+  "RestrictedPerspectiveTransform" should
   {
     "find vanishing point" in
     {

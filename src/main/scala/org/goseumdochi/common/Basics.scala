@@ -148,18 +148,3 @@ object MoreMath
       impulse.speed * impulse.duration.toMillis / 1000.0,
       impulse.theta)
 }
-
-trait RetinalTransform
-{
-  def retinaToWorld(pos : RetinalPos) : PlanarPos
-  def worldToRetina(pos : PlanarPos) : RetinalPos
-}
-
-case object IdentityRetinalTransform extends RetinalTransform
-{
-  override def retinaToWorld(pos : RetinalPos) : PlanarPos =
-    PlanarPos(pos.x, pos.y)
-
-  override def worldToRetina(pos : PlanarPos) : RetinalPos =
-    RetinalPos(pos.x, pos.y)
-}

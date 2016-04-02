@@ -18,40 +18,40 @@ package org.goseumdochi.sphero
 import org.goseumdochi.common._
 import org.goseumdochi.control._
 
-import MoreMath._
-
 import se.nicklasgavelin.sphero._
 import se.nicklasgavelin.sphero.command._
 import se.nicklasgavelin.util.Value
 
+import scala.concurrent.duration._
+
 class SpheroActuator(robot : Robot) extends Actuator
 {
-  override def actuateMotion(impulse : PolarImpulse)
+  private def executeTemporaryMacro(builder : SpheroMacroBuilder)
   {
     // kill motor on exit
     val macroFlags = SaveTemporaryMacroCommand.MacroFlagMotorControl
-    val macroDef = Array.ofDim[Byte](10)
-    // first command:  ROLL2
-    macroDef(0) = 0x1D.toByte
-    val degrees = (360.0*normalizeRadiansPositive(impulse.theta) / TWO_PI).toInt
-    val heading = (degrees % 360).toInt
-    val velocity = Value.clamp(impulse.speed.toFloat, 0.0D, 1.0D).toFloat
-    val millis = impulse.duration.toMillis.toInt
-    macroDef(1) = (velocity * 255.0D).toInt.toByte
-    macroDef(2) = (heading >> 8).toByte
-    macroDef(3) = heading.toByte
-    macroDef(4) = (millis >> 8).toByte
-    macroDef(5) = millis.toByte
-    // second command:  SET SPEED
-    macroDef(6) = 0x25.toByte
-    macroDef(7) = 0.toByte
-    macroDef(8) = 0.toByte
-    // third command:  END
-    macroDef(9) = 0x1.toByte
     robot.sendCommand(
-      new SaveTemporaryMacroCommand(macroFlags, macroDef))
+      new SaveTemporaryMacroCommand(macroFlags, builder.getMacroBytes))
     robot.sendCommand(
       new RunMacroCommand(255))
+  }
+
+  override def actuateMotion(impulse : PolarImpulse)
+  {
+    actuateMotion(impulse, true)
+  }
+
+  private def actuateMotion(impulse : PolarImpulse, withStop : Boolean)
+  {
+    val stopImpulse = PolarImpulse(0.0, 1.seconds, impulse.theta)
+    val builder = new SpheroMacroBuilder
+    builder.roll(impulse)
+    if (withStop) {
+      builder.roll(stopImpulse)
+    }
+    builder.end()
+
+    executeTemporaryMacro(builder)
   }
 
   override def actuateTwirl(
@@ -59,41 +59,20 @@ class SpheroActuator(robot : Robot) extends Actuator
   {
     if (newHeading) {
       val spin = PolarImpulse(0.0, duration, theta)
-      actuateMotion(spin)
+      actuateMotion(spin, false)
       Thread.sleep(duration.toMillis*2)
       robot.sendCommand(new CalibrateCommand(0))
       return
     }
-    val degrees = (360.0*theta / TWO_PI).toInt
-    val heading = degrees.toInt
-    // kill motor on exit
-    val macroFlags = SaveTemporaryMacroCommand.MacroFlagMotorControl
-    val macroDef = Array.ofDim[Byte](15)
-    // first command:  SET BACK LED on
-    macroDef(0) = 0x9
-    macroDef(1) = 0xFF.toByte
-    macroDef(2) = 0
-    // second command:  ROTATE OVER TIME
-    val millis = duration.toMillis.toInt
-    macroDef(3) = 0x1A
-    macroDef(4) = (heading >> 8).toByte
-    macroDef(5) = heading.toByte
-    macroDef(6) = (millis >> 8).toByte
-    macroDef(7) = millis.toByte
-    // third command:  DELAY
-    macroDef(8) = 0xB
-    macroDef(9) = (millis >> 8).toByte
-    macroDef(10) = millis.toByte
-    // fourth command:  SET BACK LED off
-    macroDef(11) = 0x9
-    macroDef(12) = 0
-    macroDef(13) = 0
-    // fifth command macro:  END
-    macroDef(14) = 0x1.toByte
-    robot.sendCommand(
-      new SaveTemporaryMacroCommand(macroFlags, macroDef))
-    robot.sendCommand(
-      new RunMacroCommand(255))
+
+    val builder = new SpheroMacroBuilder
+    builder.setBackLed(true)
+    builder.twirl(theta, duration)
+    builder.delay(duration)
+    builder.setBackLed(false)
+    builder.end()
+
+    executeTemporaryMacro(builder)
   }
 
   override def actuateLight(color : java.awt.Color)

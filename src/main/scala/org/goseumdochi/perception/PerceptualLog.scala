@@ -16,6 +16,7 @@
 package org.goseumdochi.perception
 
 import org.goseumdochi.common._
+import org.goseumdochi.vision._
 
 import java.io._
 import scala.io._

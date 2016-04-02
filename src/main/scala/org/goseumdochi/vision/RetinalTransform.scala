@@ -13,28 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.behavior
+package org.goseumdochi.vision
 
 import org.goseumdochi.common._
-import org.goseumdochi.control._
 
-import akka.actor._
-
-class DozeFsmSpec extends AkkaSpecification
+trait RetinalTransform
 {
-  "DozeFsm" should
-  {
-    "catch forty winks" in new AkkaExample
-    {
-      val fsm = system.actorOf(
-        Props(classOf[DozeFsm]))
+  def retinaToWorld(pos : RetinalPos) : PlanarPos
+  def worldToRetina(pos : PlanarPos) : RetinalPos
+}
 
-      val initialPos = PlanarPos(0, 0)
+// assume your basic parallel projection, but make the retinal y axis point
+// up instead of down, the way God intended (well, maybe not, since
+// real retinal images are "upside down", but anyway...)
+case object FlipRetinalTransform extends RetinalTransform
+{
+  override def retinaToWorld(pos : RetinalPos) : PlanarPos =
+    PlanarPos(pos.x, -pos.y)
 
-      fsm ! ControlActor.CameraAcquiredMsg(DEFAULT_DIMS, TimePoint.ZERO)
-      fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
-
-      expectQuiescence
-    }
-  }
+  override def worldToRetina(pos : PlanarPos) : RetinalPos =
+    RetinalPos(pos.x, -pos.y)
 }
