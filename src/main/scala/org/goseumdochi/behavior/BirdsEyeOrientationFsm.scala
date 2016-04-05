@@ -58,12 +58,12 @@ class BirdsEyeOrientationFsm()
   private val settings = ActorSettings(context)
 
   private val forwardImpulse =
-    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, 0)
+    PolarImpulse(settings.Motor.defaultSpeed, 500.milliseconds, 0)
 
   startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
+    case Event(ControlActor.CameraAcquiredMsg(_, eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className),
         eventTime)
@@ -98,7 +98,7 @@ class BirdsEyeOrientationFsm()
           actualMotion.distance / predictedMotion.distance,
           normalizeRadians(actualMotion.theta - predictedMotion.theta))
         sender ! ControlActor.CalibratedMsg(
-          bodyMapping, IdentityRetinalTransform, eventTime)
+          bodyMapping, FlipRetinalTransform, eventTime)
         goto(Done)
       }
     }

@@ -29,15 +29,19 @@ object ControlActor
 {
   // sent messages
   // VisionActor.ActivateAnalyzersMsg
-  final case class CameraAcquiredMsg(eventTime : TimePoint)
+  final case class CameraAcquiredMsg(
+    bottomRight : RetinalPos, eventTime : TimePoint)
       extends EventMsg
-  final case class BodyMovedMsg(pos : PlanarPos, eventTime : TimePoint)
+  final case class BodyMovedMsg(
+    pos : PlanarPos, eventTime : TimePoint)
       extends EventMsg
-  final case class PanicAttackMsg(eventTime : TimePoint)
+  final case class PanicAttackMsg(
+    eventTime : TimePoint)
       extends EventMsg
 
   // internal messages
-  final case class CheckVisibilityMsg(eventTime : TimePoint)
+  final case class CheckVisibilityMsg(
+    eventTime : TimePoint)
       extends EventMsg
 
   // received messages
@@ -48,20 +52,28 @@ object ControlActor
     eventTime : TimePoint)
       extends EventMsg
   final case class ActuateImpulseMsg(
-    impulse : PolarImpulse, eventTime : TimePoint)
+    impulse : PolarImpulse,
+    eventTime : TimePoint)
       extends EventMsg
   final case class ActuateMoveMsg(
-    from : PlanarPos, to : PlanarPos,
-    speed : Double, extraTime : TimeSpan, eventTime : TimePoint)
+    from : PlanarPos,
+    to : PlanarPos,
+    speed : Double,
+    extraTime : TimeSpan,
+    eventTime : TimePoint)
       extends EventMsg
   final case class ActuateTwirlMsg(
-    theta : Double, duration : TimeSpan, eventTime : TimePoint)
+    theta : Double,
+    duration : TimeSpan,
+    eventTime : TimePoint)
       extends EventMsg
   final case class ActuateLightMsg(
-    color : java.awt.Color, eventTime : TimePoint)
+    color : java.awt.Color,
+    eventTime : TimePoint)
       extends EventMsg
   final case class UseVisionAnalyzersMsg(
-    analyzerClassNames : Seq[String], eventTime : TimePoint)
+    analyzerClassNames : Seq[String],
+    eventTime : TimePoint)
       extends EventMsg
 
   // pass-through messages
@@ -76,6 +88,25 @@ object ControlActor
   final val ORIENTATION_ACTOR_NAME = "orientationActor"
 
   final val BEHAVIOR_ACTOR_NAME = "behaviorActor"
+
+  def readOrientation(settings : Settings) : (RetinalTransform, BodyMapping) =
+  {
+    val seq = PerceptualLog.read(settings.Orientation.persistenceFile)
+    seq.head.msg match {
+      case msg : CalibratedMsg => {
+        (msg.xform, BodyMapping(msg.bodyMapping.scale, 0.0))
+      }
+    }
+  }
+
+  def writeOrientation(settings : Settings, msg : CalibratedMsg)
+  {
+    val orientationLog = new PerceptualLog(
+      settings.Orientation.persistenceFile)
+    orientationLog.processEvent(
+      PerceptualEvent("orientation", "controlActor", "futureSelf", msg))
+    orientationLog.close
+  }
 }
 
 class ControlActor(
@@ -104,16 +135,25 @@ class ControlActor(
     Props(Class.forName(settings.Behavior.className)),
     BEHAVIOR_ACTOR_NAME)
 
+  private var doOrientation = settings.Control.orient
+
   private var localizing = true
 
-  private var orienting = true
+  private var orienting = doOrientation
 
   private var movingUntil = TimePoint.ZERO
 
-  private var retinalTransform : RetinalTransform =
-    IdentityRetinalTransform
-
   private var bodyMappingOpt : Option[BodyMapping] = None
+
+  private var retinalTransform : RetinalTransform = {
+    if (doOrientation) {
+      FlipRetinalTransform
+    } else {
+      val (xform, bodyMapping) = ControlActor.readOrientation(settings)
+      bodyMappingOpt = Some(bodyMapping)
+      xform
+    }
+  }
 
   private var lastSeenTime = TimePoint.ZERO
 
@@ -154,16 +194,19 @@ class ControlActor(
 
   private def receiveInput(eventMsg : EventMsg) = eventMsg match
   {
-    case CalibratedMsg(bodyMapping, xform, eventTime) => {
-      retinalTransform = xform
+    case calibratedMsg : CalibratedMsg => {
+      val bodyMapping = calibratedMsg.bodyMapping
+      retinalTransform = calibratedMsg.xform
       bodyMappingOpt = Some(BodyMapping(bodyMapping.scale, 0.0))
       orienting = false
       val spinDuration = 500.milliseconds
-      actuator.actuateTwirl(-bodyMapping.thetaOffset, spinDuration, true)
-      moveToCenter(lastSeenPos, eventTime + 1.second)
-      sendOutput(behaviorActor, CameraAcquiredMsg(eventTime))
+      actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
       orientationActor ! PoisonPill.getInstance
+      writeOrientation(settings, calibratedMsg)
       log.info("ORIENTATION COMPLETE")
+      if (!settings.Test.active) {
+        context.system.terminate
+      }
     }
     case ActuateLightMsg(color : java.awt.Color, eventTime) => {
       actuator.actuateLight(color)
@@ -182,7 +225,7 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       bottomRight = pos
-      sendOutput(localizationActor, CameraAcquiredMsg(eventTime))
+      sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
     // note that this pattern needs to be matched BEFORE the
     // generic ObjDetectedMsg case
@@ -216,7 +259,13 @@ class ControlActor(
     case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
       if (localizing) {
         localizing = false
-        sendOutput(orientationActor, CameraAcquiredMsg(eventTime))
+        if (orienting) {
+          sendOutput(
+            orientationActor, CameraAcquiredMsg(bottomRight, eventTime))
+        } else {
+          sendOutput(
+            behaviorActor, CameraAcquiredMsg(bottomRight, eventTime))
+        }
         localizationActor ! PoisonPill.getInstance
         log.info("BODY LOCATED")
       }

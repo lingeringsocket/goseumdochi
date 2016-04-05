@@ -29,7 +29,7 @@ class BirdsEyeOrientationFsmSpec extends AkkaSpecification
       val fsm = system.actorOf(
         Props(classOf[BirdsEyeOrientationFsm]))
 
-      fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
+      fsm ! ControlActor.CameraAcquiredMsg(DEFAULT_DIMS, TimePoint.ZERO)
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector"),
         TimePoint.ZERO))
@@ -43,15 +43,15 @@ class BirdsEyeOrientationFsmSpec extends AkkaSpecification
 
       val forwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
-      forwardImpulse.speed must be closeTo(0.2 +/- 0.01)
-      forwardImpulse.duration.toMillis must be equalTo 800
+      forwardImpulse.speed must be closeTo(0.5 +/- 0.01)
+      forwardImpulse.duration.toMillis must be equalTo 500
       forwardImpulse.theta must be closeTo(0.0 +/- 0.01)
 
       fsm ! ControlActor.BodyMovedMsg(finalPos, TimePoint.ZERO)
 
       val bodyMapping = expectMsgClass(
         classOf[ControlActor.CalibratedMsg]).bodyMapping
-      bodyMapping.scale must be closeTo(652.5 +/- 0.1)
+      bodyMapping.scale must be closeTo(417.6 +/- 0.1)
       bodyMapping.thetaOffset must be closeTo(0.29 +/- 0.01)
     }
   }

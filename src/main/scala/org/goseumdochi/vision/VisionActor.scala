@@ -27,6 +27,7 @@ import akka.routing._
 import scala.concurrent.duration._
 
 import java.awt.event._
+import javax.swing._
 
 object VisionActor
 {
@@ -67,20 +68,21 @@ class VisionActor(videoStream : VideoStream)
 
   private var hintBodyPos : Option[PlanarPos] = None
 
-  private var retinalTransform : RetinalTransform = IdentityRetinalTransform
+  private var retinalTransform : RetinalTransform = FlipRetinalTransform
+
+  private var shutDown = false
 
   def receive =
   {
     case GrabFrameMsg(lastTime) => {
-      if (canvas.waitKey(-1) != null) {
-        videoStream.quit()
-      }
-      val thisTime = TimePoint.now
-      val analyze = (thisTime > lastTime + throttlePeriod)
-      grabOne(analyze)
-      import context.dispatcher
-      context.system.scheduler.scheduleOnce(200.milliseconds) {
-        self ! GrabFrameMsg(if (analyze) thisTime else lastTime)
+      if (!shutDown) {
+        val thisTime = TimePoint.now
+        val analyze = (thisTime > lastTime + throttlePeriod)
+        grabOne(analyze)
+        import context.dispatcher
+        context.system.scheduler.scheduleOnce(200.milliseconds) {
+          self ! GrabFrameMsg(if (analyze) thisTime else lastTime)
+        }
       }
     }
     case ActivateAnalyzersMsg(analyzerClassNames, xform) => {
@@ -99,14 +101,30 @@ class VisionActor(videoStream : VideoStream)
 
   private def initCanvas() =
   {
-    val canvas = new CanvasFrame("Webcam")
-    canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
+    val canvas = new CanvasFrame("Retina")
+    canvas.setDefaultCloseOperation(
+      WindowConstants.DISPOSE_ON_CLOSE)
     canvas.getCanvas.addMouseListener(new MouseAdapter {
       override def mouseClicked(e : MouseEvent) {
         gossip(
           MotionDetector.MotionDetectedMsg(
             retinalTransform.retinaToWorld(RetinalPos(e.getX, e.getY)),
               TimePoint.now))
+      }
+    })
+    canvas.addWindowListener(new WindowAdapter {
+      override def windowClosing(e : WindowEvent)
+      {
+        super.windowClosing(e)
+        if (!shutDown) {
+          shutDown = true
+          context.system.terminate
+        }
+      }
+
+      override def windowClosed(e : WindowEvent)
+      {
+        super.windowClosed(e)
       }
     })
     canvas
@@ -181,5 +199,15 @@ class VisionActor(videoStream : VideoStream)
   override def preStart()
   {
     self ! GrabFrameMsg(TimePoint.now)
+  }
+
+  override def postStop()
+  {
+    if (!shutDown) {
+      shutDown = true
+      videoStream.quit
+      java.awt.Toolkit.getDefaultToolkit.getSystemEventQueue.postEvent(
+        new WindowEvent(canvas, WindowEvent.WINDOW_CLOSING))
+    }
   }
 }

@@ -43,7 +43,7 @@ object ConsoleMain extends App
   {
     System.err.println("Usage:")
     System.err.println(
-      "    sbt 'run sphero custom.conf'")
+      "    sbt 'run sphero orientation.conf'")
     System.err.println(
       "    sbt 'run replay /path/to/event-log.json'")
     runMap.foreach({

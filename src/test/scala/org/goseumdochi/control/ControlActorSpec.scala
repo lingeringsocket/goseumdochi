@@ -26,7 +26,8 @@ import scala.concurrent.duration._
 
 import ControlActor._
 
-class ControlActorSpec extends AkkaSpecification
+class ControlActorSpec extends AkkaSpecification(
+  "birdseye-orientation-test.conf")
 {
   "ControlActor" should
   {
@@ -57,7 +58,7 @@ class ControlActorSpec extends AkkaSpecification
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
       val backwardImpulse = actuator.expectImpulse
-      backwardImpulse must be equalTo(PolarImpulse(0.2, 800.milliseconds, PI))
+      backwardImpulse must be equalTo(PolarImpulse(0.5, 500.milliseconds, PI))
 
       controlActor ! VisionActor.HintBodyLocationMsg(initialPos, initialTime)
 
@@ -68,16 +69,12 @@ class ControlActorSpec extends AkkaSpecification
 
       val orientationImpulse = actuator.expectImpulse
       orientationImpulse must be equalTo(
-        PolarImpulse(0.2, 800.milliseconds, 0.0))
+        PolarImpulse(0.5, 500.milliseconds, 0.0))
 
       controlActor !
         BodyDetector.BodyDetectedMsg(orientationPos, orientationTime)
 
-      actuator.expectTwirlMsg.theta must be closeTo(-0.38 +/- 0.01)
-      val centeringImpulse = actuator.expectImpulse
-      centeringImpulse.speed must be closeTo(0.2 +/- 0.01)
-      centeringImpulse.duration.toMillis must be equalTo 891
-      centeringImpulse.theta must be closeTo(1.57 +/- 0.01)
+      actuator.expectTwirlMsg.theta must be closeTo(0.38 +/- 0.01)
 
       controlActor ! CheckVisibilityMsg(orientationTime)
       actuator.expectColor
@@ -92,7 +89,9 @@ class ControlActorSpec extends AkkaSpecification
       actuator.expectColor
 
       val panicImpulse = actuator.expectImpulse
-      panicImpulse must be equalTo(centeringImpulse)
+      panicImpulse.speed must be closeTo(0.5 +/- 0.01)
+      panicImpulse.duration.toMillis must be equalTo 1299
+      panicImpulse.theta must be closeTo(-1.57 +/- 0.01)
 
       expectQuiescence
     }

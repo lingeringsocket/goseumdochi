@@ -51,6 +51,7 @@ class Settings(rootConf : Config)
   object Control
   {
     val subConf = conf.getConfig("control")
+    val orient = subConf.getBoolean("orient")
     val panicDelay = getMillis(subConf, "panic-delay")
     val visibilityCheckFreq = getMillis(subConf, "visibility-check-freq")
   }
@@ -90,6 +91,7 @@ class Settings(rootConf : Config)
     val className = subConf.getString("class-name")
     val localizationClassName = subConf.getString("localization-class-name")
     val quietPeriod = getMillis(subConf, "quiet-period")
+    val persistenceFile = subConf.getString("persistence-file")
   }
 
   object BodyRecognition

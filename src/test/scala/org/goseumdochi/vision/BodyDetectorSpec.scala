@@ -22,9 +22,9 @@ import org.bytedeco.javacpp.opencv_highgui._
 class BodyDetectorSpec extends VisualizableSpecification
 {
   private val roundBodyDetector =
-    new RoundBodyDetector(settings, IdentityRetinalTransform)
+    new RoundBodyDetector(settings, FlipRetinalTransform)
   private val flashyBodyDetector =
-    new FlashyBodyDetector(settings, IdentityRetinalTransform)
+    new FlashyBodyDetector(settings, FlipRetinalTransform)
 
   "BodyDetector" should
   {
@@ -49,7 +49,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       visualize(img, pos)
 
       pos.x must be closeTo(563.0 +/- 0.1)
-      pos.y must be closeTo(451.0 +/- 0.1)
+      pos.y must be closeTo(-451.0 +/- 0.1)
     }
 
     "detect round body with good hint" in
@@ -66,7 +66,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       visualize(img, pos)
 
       pos.x must be closeTo(569.0 +/- 0.1)
-      pos.y must be closeTo(471.0 +/- 0.1)
+      pos.y must be closeTo(-471.0 +/- 0.1)
     }
 
     "detect flashy body" in
@@ -82,7 +82,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       visualize(img2, pos)
 
       pos.x must be closeTo(267.5 +/- 0.1)
-      pos.y must be closeTo(363.0 +/- 0.1)
+      pos.y must be closeTo(-363.0 +/- 0.1)
     }
   }
 }

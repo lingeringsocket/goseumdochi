@@ -34,7 +34,7 @@ class LocalizationFsmSpec extends AkkaSpecification
       val fsm = system.actorOf(
         Props(classOf[LocalizationFsm]))
 
-      fsm ! ControlActor.CameraAcquiredMsg(TimePoint.ZERO)
+      fsm ! ControlActor.CameraAcquiredMsg(DEFAULT_DIMS, TimePoint.ZERO)
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
         "org.goseumdochi.vision.FineMotionDetector"),
@@ -44,16 +44,16 @@ class LocalizationFsmSpec extends AkkaSpecification
 
       val backwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
-      backwardImpulse.speed must be closeTo(0.2 +/- 0.01)
-      backwardImpulse.duration.toMillis must be equalTo 800
+      backwardImpulse.speed must be closeTo(0.5 +/- 0.01)
+      backwardImpulse.duration.toMillis must be equalTo 500
       backwardImpulse.theta must be closeTo(PI +/- 0.01)
 
       expectQuiescence
 
       val forwardImpulse = expectMsgClass(
         classOf[ControlActor.ActuateImpulseMsg]).impulse
-      forwardImpulse.speed must be closeTo(0.2 +/- 0.01)
-      forwardImpulse.duration.toMillis must be equalTo 800
+      forwardImpulse.speed must be closeTo(0.5 +/- 0.01)
+      forwardImpulse.duration.toMillis must be equalTo 500
       forwardImpulse.theta must be closeTo(0.0 +/- 0.01)
 
       val finalPos = PlanarPos(100, 30)

@@ -25,16 +25,22 @@ case class BodyMapping(
   scale : Double,
   thetaOffset : Double)
 {
+  def transformMotion(motion : PolarVector, speed : Double) =
+  {
+    val duration = (motion.distance / speed) / scale
+    val theta = normalizeRadians(motion.theta - thetaOffset)
+    PolarImpulse(
+      speed,
+      TimeSpan((duration*1000.0).toLong, MILLISECONDS),
+      theta)
+  }
+
   def computeImpulse(
     origin : PlanarPos, dest : PlanarPos,
     speed : Double, extraTime : TimeSpan) =
   {
     val motion = polarMotion(origin, dest)
-    val duration = (motion.distance / speed) / scale
-    val theta = normalizeRadians(motion.theta - thetaOffset)
-    PolarImpulse(
-      speed,
-      TimeSpan((duration*1000.0).toLong, MILLISECONDS) + extraTime,
-      theta)
+    val impulse = transformMotion(motion, speed)
+    PolarImpulse(impulse.speed, impulse.duration + extraTime, impulse.theta)
   }
 }

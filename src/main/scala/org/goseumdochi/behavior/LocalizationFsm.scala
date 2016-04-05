@@ -70,15 +70,15 @@ class LocalizationFsm()
   }
 
   private val forwardImpulse =
-    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, 0)
+    PolarImpulse(settings.Motor.defaultSpeed, 500.milliseconds, 0)
 
   private val backwardImpulse =
-    PolarImpulse(settings.Motor.defaultSpeed, 800.milliseconds, PI)
+    PolarImpulse(settings.Motor.defaultSpeed, 500.milliseconds, PI)
 
   startWith(Blind, Empty)
 
   when(Blind) {
-    case Event(ControlActor.CameraAcquiredMsg(eventTime), _) => {
+    case Event(ControlActor.CameraAcquiredMsg(_, eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
         classOf[FineMotionDetector].getName),
@@ -93,7 +93,7 @@ class LocalizationFsm()
       controlActor ! ControlActor.ActuateImpulseMsg(
         backwardImpulse, eventTime)
       goto(FindingBody) using WithControl(
-        controlActor, eventTime + quietPeriod, true)
+        controlActor, eventTime, true)
     }
     case _ => {
       stay

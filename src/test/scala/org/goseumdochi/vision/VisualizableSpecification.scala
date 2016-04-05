@@ -39,6 +39,18 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
 
   private var canvas : Option[CanvasFrame] = None
 
+  protected final val DEFAULT_DIMS = RetinalPos(100, 100)
+
+  def beRoughlyX(p2 : PlanarVector) = beCloseTo(p2.x +/- 0.1) ^^ {
+    p1 : PlanarVector => p1.x
+  }
+
+  def beRoughlyY(p2 : PlanarVector) = beCloseTo(p2.y +/- 0.1) ^^ {
+    p1 : PlanarVector => p1.y
+  }
+
+  def beRoughly(p2 : PlanarVector) = beRoughlyX(p2) and beRoughlyY(p2)
+
   protected def loadConfig(overrideConf : String) =
   {
     val actualConf = {
@@ -80,7 +92,7 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
 
   protected def visualize(
     img : IplImage, pos : PlanarPos,
-    xform : RetinalTransform = IdentityRetinalTransform)
+    xform : RetinalTransform = FlipRetinalTransform)
   {
     visualize(img, xform.worldToRetina(pos))
   }

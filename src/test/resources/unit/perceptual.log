@@ -17,34 +17,6 @@
 ,
 {
   "description":"second event",
-  "sender":"orientationActor",
-  "receiver":"controlActor",
-  "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$CalibratedMsg",
-    "bodyMapping":{
-      "scale":784.6478332489182,
-      "thetaOffset":-2.204182069566842
-    },
-    "xform":{
-      "jsonClass":"org.goseumdochi.behavior.ProjectiveRetinalTransform",
-      "retinaOrigin":{
-        "x":748.5,
-        "y":510.0
-      },
-      "worldOrigin":{
-        "x":748.5,
-        "y":510.0
-      },
-      "vSquash":0.5615731621894507
-    },
-    "eventTime":{
-      "millis":25477
-    }
-  }
-}
-,
-{
-  "description":"third event",
   "sender":"controlActor",
   "receiver":"behaviorActor",
   "msg":{

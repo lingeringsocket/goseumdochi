@@ -46,6 +46,8 @@ class RetinalView(settings : Settings) extends PerceptualView
 {
   override def processHistory(events : Seq[PerceptualEvent])
   {
+    val (xform, bodyMapping) = ControlActor.readOrientation(settings)
+    RetinalView.retinalTransform = xform
     RetinalView.createTimeline(events, settings.View.playbackRate)
     RetinalView.startVisualization()
   }
@@ -65,7 +67,7 @@ object RetinalView
 {
   private var bottomRightOpt : Option[RetinalPos] = None
 
-  private var retinalTransform : RetinalTransform = IdentityRetinalTransform
+  private var retinalTransform : RetinalTransform = FlipRetinalTransform
 
   private[fx] def bottomRight = bottomRightOpt.getOrElse(RetinalPos(100, 100))
 
