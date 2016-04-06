@@ -98,9 +98,12 @@ class RoundBodyDetector(
     }
   }
 
+  private def blurCircle(c : RetinalCircle) =
+    RetinalCircle(5*(c.centerX/5), 5*(c.centerY/5), 3*(c.radius/3))
+
   private[vision] def findBackgroundCircles(gray : IplImage)
   {
-    filteredCircles ++= findCircles(gray)
+    filteredCircles ++= findCircles(gray).map(blurCircle)
   }
 
   private[vision] def detectBody(
@@ -119,11 +122,12 @@ class RoundBodyDetector(
       val dy = c.centerY - expectedCircle.centerY
       sqr(dx) + sqr(dy)
     }
-    val newCircles = circles -- filteredCircles
-    filteredCircles ++= newCircles
+    val newCircles = circles.filterNot(
+      c => filteredCircles.contains(blurCircle(c)))
+    filteredCircles ++= newCircles.map(blurCircle)
     Try(newCircles.minBy(metric)) match {
       case Success(c : RetinalCircle) => {
-        filteredCircles -= c
+        filteredCircles -= blurCircle(c)
         visualizeCircles(img, Iterable(c))
         minRadius = c.radius - 8
         if (minRadius < 1) {
