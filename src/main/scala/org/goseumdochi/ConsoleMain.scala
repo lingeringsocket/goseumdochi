@@ -23,6 +23,7 @@ object ConsoleMain extends App
     "sphero" -> "org.goseumdochi.sphero.SpheroMain",
     "simulation" -> "org.goseumdochi.simulation.SimulationMain",
     "capture" -> "org.goseumdochi.vision.CaptureMain",
+    "perspective" -> "org.goseumdochi.view.opencv.PerspectiveMain",
     "replay" -> "org.goseumdochi.view.ReplayMain")
 
   if (args.isEmpty) {

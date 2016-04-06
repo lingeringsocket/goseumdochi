@@ -20,8 +20,6 @@ import org.goseumdochi.perception._
 import org.goseumdochi.control._
 
 import org.bytedeco.javacpp.opencv_highgui._
-import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.helper.opencv_core._
 
 class PerspectiveVisualizationSpec extends VisualizableSpecification
 {
@@ -45,20 +43,7 @@ class PerspectiveVisualizationSpec extends VisualizableSpecification
 
       if (shouldVisualize) {
         val img = cvLoadImage("data/wallmount.jpg")
-        for (x <- -10 to 10) {
-          for (y <- -10 to 2) {
-            val wp = PlanarPos(x / 10.0, y / 10.0)
-            val rp = xform.worldToRetina(wp)
-            val point = OpenCvUtil.point(rp)
-            cvCircle(img, point, 2, AbstractCvScalar.RED, 6, CV_AA, 0)
-          }
-        }
-        for (rp <- Array(xform.nearCenter, xform.farCenter,
-          xform.distantCenter, xform.nearRight, xform.farRight))
-        {
-          val point = OpenCvUtil.point(rp)
-          cvCircle(img, point, 2, AbstractCvScalar.GREEN, 6, CV_AA, 0)
-        }
+        xform.visualize(img)
         visualize(img)
       }
 

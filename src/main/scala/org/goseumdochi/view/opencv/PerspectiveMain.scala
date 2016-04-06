@@ -13,68 +13,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.vision
+package org.goseumdochi.view.opencv
 
+import org.goseumdochi.control._
 import org.goseumdochi.common._
+import org.goseumdochi.vision._
 
-import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacv._
 
 import com.typesafe.config._
 
-import java.awt.event._
-
-object CaptureMain extends App
+object PerspectiveMain extends App
 {
   val config = ConfigFactory.load()
   val settings = Settings(config)
 
-  captureFrameOnClick()
+  showPerspective
 
-  def captureOneFrame(outFileName : String)
+  def showPerspective()
   {
-    val videoStream =
-      settings.instantiateObject(settings.Vision.cameraClass).
-        asInstanceOf[VideoStream]
-    videoStream.beforeNext
-    val img = OpenCvUtil.convert(grabOneFrame(videoStream))
-    videoStream.afterNext
-    cvSaveImage(outFileName, img)
-  }
+    val (xform, bodyMapping) = ControlActor.readOrientation(settings)
+    val perspective = xform.asInstanceOf[RestrictedPerspectiveTransform]
 
-  def captureFrameOnClick()
-  {
     val canvas = new CanvasFrame("Webcam")
     canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
     val videoStream =
       settings.instantiateObject(settings.Vision.cameraClass).
         asInstanceOf[VideoStream]
     val running = true
-    var capture = false
-    var nextSuffix = 1
 
-    canvas.getCanvas.addMouseListener(new MouseAdapter {
-      override def mouseClicked(e : MouseEvent)
-      {
-        capture = true
-      }
-    })
-
-    println("Click mouse inside webcam window to capture; " +
-      "close webcam window to quit")
+    println("Close webcam window to quit")
     while (running) {
       videoStream.beforeNext
       val frame = grabOneFrame(videoStream)
-      canvas.showImage(frame)
-      if (capture) {
-        val img = OpenCvUtil.convert(frame)
-        val outFileName = "frame" + nextSuffix + ".jpg"
-        nextSuffix += 1
-        cvSaveImage(outFileName, img)
-        capture = false
-        println("Captured " + outFileName)
-        img.release
-      }
+      val img = OpenCvUtil.convert(frame)
+      perspective.visualize(img)
+      canvas.showImage(OpenCvUtil.convert(img))
+      img.release
       videoStream.afterNext
     }
   }

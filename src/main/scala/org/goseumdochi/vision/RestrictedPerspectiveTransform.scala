@@ -17,6 +17,9 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
+import org.bytedeco.javacpp.opencv_core._
+import org.bytedeco.javacpp.helper.opencv_core._
+
 // This transform implements a restricted subset of the general perspective
 // transform.  It infers the transform parameters from a known
 // point configuration, with the following assumptions:
@@ -88,6 +91,25 @@ case class RestrictedPerspectiveTransform(
     val yRight = RetinalPos(nearRight.x, y)
     val xProj = RetinalPos(nearCenter.x + (p.x / horizontalScale), nearCenter.y)
     intersection((vanishingPoint, xProj),(yCenter, yRight))
+  }
+
+  def visualize(img : IplImage)
+  {
+    for (x <- -10 to 10) {
+      for (y <- -10 to 10) {
+        val wp = PlanarPos(x / 10.0, y / 10.0)
+        val rp = worldToRetina(wp)
+        val point = OpenCvUtil.point(rp)
+        cvCircle(img, point, 2, AbstractCvScalar.RED, 6, CV_AA, 0)
+      }
+    }
+
+    for (rp <- Array(nearCenter, farCenter,
+      distantCenter, nearRight, farRight))
+    {
+      val point = OpenCvUtil.point(rp)
+      cvCircle(img, point, 2, AbstractCvScalar.GREEN, 6, CV_AA, 0)
+    }
   }
 }
 
