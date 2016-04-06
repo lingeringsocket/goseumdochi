@@ -21,10 +21,14 @@ import org.bytedeco.javacpp.opencv_highgui._
 
 class BodyDetectorSpec extends VisualizableSpecification
 {
+  // body detectors are mutable, so we need isolation
+  isolated
+
   private val roundBodyDetector =
     new RoundBodyDetector(settings, FlipRetinalTransform)
   private val flashyBodyDetector =
     new FlashyBodyDetector(settings, FlipRetinalTransform)
+
 
   "BodyDetector" should
   {
@@ -54,11 +58,9 @@ class BodyDetectorSpec extends VisualizableSpecification
 
     "detect round body with good hint" in
     {
-      skipped("flaky on Travis")
-
       val img = cvLoadImage("data/baseline1.jpg")
       val gray = OpenCvUtil.grayscale(img)
-      val hintPos = PlanarPos(500, 500)
+      val hintPos = PlanarPos(500, -500)
       val posOpt = roundBodyDetector.detectBody(img, gray, hintPos)
       posOpt must not beEmpty
 
@@ -83,6 +85,55 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       pos.x must be closeTo(267.5 +/- 0.1)
       pos.y must be closeTo(-363.0 +/- 0.1)
+    }
+
+    "find circles for round body background elimination" in
+    {
+      val img1 = cvLoadImage("data/circles1.jpg")
+      val gray1 = OpenCvUtil.grayscale(img1)
+      val circles = roundBodyDetector.findCircles(gray1)
+
+      if (shouldVisualize) {
+        roundBodyDetector.visualizeCircles(img1, circles)
+        visualize(img1)
+      }
+
+      circles.size must be equalTo 28
+    }
+
+    "detect round body after background elimination" in
+    {
+      val img1 = cvLoadImage("data/circles1.jpg")
+      val gray1 = OpenCvUtil.grayscale(img1)
+      val img2 = cvLoadImage("data/circles2.jpg")
+      val gray2 = OpenCvUtil.grayscale(img2)
+      val hintPos = PlanarPos(500, -500)
+
+      roundBodyDetector.findBackgroundCircles(gray1)
+
+      // img1 should show no body since all circles are considered background
+      roundBodyDetector.detectBody(img1, gray1, hintPos) must beEmpty
+
+      // but img2 should have something
+      val posOpt = roundBodyDetector.detectBody(img2, gray2, hintPos)
+      posOpt must not beEmpty
+
+      val pos = posOpt.get
+
+      val circles = roundBodyDetector.findCircles(gray2)
+      if (shouldVisualize) {
+        roundBodyDetector.visualizeCircles(img2, circles)
+        visualize(img2, pos)
+      }
+
+      // even though we've already done background elimination,
+      // multiple circles still show up due to sensitivity
+      // in the algorithm, so from there we narrow it down
+      // via hint position
+      circles.size must be equalTo 6
+
+      pos.x must be closeTo(363.0 +/- 0.1)
+      pos.y must be closeTo(-539.0 +/- 0.1)
     }
   }
 }

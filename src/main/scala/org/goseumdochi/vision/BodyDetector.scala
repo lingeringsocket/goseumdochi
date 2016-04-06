@@ -23,6 +23,9 @@ import org.bytedeco.javacpp.opencv_imgproc._
 
 import MoreMath._
 
+import collection._
+import util._
+
 object BodyDetector
 {
   // result messages
@@ -58,6 +61,12 @@ class FlashyBodyDetector(
   }
 }
 
+// use integers to allow for hash-based filtering (which is tricky with doubles)
+case class RetinalCircle(
+  centerX : Int,
+  centerY : Int,
+  radius : Int)
+
 class RoundBodyDetector(
   val settings : Settings, val xform : RetinalTransform)
     extends BodyDetector
@@ -68,68 +77,103 @@ class RoundBodyDetector(
 
   private var maxRadius = conf.getInt("max-radius")
 
+  private val filteredCircles = new mutable.LinkedHashSet[RetinalCircle]
+
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
   {
-    hintBodyPos.flatMap(
-      hintPos => detectBody(img, gray, hintPos).map(
-        pos => {
-          BodyDetectedMsg(pos, frameTime)
-        }
-      )
-    )
-  }
-
-  def detectBody(img : IplImage, gray : IplImage,
-    hintBodyPos : PlanarPos)
-      : Option[PlanarPos] =
-  {
-    val mem = AbstractCvMemStorage.create
-    val circles = cvHoughCircles(
-      gray,
-      mem,
-      CV_HOUGH_GRADIENT,
-      2,
-      50,
-      100,
-      sensitivity,
-      minRadius,
-      maxRadius)
-
-    var rMin = Double.MaxValue
-    var closest : Option[CvPoint3D32f] = None
-
-    for (i <- 0 until circles.total) {
-      val circle = new CvPoint3D32f(cvGetSeqElem(circles, i))
-      val dx = circle.x - hintBodyPos.x
-      val dy = circle.y - hintBodyPos.y
-      val r = sqr(dx) + sqr(dy)
-      if (r < rMin) {
-        rMin = r
-        closest = Some(circle)
+    hintBodyPos match {
+      case Some(hintPos) => {
+        detectBody(img, gray, hintPos).map(
+          pos => {
+            BodyDetectedMsg(pos, frameTime)
+          }
+        )
+      }
+      case _ => {
+        findBackgroundCircles(gray)
+        Iterable.empty
       }
     }
+  }
 
-    if (closest.isEmpty) {
-      return None
+  private[vision] def findBackgroundCircles(gray : IplImage)
+  {
+    filteredCircles ++= findCircles(gray)
+  }
+
+  private[vision] def detectBody(
+    img : IplImage, gray : IplImage, hintBodyPos : PlanarPos)
+      : Option[PlanarPos] =
+  {
+    val circles = findCircles(gray)
+
+    val expectedPos = xform.worldToRetina(hintBodyPos)
+    val expectedCircle = RetinalCircle(
+      Math.round(expectedPos.x).toInt, Math.round(expectedPos.y).toInt, 0)
+
+    def metric(c : RetinalCircle) =
+    {
+      val dx = c.centerX - expectedCircle.centerX
+      val dy = c.centerY - expectedCircle.centerY
+      sqr(dx) + sqr(dy)
     }
-
-    val circle = closest.get
-    val point = new CvPoint2D32f
-    point.x(circle.x)
-    point.y(circle.y)
-    val result = Some(RetinalPos(point.x, point.y))
-    val center = cvPointFrom32f(point)
-    val radius = Math.round(circle.z)
-    minRadius = radius - 8
-    if (minRadius < 1) {
-      minRadius = 1
+    val newCircles = circles -- filteredCircles
+    filteredCircles ++= newCircles
+    Try(newCircles.minBy(metric)) match {
+      case Success(c : RetinalCircle) => {
+        filteredCircles -= c
+        visualizeCircles(img, Iterable(c))
+        minRadius = c.radius - 8
+        if (minRadius < 1) {
+          minRadius = 1
+        }
+        maxRadius = c.radius + 8
+        Some(xform.retinaToWorld(RetinalPos(c.centerX, c.centerY)))
+      }
+      case _ => {
+        None
+      }
     }
-    maxRadius = radius + 8
-    cvCircle(img, center, radius, AbstractCvScalar.RED, 6, CV_AA, 0)
+  }
 
-    mem.release
-    result.map(xform.retinaToWorld(_))
+  private[vision] def findCircles(gray : IplImage) : Set[RetinalCircle] =
+  {
+    val mem = AbstractCvMemStorage.create
+    try {
+      val circles = cvHoughCircles(
+        gray,
+        mem,
+        CV_HOUGH_GRADIENT,
+        2,
+        50,
+        100,
+        sensitivity,
+        minRadius,
+        maxRadius)
+
+      (0 until circles.total).map(
+        i => {
+          val circle = new CvPoint3D32f(cvGetSeqElem(circles, i))
+          RetinalCircle(
+            Math.round(circle.x), Math.round(circle.y), Math.round(circle.z))
+        }
+      ).toSet
+    } finally {
+      mem.release
+    }
+  }
+
+  private[vision] def visualizeCircles(
+    img : IplImage, circles : Iterable[RetinalCircle])
+  {
+    circles.foreach(c => {
+      val point = new CvPoint2D32f
+      point.x(c.centerX.toFloat)
+      point.y(c.centerY.toFloat)
+      val center = cvPointFrom32f(point)
+      cvCircle(img, center, c.radius, AbstractCvScalar.RED, 6, CV_AA, 0)
+    })
   }
 }
