@@ -47,3 +47,5 @@ traceLevel := 10
 scalastyleFailOnError := true
 
 mainClass in Compile := Some("org.goseumdochi.ConsoleMain")
+
+publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath+"/.ivy2/local/org.goseumdochi")))
