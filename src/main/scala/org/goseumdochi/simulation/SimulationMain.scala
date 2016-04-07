@@ -33,19 +33,19 @@ object SimulationMain extends App
   {
     val videoStream = new PlaybackStream(
       Array(
-        ("data/table1.jpg", 1.second),
-        ("data/table1.jpg", 1.second),
-        ("data/table1.jpg", 1.second),
-        ("data/table1.jpg", 1.second),
-        ("data/table2.jpg", 1.second),
-        ("data/table2.jpg", 1.second),
-        ("data/table2.jpg", 1.second),
-        ("data/table2.jpg", 1.second),
-        ("data/empty.jpg", 1.second),
-        ("data/empty.jpg", 1.second),
-        ("data/empty.jpg", 1.second),
-        ("data/empty.jpg", 1.second),
-        ("data/empty.jpg", 1.second)),
+        ("base/data/table1.jpg", 1.second),
+        ("base/data/table1.jpg", 1.second),
+        ("base/data/table1.jpg", 1.second),
+        ("base/data/table1.jpg", 1.second),
+        ("base/data/table2.jpg", 1.second),
+        ("base/data/table2.jpg", 1.second),
+        ("base/data/table2.jpg", 1.second),
+        ("base/data/table2.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second)),
       true)
     val actuator = NullActuator
     val props = Props(

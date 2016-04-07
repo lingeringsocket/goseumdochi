@@ -62,7 +62,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
       System.err.println(
         "Required property goseumdochi.sphero.bluetooth-id is not set.")
       System.err.println(
-        "In src/main/resources, copy application.conf.template to ")
+        "In base/src/main/resources, copy application.conf.template to ")
       System.err.println("application.conf, then edit for your configuration.")
       system.terminate
       return
