@@ -1,6 +1,6 @@
 name := "goseumdochi-root"
 
-val javacppVersion = "0.11"
+val javacppVersion = "1.1"
 
 version := "0.1"
 
@@ -31,8 +31,8 @@ mainClass in Compile := Some("org.goseumdochi.ConsoleMain")
 libraryDependencies ++= Seq(
   "org.bytedeco"                 % "javacpp"         % javacppVersion,
   "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "org.bytedeco.javacpp-presets" % "opencv" % ("2.4.11-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % ("2.4.11-" + javacppVersion) classifier platform,
+  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier "",
+  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier platform,
   "org.scalafx" %% "scalafx" % "8.0.60-R9"
 )
 

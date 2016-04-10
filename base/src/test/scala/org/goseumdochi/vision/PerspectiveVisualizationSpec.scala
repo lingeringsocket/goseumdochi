@@ -19,7 +19,7 @@ import org.goseumdochi.common._
 import org.goseumdochi.perception._
 import org.goseumdochi.control._
 
-import org.bytedeco.javacpp.opencv_highgui._
+import org.bytedeco.javacpp.opencv_imgcodecs._
 
 class PerspectiveVisualizationSpec extends VisualizableSpecification
 {

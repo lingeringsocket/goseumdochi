@@ -17,7 +17,7 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
-import org.bytedeco.javacpp.opencv_highgui._
+import org.bytedeco.javacpp.opencv_imgcodecs._
 
 class BodyDetectorSpec extends VisualizableSpecification
 {
@@ -98,7 +98,7 @@ class BodyDetectorSpec extends VisualizableSpecification
         visualize(img1)
       }
 
-      circles.size must be equalTo 28
+      circles.size must be equalTo 31
     }
 
     "detect round body after background elimination" in
@@ -130,7 +130,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       // multiple circles still show up due to sensitivity
       // in the algorithm, so from there we narrow it down
       // via hint position
-      circles.size must be equalTo 6
+      circles.size must be equalTo 5
 
       pos.x must be closeTo(363.0 +/- 0.1)
       pos.y must be closeTo(-539.0 +/- 0.1)

@@ -15,9 +15,10 @@
 
 package org.goseumdochi.vision
 
-import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
+import org.bytedeco.javacpp.opencv_imgproc._
+import org.bytedeco.javacpp.opencv_imgcodecs._
 
 class RampDetectorSpec extends VisualizableSpecification
 {

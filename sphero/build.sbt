@@ -8,7 +8,7 @@ isSnapshot := true
 
 scalaVersion := "2.11.7"
 
-val javacppVersion = "0.11"
+val javacppVersion = "1.1"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint",
   "-Xfatal-warnings", "-Ywarn-unused-import")
@@ -26,8 +26,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka"      %% "akka-testkit"     % "2.4.1" % "test",
   "org.bytedeco"                 % "javacpp"         % javacppVersion,
   "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "org.bytedeco.javacpp-presets" % "opencv" % ("2.4.11-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % ("2.4.11-" + javacppVersion) classifier platform,
+  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier "",
+  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier platform,
   "org.specs2"        %% "specs2-core"             % "3.7.2"           % "test"
 )
 

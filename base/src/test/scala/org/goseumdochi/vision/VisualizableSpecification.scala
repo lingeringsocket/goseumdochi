@@ -22,6 +22,7 @@ import org.specs2.mutable._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacv._
+import org.bytedeco.javacpp.opencv_imgproc._
 
 import com.typesafe.config._
 

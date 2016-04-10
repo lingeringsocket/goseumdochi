@@ -8,7 +8,7 @@ isSnapshot := true
 
 scalaVersion := "2.11.7"
 
-val javacppVersion = "0.11"
+val javacppVersion = "1.1"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint",
   "-Xfatal-warnings", "-Ywarn-unused-import")
@@ -24,8 +24,8 @@ resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 libraryDependencies ++= Seq(
   "org.bytedeco"                 % "javacpp"         % javacppVersion,
   "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "org.bytedeco.javacpp-presets" % "opencv" % ("2.4.11-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % ("2.4.11-" + javacppVersion) classifier platform,
+  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier "",
+  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier platform,
   "com.typesafe.akka"      %% "akka-actor"     % "2.4.1",
   "com.typesafe.akka"      %% "akka-testkit"     % "2.4.1" % "test",
   "com.jsuereth" %% "scala-arm" % "1.4",

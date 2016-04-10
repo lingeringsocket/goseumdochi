@@ -178,7 +178,7 @@ class RampDetector(val settings : Settings, val xform : RetinalTransform)
       val count = new IntPointer(1).put(4)
       cvCvtSeqToArray(rects, rect, slice.start_index(i).end_index(i + 4))
 
-      org.bytedeco.javacpp.opencv_core.cvPolyLine(
+      cvPolyLine(
         img, rect.position(0), count, 1, 1, CV_RGB(0,255,0), 3, CV_AA, 0)
     }
   }

@@ -18,7 +18,7 @@ package org.goseumdochi.vision
 import org.goseumdochi.common._
 import org.goseumdochi.common.MoreMath._
 
-import org.bytedeco.javacpp.opencv_highgui._
+import org.bytedeco.javacpp.opencv_imgcodecs._
 
 class RestrictedPerspectiveTransformSpec extends VisualizableSpecification
 {
