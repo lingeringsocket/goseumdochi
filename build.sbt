@@ -20,10 +20,6 @@ fork := true
 
 javaOptions += "-Xmx1G"
 
-javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
-
-scalacOptions += "-target:jvm-1.7"
-
 lazy val base = project
 
 lazy val sphero = project.dependsOn(base)

@@ -10,10 +10,6 @@ scalaVersion := "2.11.7"
 
 val javacppVersion = "0.11"
 
-javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
-
-scalacOptions += "-target:jvm-1.7"
-
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint",
   "-Xfatal-warnings", "-Ywarn-unused-import")
 
