@@ -26,8 +26,8 @@ libraryDependencies ++= Seq(
   "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion)% "test" classifier "",
   "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion)% "test" classifier platform,
   "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "com.typesafe.akka"      %% "akka-actor"     % "2.4.1",
-  "com.typesafe.akka"      %% "akka-testkit"     % "2.4.1" % "test",
+  "com.typesafe.akka"      %% "akka-actor"     % "2.3.15",
+  "com.typesafe.akka"      %% "akka-testkit"     % "2.3.15" % "test",
   "com.jsuereth" %% "scala-arm" % "1.4",
   "org.json4s" %% "json4s-native" % "3.3.0",
   "org.specs2"        %% "specs2-core"             % "3.7.2"           % "test"
@@ -38,6 +38,9 @@ autoCompilerPlugins := true
 parallelExecution in Test := false
 
 fork := true
+
+// make Android happy
+javacOptions ++= Seq("-target", "1.7", "-source", "1.7")
 
 javaOptions += "-Xmx1G"
 

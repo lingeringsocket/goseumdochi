@@ -119,7 +119,7 @@ class VisionActor(videoStream : VideoStream)
         super.windowClosing(e)
         if (!shutDown) {
           shutDown = true
-          context.system.terminate
+          context.system.shutdown
         }
       }
 

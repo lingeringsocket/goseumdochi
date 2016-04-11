@@ -19,9 +19,6 @@ import org.goseumdochi.common._
 
 import akka.actor._
 
-import scala.concurrent._
-import scala.concurrent.duration._
-
 import com.typesafe.config._
 
 object BlindMain extends App
@@ -45,6 +42,6 @@ object BlindMain extends App
   private def run()
   {
     val system = start()
-    Await.result(system.whenTerminated, Duration.Inf)
+    system.awaitTermination
   }
 }

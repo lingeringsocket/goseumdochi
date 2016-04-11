@@ -205,7 +205,7 @@ class ControlActor(
       writeOrientation(settings, calibratedMsg)
       log.info("ORIENTATION COMPLETE")
       if (!settings.Test.active) {
-        context.system.terminate
+        context.system.shutdown
       }
     }
     case ActuateLightMsg(color : java.awt.Color, eventTime) => {
