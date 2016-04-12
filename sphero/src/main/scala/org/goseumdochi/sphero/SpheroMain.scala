@@ -85,7 +85,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
       val props = Props(
         classOf[ControlActor],
         actuator,
-        Props(classOf[VisionActor], videoStream),
+        Props(classOf[VisionActor], videoStream, new CanvasTheater),
         true)
       val controlActor = system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)
     } catch {

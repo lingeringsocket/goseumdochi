@@ -20,15 +20,11 @@ import org.goseumdochi.common._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
 import org.bytedeco.javacpp.helper.opencv_core._
-import org.bytedeco.javacv._
 
 import akka.actor._
 import akka.routing._
 
 import scala.concurrent.duration._
-
-import java.awt.event._
-import javax.swing._
 
 object VisionActor
 {
@@ -50,14 +46,12 @@ object VisionActor
 }
 import VisionActor._
 
-class VisionActor(videoStream : VideoStream)
+class VisionActor(videoStream : VideoStream, theater : RetinalTheater)
     extends Actor with Listeners
 {
   private val settings = ActorSettings(context)
 
   private val throttlePeriod = settings.Vision.throttlePeriod
-
-  private val canvas = initCanvas()
 
   private var analyzers : Seq[VisionAnalyzer] = Seq.empty
 
@@ -98,37 +92,6 @@ class VisionActor(videoStream : VideoStream)
     case m : Any => {
       listenerManagement(m)
     }
-  }
-
-  private def initCanvas() =
-  {
-    val canvas = new CanvasFrame("Retina")
-    canvas.setDefaultCloseOperation(
-      WindowConstants.DISPOSE_ON_CLOSE)
-    canvas.getCanvas.addMouseListener(new MouseAdapter {
-      override def mouseClicked(e : MouseEvent) {
-        gossip(
-          MotionDetector.MotionDetectedMsg(
-            retinalTransform.retinaToWorld(RetinalPos(e.getX, e.getY)),
-              TimePoint.now))
-      }
-    })
-    canvas.addWindowListener(new WindowAdapter {
-      override def windowClosing(e : WindowEvent)
-      {
-        super.windowClosing(e)
-        if (!shutDown) {
-          shutDown = true
-          context.system.shutdown
-        }
-      }
-
-      override def windowClosed(e : WindowEvent)
-      {
-        super.windowClosed(e)
-      }
-    })
-    canvas
   }
 
   private def analyzeFrame(img : IplImage, frameTime : TimePoint)
@@ -186,7 +149,7 @@ class VisionActor(videoStream : VideoStream)
         }
       }
       val converted = OpenCvUtil.convert(img)
-      canvas.showImage(converted)
+      theater.display(converted)
       img.release
     } catch {
       case ex : Throwable => {
@@ -199,6 +162,7 @@ class VisionActor(videoStream : VideoStream)
 
   override def preStart()
   {
+    theater.setActor(this)
     self ! GrabFrameMsg(TimePoint.now)
   }
 
@@ -207,8 +171,23 @@ class VisionActor(videoStream : VideoStream)
     if (!shutDown) {
       shutDown = true
       videoStream.quit
-      java.awt.Toolkit.getDefaultToolkit.getSystemEventQueue.postEvent(
-        new WindowEvent(canvas, WindowEvent.WINDOW_CLOSING))
+      theater.quit
+    }
+  }
+
+  def onTheaterClick(retinalPos : RetinalPos)
+  {
+    gossip(
+      MotionDetector.MotionDetectedMsg(
+        retinalTransform.retinaToWorld(retinalPos),
+        TimePoint.now))
+  }
+
+  def onTheaterClose()
+  {
+    if (!shutDown) {
+      shutDown = true
+      context.system.shutdown
     }
   }
 }

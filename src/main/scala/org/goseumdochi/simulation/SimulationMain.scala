@@ -51,7 +51,7 @@ object SimulationMain extends App
     val props = Props(
       classOf[ControlActor],
       actuator,
-      Props(classOf[VisionActor], videoStream),
+      Props(classOf[VisionActor], videoStream, new CanvasTheater),
       true)
     val config = ConfigFactory.load("simulation.conf")
     val system = ActorSystem("SimulationActors", config)
