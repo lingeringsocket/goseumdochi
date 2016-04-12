@@ -38,8 +38,6 @@ class LocalVideoStream(settings : Settings) extends VideoStream
 {
   private val frameGrabber = startGrabber
 
-  private val converter = OpenCvUtil.newConverter
-
   private def startGrabber() =
   {
     val grabber = new OpenCVFrameGrabber(0)
@@ -53,9 +51,9 @@ class LocalVideoStream(settings : Settings) extends VideoStream
 
   override def nextFrame() =
   {
-    val img = converter.convert(frameGrabber.grab)
+    val img = OpenCvUtil.convert(frameGrabber.grab)
     cvFlip(img, img, 1)
-    (converter.convert(img), TimePoint.now)
+    (OpenCvUtil.convert(img), TimePoint.now)
   }
 
   override def quit()
@@ -103,8 +101,6 @@ class PlaybackStream(
 {
   private val circular = Iterator.continually(keyFrames).flatten
 
-  private val converter = OpenCvUtil.newConverter
-
   private var simulatedTime = TimePoint(TimeSpan(1, SECONDS))
 
   override def nextFrame() =
@@ -119,7 +115,7 @@ class PlaybackStream(
         simulatedTime
       }
     }
-    val frame = converter.convert(cvLoadImage(filename))
+    val frame = OpenCvUtil.convert(cvLoadImage(filename))
     (frame, frameTime)
   }
 }

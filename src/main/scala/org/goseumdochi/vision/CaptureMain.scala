@@ -29,7 +29,6 @@ object CaptureMain extends App
 {
   private val config = ConfigFactory.load()
   private val settings = Settings(config)
-  private val converter = OpenCvUtil.newConverter
 
   captureFrameOnClick()
 
@@ -39,7 +38,7 @@ object CaptureMain extends App
       settings.instantiateObject(settings.Vision.cameraClass).
         asInstanceOf[VideoStream]
     videoStream.beforeNext
-    val img = converter.convert(grabOneFrame(videoStream))
+    val img = OpenCvUtil.convert(grabOneFrame(videoStream))
     videoStream.afterNext
     cvSaveImage(outFileName, img)
   }
@@ -69,7 +68,7 @@ object CaptureMain extends App
       val frame = grabOneFrame(videoStream)
       canvas.showImage(frame)
       if (capture) {
-        val img = converter.convert(frame)
+        val img = OpenCvUtil.convert(frame)
         val outFileName = "frame" + nextSuffix + ".jpg"
         nextSuffix += 1
         cvSaveImage(outFileName, img)
