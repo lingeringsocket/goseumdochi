@@ -43,12 +43,13 @@ object PerspectiveMain extends App
     val running = true
 
     println("Close webcam window to quit")
+    val converter = OpenCvUtil.newConverter
     while (running) {
       videoStream.beforeNext
       val frame = grabOneFrame(videoStream)
-      val img = OpenCvUtil.convert(frame)
+      val img = converter.convert(frame)
       perspective.visualize(img)
-      canvas.showImage(OpenCvUtil.convert(img))
+      canvas.showImage(converter.convert(img))
       img.release
       videoStream.afterNext
     }

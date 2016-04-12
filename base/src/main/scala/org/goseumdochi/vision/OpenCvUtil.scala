@@ -23,11 +23,17 @@ import org.bytedeco.javacv._
 
 object OpenCvUtil
 {
-  private val converter = new OpenCVFrameConverter.ToIplImage
+  def newConverter = new OpenCVFrameConverter.ToIplImage
 
-  def convert(img : IplImage) = converter.convert(img)
+  def convert(img : IplImage) =
+  {
+    newConverter.convert(img)
+  }
 
-  def convert(frame : Frame) = converter.convert(frame)
+  def convert(frame : Frame) =
+  {
+    newConverter.convert(frame)
+  }
 
   def grayscale(img : IplImage) =
   {

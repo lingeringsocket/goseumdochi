@@ -67,6 +67,8 @@ class VisionActor(videoStream : VideoStream, theater : RetinalTheater)
 
   private var shutDown = false
 
+  private val converter = OpenCvUtil.newConverter
+
   def receive =
   {
     case GrabFrameMsg(lastTime) => {
@@ -131,7 +133,7 @@ class VisionActor(videoStream : VideoStream, theater : RetinalTheater)
     try {
       videoStream.beforeNext()
       val (frame, frameTime) = videoStream.nextFrame()
-      val img = OpenCvUtil.convert(frame)
+      val img = converter.convert(frame)
       if (!cornerSeen) {
         val corner = RetinalPos(img.width, img.height)
         gossip(DimensionsKnownMsg(corner, frameTime))
@@ -148,7 +150,7 @@ class VisionActor(videoStream : VideoStream, theater : RetinalTheater)
           case _ => {}
         }
       }
-      val converted = OpenCvUtil.convert(img)
+      val converted = converter.convert(img)
       theater.display(converted)
       img.release
     } catch {
