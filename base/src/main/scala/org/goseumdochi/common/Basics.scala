@@ -152,13 +152,13 @@ object MoreMath
 
 object NamedColor
 {
-  def BLACK = AbstractCvScalar.BLACK
-  def BLUE = AbstractCvScalar.BLUE
-  def CYAN = AbstractCvScalar.CYAN
-  def GRAY = AbstractCvScalar.GRAY
-  def GREEN = AbstractCvScalar.GREEN
-  def MAGENTA = AbstractCvScalar.MAGENTA
-  def RED = AbstractCvScalar.RED
-  def WHITE = AbstractCvScalar.WHITE
-  def YELLOW = AbstractCvScalar.YELLOW
+  final val BLACK = AbstractCvScalar.BLACK
+  final val BLUE = AbstractCvScalar.BLUE
+  final val CYAN = AbstractCvScalar.CYAN
+  final val GRAY = AbstractCvScalar.GRAY
+  final val GREEN = AbstractCvScalar.GREEN
+  final val MAGENTA = AbstractCvScalar.MAGENTA
+  final val RED = AbstractCvScalar.RED
+  final val WHITE = AbstractCvScalar.WHITE
+  final val YELLOW = AbstractCvScalar.YELLOW
 }
