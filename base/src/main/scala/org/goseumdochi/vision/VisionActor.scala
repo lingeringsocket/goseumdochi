@@ -131,7 +131,9 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     try {
       retinalInput.beforeNext()
       val (frame, frameTime) = retinalInput.nextFrame()
-      val img = OpenCvUtil.convert(frame)
+      val converted = OpenCvUtil.convert(frame)
+      // without this, Android crashes...wish I understood why!
+      val img = cvCloneImage(converted)
       if (!cornerSeen) {
         val corner = RetinalPos(img.width, img.height)
         gossip(DimensionsKnownMsg(corner, frameTime))
@@ -148,9 +150,10 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
           case _ => {}
         }
       }
-      val converted = OpenCvUtil.convert(img)
-      theater.display(converted)
+      val result = OpenCvUtil.convert(img)
+      theater.display(result)
       img.release
+      converted.release
     } catch {
       case ex : Throwable => {
         ex.printStackTrace
