@@ -1,4 +1,4 @@
-name := "goseumdochi-sphero"
+name := "goseumdochi-desktop-sphero"
 
 organization := "org.goseumdochi"
 

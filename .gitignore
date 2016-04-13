@@ -1,7 +1,7 @@
 TAGS
 *.class
 lib/bluecove-gpl-2.1.1-SNAPSHOT.jar
-sphero/lib/bluecove-gpl-2.1.1-SNAPSHOT.jar
+desktop-sphero/lib/bluecove-gpl-2.1.1-SNAPSHOT.jar
 base/src/main/resources/application.conf
 
 # sbt specific

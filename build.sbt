@@ -22,9 +22,11 @@ javaOptions += "-Xmx1G"
 
 lazy val base = project
 
-lazy val sphero = project.dependsOn(base)
+lazy val `desktop-sphero` = project.dependsOn(base)
 
-lazy val root = (project in file(".")).aggregate(base, sphero).dependsOn(sphero)
+lazy val root = (project in file(".")).
+  aggregate(base, `desktop-sphero`).
+  dependsOn(`desktop-sphero`)
 
 mainClass in Compile := Some("org.goseumdochi.ConsoleMain")
 
