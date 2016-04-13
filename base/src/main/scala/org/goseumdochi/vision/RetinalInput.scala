@@ -23,7 +23,7 @@ import org.bytedeco.javacv._
 
 import scala.concurrent.duration._
 
-trait VideoStream
+trait RetinalInput
 {
   def beforeNext() {}
 
@@ -34,7 +34,7 @@ trait VideoStream
   def quit() {}
 }
 
-class LocalVideoStream(settings : Settings) extends VideoStream
+class LocalRetinalInput(settings : Settings) extends RetinalInput
 {
   private val frameGrabber = startGrabber
 
@@ -62,15 +62,15 @@ class LocalVideoStream(settings : Settings) extends VideoStream
   }
 }
 
-class RemoteVideoStream(settings : Settings) extends VideoStream
+class HttpRetinalInput(settings : Settings) extends RetinalInput
 {
   private var frameGrabber : Option[IPCameraFrameGrabber] = None
 
   override def beforeNext()
   {
-    val url = settings.Vision.remoteCameraUrl
+    val url = settings.Vision.remoteInputUrl
     if (url.isEmpty) {
-      Settings.complainMissing("goseumdochi.vision.remote-camera-url")
+      Settings.complainMissing("goseumdochi.vision.remote-input-url")
     }
     val grabber = new IPCameraFrameGrabber(url)
     grabber.setBitsPerPixel(CV_8U)
@@ -95,9 +95,9 @@ class RemoteVideoStream(settings : Settings) extends VideoStream
   }
 }
 
-class PlaybackStream(
+class KeyFrameRetinalInput(
   keyFrames : Seq[(String, TimeSpan)], realTime : Boolean = true)
-    extends VideoStream
+    extends RetinalInput
 {
   private val circular = Iterator.continually(keyFrames).flatten
 

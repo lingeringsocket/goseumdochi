@@ -37,23 +37,23 @@ object PerspectiveMain extends App
 
     val canvas = new CanvasFrame("Webcam")
     canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
-    val videoStream =
-      settings.instantiateObject(settings.Vision.cameraClass).
-        asInstanceOf[VideoStream]
+    val retinalInput =
+      settings.instantiateObject(settings.Vision.inputClass).
+        asInstanceOf[RetinalInput]
     val running = true
 
     println("Close webcam window to quit")
     while (running) {
-      videoStream.beforeNext
-      val frame = grabOneFrame(videoStream)
+      retinalInput.beforeNext
+      val frame = grabOneFrame(retinalInput)
       val img = OpenCvUtil.convert(frame)
       perspective.visualize(img)
       canvas.showImage(OpenCvUtil.convert(img))
       img.release
-      videoStream.afterNext
+      retinalInput.afterNext
     }
   }
 
-  private def grabOneFrame(videoStream : VideoStream) =
-    videoStream.nextFrame._1
+  private def grabOneFrame(retinalInput : RetinalInput) =
+    retinalInput.nextFrame._1
 }

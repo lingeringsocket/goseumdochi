@@ -46,7 +46,7 @@ object VisionActor
 }
 import VisionActor._
 
-class VisionActor(videoStream : VideoStream, theater : RetinalTheater)
+class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     extends Actor with Listeners
 {
   private val settings = ActorSettings(context)
@@ -129,8 +129,8 @@ class VisionActor(videoStream : VideoStream, theater : RetinalTheater)
   private def grabOne(analyze : Boolean)
   {
     try {
-      videoStream.beforeNext()
-      val (frame, frameTime) = videoStream.nextFrame()
+      retinalInput.beforeNext()
+      val (frame, frameTime) = retinalInput.nextFrame()
       val img = OpenCvUtil.convert(frame)
       if (!cornerSeen) {
         val corner = RetinalPos(img.width, img.height)
@@ -156,7 +156,7 @@ class VisionActor(videoStream : VideoStream, theater : RetinalTheater)
         ex.printStackTrace
       }
     } finally {
-      videoStream.afterNext()
+      retinalInput.afterNext()
     }
   }
 
@@ -170,7 +170,7 @@ class VisionActor(videoStream : VideoStream, theater : RetinalTheater)
   {
     if (!shutDown) {
       shutDown = true
-      videoStream.quit
+      retinalInput.quit
       theater.quit
     }
   }

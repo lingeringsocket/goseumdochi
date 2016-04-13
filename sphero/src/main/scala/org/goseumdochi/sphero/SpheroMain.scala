@@ -31,9 +31,6 @@ import java.util._
 
 import akka.actor._
 
-import scala.concurrent._
-import scala.concurrent.duration._
-
 import com.typesafe.config._
 
 object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
@@ -64,7 +61,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
       System.err.println(
         "In base/src/main/resources, copy application.conf.template to ")
       System.err.println("application.conf, then edit for your configuration.")
-      system.terminate
+      system.shutdown
       return
     }
     var robotOpt : Option[Robot] = None
@@ -73,30 +70,30 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
         com.intel.bluetooth.DebugLog.setDebugEnabled(true)
       }
       robotOpt = Some(connectToRobot(id))
-      val videoStream =
-        settings.instantiateObject(settings.Vision.cameraClass).
-          asInstanceOf[VideoStream]
+      val retinalInput =
+        settings.instantiateObject(settings.Vision.inputClass).
+          asInstanceOf[RetinalInput]
       // pull and discard one frame as a test to make sure we have a
       // good connection
-      videoStream.beforeNext
-      videoStream.nextFrame
-      videoStream.afterNext
+      retinalInput.beforeNext
+      retinalInput.nextFrame
+      retinalInput.afterNext
       val actuator = new SpheroActuator(robotOpt.get)
       val props = Props(
         classOf[ControlActor],
         actuator,
-        Props(classOf[VisionActor], videoStream, new CanvasTheater),
+        Props(classOf[VisionActor], retinalInput, new CanvasTheater),
         true)
       val controlActor = system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)
     } catch {
       case ex : Throwable => {
         System.err.println("EXCEPTION:  " + ex)
         ex.printStackTrace
-        system.terminate
+        system.shutdown
       }
     } finally {
       println("Close retina window to quit")
-      Await.result(system.whenTerminated, Duration.Inf)
+      system.awaitTermination
       systemOpt = None
       robotOpt.foreach(_.disconnect)
       println("Shutdown complete")
@@ -152,7 +149,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
   private def stopActor()
   {
     systemOpt.foreach(
-      system => system.terminate
+      system => system.shutdown
     )
   }
 

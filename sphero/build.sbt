@@ -22,8 +22,8 @@ classpathTypes += "maven-plugin"
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka"      %% "akka-actor"     % "2.4.1",
-  "com.typesafe.akka"      %% "akka-testkit"     % "2.4.1" % "test",
+  "com.typesafe.akka"      %% "akka-actor"     % "2.3.15",
+  "com.typesafe.akka"      %% "akka-testkit"     % "2.3.15" % "test",
   "org.bytedeco"                 % "javacpp"         % javacppVersion,
   "org.bytedeco"                 % "javacv"          % javacppVersion,
   "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier "",

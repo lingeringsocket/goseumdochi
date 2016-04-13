@@ -31,7 +31,7 @@ object SimulationMain extends App
 
   private def run()
   {
-    val videoStream = new PlaybackStream(
+    val retinalInput = new KeyFrameRetinalInput(
       Array(
         ("base/data/table1.jpg", 1.second),
         ("base/data/table1.jpg", 1.second),
@@ -51,11 +51,11 @@ object SimulationMain extends App
     val props = Props(
       classOf[ControlActor],
       actuator,
-      Props(classOf[VisionActor], videoStream, new CanvasTheater),
+      Props(classOf[VisionActor], retinalInput, new CanvasTheater),
       true)
     val config = ConfigFactory.load("simulation.conf")
     val system = ActorSystem("SimulationActors", config)
     system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)
-    Await.result(system.whenTerminated, Duration.Inf)
+    system.awaitTermination
   }
 }

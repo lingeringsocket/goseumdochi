@@ -42,8 +42,8 @@ class Settings(rootConf : Config)
   object Vision
   {
     val subConf = conf.getConfig("vision")
-    val cameraClass = subConf.getString("camera-class-name")
-    val remoteCameraUrl = subConf.getString("remote-camera-url")
+    val inputClass = subConf.getString("input-class-name")
+    val remoteInputUrl = subConf.getString("remote-input-url")
     val throttlePeriod = getMillis(subConf, "throttle-period")
     val sensorDelay = getMillis(subConf, "sensor-delay")
   }

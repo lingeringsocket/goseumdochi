@@ -34,12 +34,12 @@ object CaptureMain extends App
 
   def captureOneFrame(outFileName : String)
   {
-    val videoStream =
-      settings.instantiateObject(settings.Vision.cameraClass).
-        asInstanceOf[VideoStream]
-    videoStream.beforeNext
-    val img = OpenCvUtil.convert(grabOneFrame(videoStream))
-    videoStream.afterNext
+    val retinalInput =
+      settings.instantiateObject(settings.Vision.inputClass).
+        asInstanceOf[RetinalInput]
+    retinalInput.beforeNext
+    val img = OpenCvUtil.convert(grabOneFrame(retinalInput))
+    retinalInput.afterNext
     cvSaveImage(outFileName, img)
   }
 
@@ -47,9 +47,9 @@ object CaptureMain extends App
   {
     val canvas = new CanvasFrame("Webcam")
     canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
-    val videoStream =
-      settings.instantiateObject(settings.Vision.cameraClass).
-        asInstanceOf[VideoStream]
+    val retinalInput =
+      settings.instantiateObject(settings.Vision.inputClass).
+        asInstanceOf[RetinalInput]
     val running = true
     var capture = false
     var nextSuffix = 1
@@ -64,8 +64,8 @@ object CaptureMain extends App
     println("Click mouse inside webcam window to capture; " +
       "close webcam window to quit")
     while (running) {
-      videoStream.beforeNext
-      val frame = grabOneFrame(videoStream)
+      retinalInput.beforeNext
+      val frame = grabOneFrame(retinalInput)
       canvas.showImage(frame)
       if (capture) {
         val img = OpenCvUtil.convert(frame)
@@ -76,10 +76,10 @@ object CaptureMain extends App
         println("Captured " + outFileName)
         img.release
       }
-      videoStream.afterNext
+      retinalInput.afterNext
     }
   }
 
-  private def grabOneFrame(videoStream : VideoStream) =
-    videoStream.nextFrame._1
+  private def grabOneFrame(retinalInput : RetinalInput) =
+    retinalInput.nextFrame._1
 }
