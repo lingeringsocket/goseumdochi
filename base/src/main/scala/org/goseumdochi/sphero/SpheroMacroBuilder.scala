@@ -20,8 +20,6 @@ import MoreMath._
 
 import scala.collection.mutable._
 
-import se.nicklasgavelin.util.Value
-
 // see http://sdk.sphero.com/api-reference/api-quick-reference/#macro-commands
 class SpheroMacroBuilder
 {
@@ -32,6 +30,20 @@ class SpheroMacroBuilder
   private def appendByte(b : Byte)
   {
     buf += b
+  }
+
+  private def clamp[T](value : T, minValue : T, maxValue : T)
+    (implicit num : Numeric[T]) : T =
+  {
+    import num._
+
+    if (value > maxValue) {
+      maxValue
+    } else if (value < minValue) {
+      minValue
+    } else {
+      value
+    }
   }
 
   def getMacroBytes() =
@@ -55,7 +67,7 @@ class SpheroMacroBuilder
   {
     val degrees = (360.0*normalizeRadiansPositive(impulse.theta) / TWO_PI).toInt
     val heading = (degrees % 360).toInt
-    val velocity = Value.clamp(impulse.speed.toFloat, 0.0D, 1.0D).toFloat
+    val velocity = clamp(impulse.speed.toFloat, 0.0D, 1.0D)
     val millis = impulse.duration.toMillis.toInt
     appendByte(0x1D)
     appendByte((velocity * 255.0D).toInt.toByte)

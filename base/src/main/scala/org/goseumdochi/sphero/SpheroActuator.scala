@@ -18,23 +18,13 @@ package org.goseumdochi.sphero
 import org.goseumdochi.common._
 import org.goseumdochi.control._
 
-import se.nicklasgavelin.sphero._
-import se.nicklasgavelin.sphero.command._
-import se.nicklasgavelin.util.Value
-
 import scala.concurrent.duration._
 
-class SpheroActuator(robot : Robot) extends Actuator
+abstract class SpheroActuator extends Actuator
 {
-  private def executeTemporaryMacro(builder : SpheroMacroBuilder)
-  {
-    // kill motor on exit
-    val macroFlags = SaveTemporaryMacroCommand.MacroFlagMotorControl
-    robot.sendCommand(
-      new SaveTemporaryMacroCommand(macroFlags, builder.getMacroBytes))
-    robot.sendCommand(
-      new RunMacroCommand(255))
-  }
+  protected def executeTemporaryMacro(builder : SpheroMacroBuilder)
+
+  protected def executeCalibrate()
 
   override def actuateMotion(impulse : PolarImpulse)
   {
@@ -61,7 +51,7 @@ class SpheroActuator(robot : Robot) extends Actuator
       val spin = PolarImpulse(0.0, duration, theta)
       actuateMotion(spin, false)
       Thread.sleep(duration.toMillis*2)
-      robot.sendCommand(new CalibrateCommand(0))
+      executeCalibrate()
       return
     }
 
@@ -73,11 +63,5 @@ class SpheroActuator(robot : Robot) extends Actuator
     builder.end()
 
     executeTemporaryMacro(builder)
-  }
-
-  override def actuateLight(color : java.awt.Color)
-  {
-    robot.sendCommand(
-      new RGBLEDCommand(color))
   }
 }

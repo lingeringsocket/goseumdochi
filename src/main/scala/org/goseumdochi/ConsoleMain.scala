@@ -20,7 +20,7 @@ import collection.immutable._
 object ConsoleMain extends App
 {
   private val runMap = ListMap(
-    "sphero" -> "org.goseumdochi.sphero.SpheroMain",
+    "sphero" -> "org.goseumdochi.sphero.desktop.SpheroMain",
     "simulation" -> "org.goseumdochi.simulation.SimulationMain",
     "capture" -> "org.goseumdochi.vision.CaptureMain",
     "perspective" -> "org.goseumdochi.view.opencv.PerspectiveMain",

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.sphero
+package org.goseumdochi.sphero.desktop
 
 import org.goseumdochi.common._
 import org.goseumdochi.control._
@@ -78,7 +78,7 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
       retinalInput.beforeNext
       retinalInput.nextFrame
       retinalInput.afterNext
-      val actuator = new SpheroActuator(robotOpt.get)
+      val actuator = new DesktopSpheroActuator(robotOpt.get)
       val props = Props(
         classOf[ControlActor],
         actuator,
