@@ -19,7 +19,6 @@ import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
-import org.bytedeco.javacpp.helper.opencv_core._
 
 import akka.actor._
 import akka.routing._
@@ -145,7 +144,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
         hintBodyPos match {
           case Some(pos) => {
             val center = OpenCvUtil.point(retinalTransform.worldToRetina(pos))
-            cvCircle(img, center, 2, AbstractCvScalar.GREEN, 6, CV_AA, 0)
+            cvCircle(img, center, 2, NamedColor.GREEN, 6, CV_AA, 0)
           }
           case _ => {}
         }

@@ -19,6 +19,7 @@ import scala.math._
 import scala.annotation._
 
 import scala.concurrent.duration._
+import org.bytedeco.javacpp.helper.opencv_core._
 
 case class TimePoint(d : TimeSpan)
 {
@@ -147,4 +148,17 @@ object MoreMath
     PolarVector(
       impulse.speed * impulse.duration.toMillis / 1000.0,
       impulse.theta)
+}
+
+object NamedColor
+{
+  def BLACK = AbstractCvScalar.BLACK
+  def BLUE = AbstractCvScalar.BLUE
+  def CYAN = AbstractCvScalar.CYAN
+  def GRAY = AbstractCvScalar.GRAY
+  def GREEN = AbstractCvScalar.GREEN
+  def MAGENTA = AbstractCvScalar.MAGENTA
+  def RED = AbstractCvScalar.RED
+  def WHITE = AbstractCvScalar.WHITE
+  def YELLOW = AbstractCvScalar.YELLOW
 }

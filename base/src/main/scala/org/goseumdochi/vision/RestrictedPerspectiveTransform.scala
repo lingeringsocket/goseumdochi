@@ -19,7 +19,6 @@ import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
-import org.bytedeco.javacpp.helper.opencv_core._
 
 // This transform implements a restricted subset of the general perspective
 // transform.  It infers the transform parameters from a known
@@ -101,7 +100,7 @@ case class RestrictedPerspectiveTransform(
         val wp = PlanarPos(x / 10.0, y / 10.0)
         val rp = worldToRetina(wp)
         val point = OpenCvUtil.point(rp)
-        cvCircle(img, point, 2, AbstractCvScalar.RED, 6, CV_AA, 0)
+        cvCircle(img, point, 2, NamedColor.RED, 6, CV_AA, 0)
       }
     }
 
@@ -109,7 +108,7 @@ case class RestrictedPerspectiveTransform(
       distantCenter, nearRight, farRight))
     {
       val point = OpenCvUtil.point(rp)
-      cvCircle(img, point, 2, AbstractCvScalar.GREEN, 6, CV_AA, 0)
+      cvCircle(img, point, 2, NamedColor.GREEN, 6, CV_AA, 0)
     }
   }
 }

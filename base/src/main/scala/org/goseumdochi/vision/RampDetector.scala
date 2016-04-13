@@ -49,10 +49,10 @@ class RampDetector(val settings : Settings, val xform : RetinalTransform)
       ramp => {
         cvCircle(
           img, OpenCvUtil.point(xform.worldToRetina(ramp.center)),
-          2, AbstractCvScalar.GREEN, 6, CV_AA, 0)
+          2, NamedColor.GREEN, 6, CV_AA, 0)
         cvCircle(
           img, OpenCvUtil.point(xform.worldToRetina(ramp.entry)),
-          2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
+          2, NamedColor.BLUE, 6, CV_AA, 0)
         RampDetectedMsg(ramp, frameTime)
       }
     )

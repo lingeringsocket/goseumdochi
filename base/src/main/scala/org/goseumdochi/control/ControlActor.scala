@@ -68,7 +68,7 @@ object ControlActor
     eventTime : TimePoint)
       extends EventMsg
   final case class ActuateLightMsg(
-    color : java.awt.Color,
+    color : LightColor,
     eventTime : TimePoint)
       extends EventMsg
   final case class UseVisionAnalyzersMsg(
@@ -208,7 +208,7 @@ class ControlActor(
         context.system.shutdown
       }
     }
-    case ActuateLightMsg(color : java.awt.Color, eventTime) => {
+    case ActuateLightMsg(color : LightColor, eventTime) => {
       actuator.actuateLight(color)
     }
     case ActuateImpulseMsg(impulse, eventTime) => {
@@ -274,10 +274,9 @@ class ControlActor(
     case CheckVisibilityMsg(checkTime) => {
       val randomColor = {
         if (random.nextBoolean) {
-          new java.awt.Color(
-            random.nextInt(256), random.nextInt(256), random.nextInt(256))
+          NamedColor.WHITE
         } else {
-          java.awt.Color.BLACK
+          NamedColor.BLACK
         }
       }
       actuator.actuateLight(randomColor)
@@ -331,7 +330,7 @@ class ControlActor(
   {
     visionActor ! Listen(self)
     if (monitorVisibility) {
-      actuator.actuateLight(java.awt.Color.CYAN)
+      actuator.actuateLight(NamedColor.CYAN)
       context.system.scheduler.scheduleOnce(visibilityCheckFreq) {
         self ! CheckVisibilityMsg(TimePoint.now)
       }

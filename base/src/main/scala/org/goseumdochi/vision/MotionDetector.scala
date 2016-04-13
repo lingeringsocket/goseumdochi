@@ -42,7 +42,7 @@ abstract class MotionDetector(
     detectMotion(prevGray, gray).map(
       pos => {
         val center = OpenCvUtil.point(xform.worldToRetina(pos))
-        cvCircle(img, center, 2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
+        cvCircle(img, center, 2, NamedColor.BLUE, 6, CV_AA, 0)
         MotionDetectedMsg(pos, frameTime)
       }
     )

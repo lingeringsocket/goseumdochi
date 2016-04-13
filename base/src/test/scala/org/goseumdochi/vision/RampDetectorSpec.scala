@@ -15,8 +15,9 @@
 
 package org.goseumdochi.vision
 
+import org.goseumdochi.common._
+
 import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
 import org.bytedeco.javacpp.opencv_imgcodecs._
 
@@ -32,10 +33,10 @@ class RampDetectorSpec extends VisualizableSpecification
     }
 
     val center = OpenCvUtil.point(rampDetector.xform.worldToRetina(ramp.center))
-    cvCircle(img, center, 2, AbstractCvScalar.BLUE, 6, CV_AA, 0)
+    cvCircle(img, center, 2, NamedColor.BLUE, 6, CV_AA, 0)
 
     val entry = OpenCvUtil.point(rampDetector.xform.worldToRetina(ramp.entry))
-    cvCircle(img, entry, 2, AbstractCvScalar.RED, 6, CV_AA, 0)
+    cvCircle(img, entry, 2, NamedColor.RED, 6, CV_AA, 0)
 
     visualize(img)
   }

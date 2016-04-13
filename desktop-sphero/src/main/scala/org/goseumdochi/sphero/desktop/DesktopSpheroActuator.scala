@@ -15,6 +15,7 @@
 
 package org.goseumdochi.sphero.desktop
 
+import org.goseumdochi.common._
 import org.goseumdochi.sphero._
 
 import se.nicklasgavelin.sphero._
@@ -37,9 +38,9 @@ class DesktopSpheroActuator(robot : Robot) extends SpheroActuator
     robot.sendCommand(new CalibrateCommand(0))
   }
 
-  override def actuateLight(color : java.awt.Color)
+  override def actuateLight(color : LightColor)
   {
     robot.sendCommand(
-      new RGBLEDCommand(color))
+      new RGBLEDCommand(color.red.toInt, color.green.toInt, color.blue.toInt))
   }
 }

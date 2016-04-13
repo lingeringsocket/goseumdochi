@@ -16,9 +16,11 @@
 package org.goseumdochi
 
 import scala.concurrent.duration._
+import org.bytedeco.javacpp.helper.opencv_core._
 
 package object common
 {
   type TimeSpan = FiniteDuration
   val TimeSpan = FiniteDuration
+  type LightColor = AbstractCvScalar
 }

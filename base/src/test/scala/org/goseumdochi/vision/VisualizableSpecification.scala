@@ -20,7 +20,6 @@ import org.goseumdochi.common._
 import org.specs2.mutable._
 
 import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacv._
 import org.bytedeco.javacpp.opencv_imgproc._
 
@@ -86,7 +85,7 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
     }
 
     val center = OpenCvUtil.point(pos)
-    cvCircle(img, center, 2, AbstractCvScalar.BLACK, 6, CV_AA, 0)
+    cvCircle(img, center, 2, NamedColor.BLACK, 6, CV_AA, 0)
 
     visualize(img)
   }

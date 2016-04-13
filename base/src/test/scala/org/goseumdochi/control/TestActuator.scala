@@ -30,7 +30,7 @@ class TestActuator(system : ActorSystem, includeHeading : Boolean)
     probe.ref ! ControlActor.ActuateImpulseMsg(impulse, TimePoint.ZERO)
   }
 
-  override def actuateLight(color : java.awt.Color)
+  override def actuateLight(color : LightColor)
   {
     probe.ref ! ControlActor.ActuateLightMsg(color, TimePoint.ZERO)
   }

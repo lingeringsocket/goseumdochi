@@ -177,7 +177,7 @@ class RoundBodyDetector(
       point.x(c.centerX.toFloat)
       point.y(c.centerY.toFloat)
       val center = cvPointFrom32f(point)
-      cvCircle(img, center, c.radius, AbstractCvScalar.RED, 6, CV_AA, 0)
+      cvCircle(img, center, c.radius, NamedColor.RED, 6, CV_AA, 0)
     })
   }
 }
