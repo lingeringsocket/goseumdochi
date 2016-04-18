@@ -96,7 +96,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
   private def analyzeFrame(img : IplImage, frameTime : TimePoint)
   {
     val gray = OpenCvUtil.grayscale(img)
-    val copy = cvCloneImage(img)
+    val copy = img.clone
 
     lastGray.foreach(
       prevGray => {
@@ -132,7 +132,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       val (frame, frameTime) = retinalInput.nextFrame()
       val converted = OpenCvUtil.convert(frame)
       // without this, Android crashes...wish I understood why!
-      val img = cvCloneImage(converted)
+      val img = converted.clone
       if (!cornerSeen) {
         val corner = RetinalPos(img.width, img.height)
         gossip(DimensionsKnownMsg(corner, frameTime))

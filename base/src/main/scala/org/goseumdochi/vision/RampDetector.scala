@@ -62,10 +62,10 @@ class RampDetector(val settings : Settings, val xform : RetinalTransform)
   def detectRamp(img : IplImage) : Option[OrientedRamp] =
   {
     val sz = cvSize(img.width & -2, img.height & -2)
-    val timg = cvCloneImage(img)
-    val gray = cvCreateImage(sz, 8, 1)
-    val pyr = cvCreateImage(cvSize(sz.width/2, sz.height/2), 8, 3)
-    val tgray = cvCreateImage(sz, 8, 1)
+    val timg = img.clone
+    val gray = AbstractIplImage.create(sz, 8, 1)
+    val pyr = AbstractIplImage.create(cvSize(sz.width/2, sz.height/2), 8, 3)
+    val tgray = AbstractIplImage.create(sz, 8, 1)
     val storage = AbstractCvMemStorage.create
 
     try {

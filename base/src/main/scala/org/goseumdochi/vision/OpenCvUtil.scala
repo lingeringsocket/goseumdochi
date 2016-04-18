@@ -19,6 +19,7 @@ import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
+import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacv._
 
 object OpenCvUtil
@@ -37,7 +38,7 @@ object OpenCvUtil
 
   def grayscale(img : IplImage) =
   {
-    val gray = cvCreateImage(cvGetSize(img), 8, 1)
+    val gray = AbstractIplImage.create(cvGetSize(img), 8, 1)
     cvCvtColor(img, gray, CV_RGB2GRAY)
     cvSmooth(gray, gray, CV_GAUSSIAN, 3, 3, 0, 0)
     gray
