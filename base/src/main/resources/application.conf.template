@@ -3,6 +3,7 @@ akka {
     debug {
       receive = off
       fsm = off
+      lifecycle = off
     }
   }
   loglevel = "INFO"

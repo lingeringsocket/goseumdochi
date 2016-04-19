@@ -20,7 +20,6 @@ import org.goseumdochi.vision._
 import org.goseumdochi.perception._
 
 import akka.actor._
-import akka.routing._
 import akka.event._
 
 import scala.concurrent.duration._
@@ -328,7 +327,7 @@ class ControlActor(
 
   override def preStart()
   {
-    visionActor ! Listen(self)
+    VisionActor.startFrameGrabber(visionActor, self)
     if (monitorVisibility) {
       actuator.actuateLight(NamedColor.CYAN)
       context.system.scheduler.scheduleOnce(visibilityCheckFreq) {

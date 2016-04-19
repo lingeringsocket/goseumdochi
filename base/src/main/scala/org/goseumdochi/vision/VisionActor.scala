@@ -42,6 +42,12 @@ object VisionActor
     xform : RetinalTransform)
   final case class HintBodyLocationMsg(pos : PlanarPos, eventTime : TimePoint)
       extends EventMsg
+
+  def startFrameGrabber(visionActor : ActorRef, listener : ActorRef)
+  {
+    visionActor ! Listen(listener)
+    visionActor ! GrabFrameMsg(TimePoint.now)
+  }
 }
 import VisionActor._
 
@@ -165,7 +171,6 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
   override def preStart()
   {
     theater.setActor(this)
-    self ! GrabFrameMsg(TimePoint.now)
   }
 
   override def postStop()
