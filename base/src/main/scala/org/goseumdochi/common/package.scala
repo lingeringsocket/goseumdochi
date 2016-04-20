@@ -23,4 +23,7 @@ package object common
   type TimeSpan = FiniteDuration
   val TimeSpan = FiniteDuration
   type LightColor = AbstractCvScalar
+
+  def resourcePath(resource : String) : String =
+    classOf[TimePoint].getResource(resource).getPath
 }

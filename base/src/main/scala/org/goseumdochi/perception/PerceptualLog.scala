@@ -15,32 +15,23 @@
 
 package org.goseumdochi.perception
 
-import org.goseumdochi.common._
-import org.goseumdochi.vision._
-
 import java.io._
 import scala.io._
 import resource._
 
-import scala.concurrent.duration._
-
-import org.json4s._
-import org.json4s.native._
+import com.owlike.genson._
 
 object PerceptualLog
 {
-  implicit val formats =
-    Serialization.formats(
-      FullTypeHints(List(classOf[EventMsg], classOf[RetinalTransform]))) +
-      TimeSpanSerializer + TimePointSerializer
+  private val genson = new ScalaGenson(
+    new GensonBuilder().withBundle(new LogGensonBundle).create)
 
   def read(filePath : String) : Seq[PerceptualEvent] =
     managed(Source.fromFile(filePath)).acquireAndGet(src => {
-      Serialization.read[Array[PerceptualEvent]](src.getLines.mkString)
+      genson.fromJson[Array[PerceptualEvent]](src.getLines.mkString)
     })
 
-  def write(event : PerceptualEvent) =
-    Serialization.writePretty(event)
+  def write(event : PerceptualEvent) : String = genson.toJson(event)
 }
 
 class PerceptualLog(filePath : String) extends PerceptualProcessor
@@ -76,53 +67,5 @@ class PerceptualLog(filePath : String) extends PerceptualProcessor
   {
     pw.println("]")
     pw.close
-  }
-}
-
-object TimePointSerializer extends Serializer[TimePoint]
-{
-  private val TimePointClass = classOf[TimePoint]
-
-  def deserialize(implicit format: Formats)
-      : PartialFunction[(TypeInfo, JValue), TimePoint] =
-  {
-    case (TypeInfo(TimePointClass, _), json) => json match {
-      case JObject(JField("millis", JInt(millis)) :: _) =>
-        TimePoint(TimeSpan(millis.toLong, MILLISECONDS))
-      case x => throw new MappingException(
-        "Can't convert " + x + " to TimePoint")
-    }
-  }
-
-  def serialize(implicit formats: Formats)
-      : PartialFunction[Any, JValue] =
-  {
-    case x: TimePoint =>
-      import JsonDSL._
-      ("millis" -> x.d.toMillis)
-  }
-}
-
-object TimeSpanSerializer extends Serializer[TimeSpan]
-{
-  private val TimeSpanClass = classOf[TimeSpan]
-
-  def deserialize(implicit format: Formats)
-      : PartialFunction[(TypeInfo, JValue), TimeSpan] =
-  {
-    case (TypeInfo(TimeSpanClass, _), json) => json match {
-      case JObject(JField("millis", JInt(millis)) :: _) =>
-        TimeSpan(millis.toLong, MILLISECONDS)
-      case x => throw new MappingException(
-        "Can't convert " + x + " to TimeSpan")
-    }
-  }
-
-  def serialize(implicit formats: Formats)
-      : PartialFunction[Any, JValue] =
-  {
-    case x: TimeSpan =>
-      import JsonDSL._
-      ("millis" -> x.toMillis)
   }
 }

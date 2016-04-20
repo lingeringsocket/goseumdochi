@@ -4,13 +4,13 @@
   "sender":"controlActor",
   "receiver":"futureSelf",
   "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$CalibratedMsg",
+    "@class":"org.goseumdochi.control.ControlActor$CalibratedMsg",
     "bodyMapping":{
       "scale":1.0,
       "thetaOffset":0.40736069181668927
     },
     "xform":{
-      "jsonClass":"org.goseumdochi.vision.RestrictedPerspectiveTransform",
+      "@class":"org.goseumdochi.vision.RestrictedPerspectiveTransform",
       "nearCenter":{
         "x":497.75006103515625,
         "y":298.7500305175781

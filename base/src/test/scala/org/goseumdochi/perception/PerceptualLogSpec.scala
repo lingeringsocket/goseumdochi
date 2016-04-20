@@ -21,24 +21,36 @@ import org.goseumdochi.control._
 
 import scala.concurrent.duration._
 
+import scala.io._
+
 class PerceptualLogSpec extends VisualizableSpecification
 {
+  private val firstEvent =
+    PerceptualEvent(
+      "first event",
+      ControlActor.CONTROL_ACTOR_NAME,
+      ControlActor.BEHAVIOR_ACTOR_NAME,
+      ControlActor.BodyMovedMsg(
+        PlanarPos(25.0, 10.0),
+        TimePoint(TimeSpan(10, SECONDS))))
+
   "PerceptualLog" should
   {
     "read log" in
     {
-      val path = getClass.getResource("/unit/perceptual.log").getPath
+      val path = resourcePath("/unit/perceptual.log")
       val seq = PerceptualLog.read(path)
       seq.size must be equalTo(2)
       val first = seq.head
-      first must be equalTo(
-        PerceptualEvent(
-          "first event",
-          ControlActor.CONTROL_ACTOR_NAME,
-          ControlActor.BEHAVIOR_ACTOR_NAME,
-          ControlActor.BodyMovedMsg(
-            PlanarPos(25.0, 10.0),
-            TimePoint(TimeSpan(10, SECONDS)))))
+      first must be equalTo firstEvent
+    }
+
+    "write event" in
+    {
+      val src = Source.fromFile(resourcePath("/unit/event.json"))
+      val expected = src.getLines.mkString("\n")
+      val result = PerceptualLog.write(firstEvent)
+      result must be equalTo expected
     }
   }
 }

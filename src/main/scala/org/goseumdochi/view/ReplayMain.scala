@@ -29,8 +29,7 @@ object ReplayMain extends App
 
   def replay()
   {
-    val path = args.headOption.getOrElse(
-      getClass.getResource("/demo/quick.json").getPath)
+    val path = args.headOption.getOrElse(resourcePath("/demo/quick.json"))
     val seq = PerceptualLog.read(path)
     val view = settings.instantiateObject(settings.View.className).
       asInstanceOf[PerceptualProcessor]

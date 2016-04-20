@@ -15,6 +15,7 @@
 
 package org.goseumdochi.behavior
 
+import org.goseumdochi.common._
 import org.goseumdochi.perception._
 import org.goseumdochi.control._
 
@@ -51,7 +52,7 @@ class ScriptedBehaviorSpecification(confFile : String)
   {
     protected def processScript() =
     {
-      val path = getClass.getResource(scriptResource).getPath
+      val path = resourcePath(scriptResource)
       val seq = PerceptualLog.read(path)
 
       val probe = TestProbe()(system)

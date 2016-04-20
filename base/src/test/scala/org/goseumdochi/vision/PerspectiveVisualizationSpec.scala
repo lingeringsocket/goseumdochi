@@ -27,8 +27,7 @@ class PerspectiveVisualizationSpec extends VisualizableSpecification
   {
     "deserialize and visualize" in
     {
-      val path = getClass.getResource(
-        "/unit/perspective-visualization.json").getPath
+      val path = resourcePath("/unit/perspective-visualization.json")
       val seq = PerceptualLog.read(path)
       val xform = seq.head.msg match {
         case msg : ControlActor.CalibratedMsg => {

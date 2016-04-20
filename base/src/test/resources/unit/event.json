@@ -1,0 +1,17 @@
+{
+  "@class":"org.goseumdochi.perception.PerceptualEvent",
+  "description":"first event",
+  "msg":{
+    "@class":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
+    "eventTime":{
+      "millis":10000
+    },
+    "pos":{
+      "@class":"org.goseumdochi.common.PlanarPos",
+      "x":25.0,
+      "y":10.0
+    }
+  },
+  "receiver":"behaviorActor",
+  "sender":"controlActor"
+}

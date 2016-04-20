@@ -1,11 +1,13 @@
 [
 {
+  "@class":"org.goseumdochi.perception.PerceptualEvent",
   "description":"first event",
   "sender":"controlActor",
   "receiver":"behaviorActor",
   "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
+    "@class":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
+      "@class":"org.goseumdochi.common.PlanarPos",
       "x":25.0,
       "y":10.0
     },
@@ -16,12 +18,14 @@
 }
 ,
 {
+  "@class":"org.goseumdochi.perception.PerceptualEvent",
   "description":"second event",
   "sender":"controlActor",
   "receiver":"behaviorActor",
   "msg":{
-    "jsonClass":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
+    "@class":"org.goseumdochi.control.ControlActor$BodyMovedMsg",
     "pos":{
+      "@class":"org.goseumdochi.common.PlanarPos",
       "x":50.0,
       "y":20.0
     },
