@@ -203,9 +203,8 @@ class ControlActor(
       orientationActor ! PoisonPill.getInstance
       writeOrientation(settings, calibratedMsg)
       log.info("ORIENTATION COMPLETE")
-      if (!settings.Test.active) {
-        context.system.shutdown
-      }
+      sendOutput(
+        behaviorActor, CameraAcquiredMsg(bottomRight, calibratedMsg.eventTime))
     }
     case ActuateLightMsg(color : LightColor, eventTime) => {
       actuator.actuateLight(color)

@@ -63,12 +63,12 @@ private[perception] trait TimeConverter
 private[perception] object TimePointConverter extends Converter[TimePoint]
     with TimeConverter
 {
-  override def serialize(point : TimePoint, writer : ObjectWriter, ctx : Context)
+  override def serialize(point : TimePoint, writer : ObjectWriter, cx : Context)
   {
     serializeSpan(point.d, writer)
   }
 
-  override def deserialize(reader : ObjectReader, ctx : Context) : TimePoint =
+  override def deserialize(reader : ObjectReader, cx : Context) : TimePoint =
   {
     TimePoint(deserializeSpan(reader))
   }
@@ -78,12 +78,12 @@ private[perception] object TimePointConverter extends Converter[TimePoint]
 private[perception] object TimeSpanConverter extends Converter[TimeSpan]
     with TimeConverter
 {
-  override def serialize(span : TimeSpan, writer : ObjectWriter, ctx : Context)
+  override def serialize(span : TimeSpan, writer : ObjectWriter, cx : Context)
   {
     serializeSpan(span, writer)
   }
 
-  override def deserialize(reader : ObjectReader, ctx : Context) : TimeSpan =
+  override def deserialize(reader : ObjectReader, cx : Context) : TimeSpan =
   {
     deserializeSpan(reader)
   }
