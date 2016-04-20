@@ -100,11 +100,13 @@ object ControlActor
 
   def writeOrientation(settings : Settings, msg : CalibratedMsg)
   {
-    val orientationLog = new PerceptualLog(
-      settings.Orientation.persistenceFile)
-    orientationLog.processEvent(
-      PerceptualEvent("orientation", "controlActor", "futureSelf", msg))
-    orientationLog.close
+    val file = settings.Orientation.persistenceFile
+    if (!file.isEmpty) {
+      val orientationLog = new PerceptualLog(file)
+      orientationLog.processEvent(
+        PerceptualEvent("orientation", "controlActor", "futureSelf", msg))
+      orientationLog.close
+    }
   }
 }
 
