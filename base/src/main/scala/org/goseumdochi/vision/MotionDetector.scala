@@ -80,7 +80,15 @@ abstract class MotionDetector(
             }
             if (detected) {
               val center = box.center
-              return Some(xform.retinaToWorld(RetinalPos(center.x, center.y)))
+              val x = center.x
+              var y = center.y
+              if (!under) {
+                // looking for something big:  use roughly the max y instead of
+                // the vertical center; this corresponds to the bottom
+                // after retinal flip
+                y += (size.height / 2)
+              }
+              return Some(xform.retinaToWorld(RetinalPos(x, y)))
             }
           }
         }

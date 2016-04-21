@@ -54,7 +54,7 @@ class MotionDetectorSpec extends VisualizableSpecification
       visualize(afterImg, pos)
 
       pos.x must be closeTo(424.3 +/- 0.1)
-      pos.y must be closeTo(-152.0 +/- 0.1)
+      pos.y must be closeTo(-202.1 +/- 0.1)
     }
 
     "detect fine motion" in
@@ -72,7 +72,7 @@ class MotionDetectorSpec extends VisualizableSpecification
       visualize(afterImg, pos)
 
       pos.x must be closeTo(386.5 +/- 0.1)
-      pos.y must be closeTo(-438.0 +/- 0.1)
+      pos.y must be closeTo(-448.0 +/- 0.1)
     }
   }
 }
