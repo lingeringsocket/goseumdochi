@@ -58,7 +58,7 @@ class PerceptualLogSpec extends VisualizableSpecification
 
     "serialize and deserialize event" >> {
       Fragment.foreach(Seq(".ser", ".json")) { fileExt =>
-        "using format "+fileExt ! {
+        "using format " + fileExt ! {
           val file = File.createTempFile("event", fileExt)
           val filePath = file.getAbsolutePath
           PerceptualLog.serialize(filePath, Seq(firstEvent))
