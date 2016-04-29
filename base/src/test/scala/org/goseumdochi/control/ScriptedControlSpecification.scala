@@ -49,7 +49,7 @@ abstract class ScriptedControlSpecification
     protected def processScript() =
     {
       val path = resourcePath(scriptResource)
-      val seq = PerceptualLog.read(path)
+      val seq = PerceptualLog.readJsonFile(path)
 
       val actuator = new TestActuator(system, false)
       val controlActor = system.actorOf(

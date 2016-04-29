@@ -22,6 +22,9 @@ import org.goseumdochi.control._
 import scala.concurrent.duration._
 
 import scala.io._
+import java.io._
+
+import org.specs2.specification.core._
 
 class PerceptualLogSpec extends VisualizableSpecification
 {
@@ -36,21 +39,35 @@ class PerceptualLogSpec extends VisualizableSpecification
 
   "PerceptualLog" should
   {
-    "read log" in
+    "read log JSON" in
     {
-      val path = resourcePath("/unit/perceptual.log")
-      val seq = PerceptualLog.read(path)
+      val path = resourcePath("/unit/perceptual.json")
+      val seq = PerceptualLog.readJsonFile(path)
       seq.size must be equalTo(2)
       val first = seq.head
       first must be equalTo firstEvent
     }
 
-    "write event" in
+    "write event JSON" in
     {
       val src = Source.fromFile(resourcePath("/unit/event.json"))
       val expected = src.getLines.mkString("\n")
-      val result = PerceptualLog.write(firstEvent)
+      val result = PerceptualLog.toJsonString(firstEvent)
       result must be equalTo expected
+    }
+
+    "serialize and deserialize event" >> {
+      Fragment.foreach(Seq(".ser", ".json")) { fileExt =>
+        "using format "+fileExt ! {
+          val file = File.createTempFile("event", fileExt)
+          val filePath = file.getAbsolutePath
+          PerceptualLog.serialize(filePath, Seq(firstEvent))
+          val result = PerceptualLog.deserialize(filePath)
+          file.delete
+          result.size must be equalTo 1
+          result.head must be equalTo firstEvent
+        }
+      }
     }
   }
 }

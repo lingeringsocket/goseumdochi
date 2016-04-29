@@ -90,7 +90,7 @@ object ControlActor
 
   def readOrientation(settings : Settings) : (RetinalTransform, BodyMapping) =
   {
-    val seq = PerceptualLog.read(settings.Orientation.persistenceFile)
+    val seq = PerceptualLog.deserialize(settings.Orientation.persistenceFile)
     seq.head.msg match {
       case msg : CalibratedMsg => {
         (msg.xform, BodyMapping(msg.bodyMapping.scale, 0.0))
@@ -102,10 +102,9 @@ object ControlActor
   {
     val file = settings.Orientation.persistenceFile
     if (!file.isEmpty) {
-      val orientationLog = new PerceptualLog(file)
-      orientationLog.processEvent(
-        PerceptualEvent("orientation", "controlActor", "futureSelf", msg))
-      orientationLog.close
+      PerceptualLog.serialize(
+        file,
+        Seq(PerceptualEvent("orientation", "controlActor", "futureSelf", msg)))
     }
   }
 }

@@ -53,7 +53,7 @@ class ScriptedBehaviorSpecification(confFile : String)
     protected def processScript() =
     {
       val path = resourcePath(scriptResource)
-      val seq = PerceptualLog.read(path)
+      val seq = PerceptualLog.readJsonFile(path)
 
       val probe = TestProbe()(system)
       val behaviorActor = system.actorOf(

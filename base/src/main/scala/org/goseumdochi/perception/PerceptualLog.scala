@@ -26,12 +26,40 @@ object PerceptualLog
   private val genson = new ScalaGenson(
     new GensonBuilder().withBundle(new LogGensonBundle).create)
 
-  def read(filePath : String) : Seq[PerceptualEvent] =
+  def readJsonFile(filePath : String) : Seq[PerceptualEvent] =
     managed(Source.fromFile(filePath)).acquireAndGet(src => {
       genson.fromJson[Array[PerceptualEvent]](src.getLines.mkString)
     })
 
-  def write(event : PerceptualEvent) : String = genson.toJson(event)
+  def toJsonString(event : PerceptualEvent) : String = genson.toJson(event)
+
+  def serialize(
+    filePath : String, events : Seq[PerceptualEvent])
+  {
+    if (useJson(filePath)) {
+      val log = new PerceptualLog(filePath)
+      log.processHistory(events)
+      log.close
+    } else {
+      managed(new ObjectOutputStream(new BufferedOutputStream(
+        new FileOutputStream(filePath)))).
+        acquireAndGet(_.writeObject(events))
+    }
+  }
+
+  def deserialize(filePath : String)
+      : Seq[PerceptualEvent] =
+  {
+    if (useJson(filePath)) {
+      readJsonFile(filePath)
+    } else {
+      managed(new ObjectInputStream(new BufferedInputStream(
+        new FileInputStream(filePath)))).
+        acquireAndGet(_.readObject).asInstanceOf[Seq[PerceptualEvent]]
+    }
+  }
+
+  private def useJson(filePath : String) = filePath.endsWith(".json")
 }
 
 class PerceptualLog(filePath : String) extends PerceptualProcessor
@@ -59,7 +87,7 @@ class PerceptualLog(filePath : String) extends PerceptualProcessor
     } else {
       pw.println(",")
     }
-    pw.println(PerceptualLog.write(event))
+    pw.println(PerceptualLog.toJsonString(event))
     pw.flush
   }
 
