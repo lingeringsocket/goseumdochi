@@ -23,7 +23,7 @@ import com.owlike.genson._
 
 object PerceptualLog
 {
-  private val genson = new ScalaGenson(
+  private lazy val genson = new ScalaGenson(
     new GensonBuilder().withBundle(new LogGensonBundle).create)
 
   def readJsonFile(filePath : String) : Seq[PerceptualEvent] =
