@@ -19,12 +19,14 @@ import org.goseumdochi.common._
 import org.goseumdochi.vision._
 
 import akka.actor._
+import akka.testkit._
 
 import MoreMath._
 
 import scala.concurrent.duration._
 
 import ControlActor._
+import ControlStatus._
 
 class ControlActorSpec extends AkkaSpecification(
   "birdseye-orientation-test.conf")
@@ -34,6 +36,8 @@ class ControlActorSpec extends AkkaSpecification(
     "keep cool" in new AkkaExample
     {
       val actuator = new TestActuator(system, true)
+      val statusProbe = TestProbe()(system)
+
       val controlActor = system.actorOf(
         Props(
           classOf[ControlActor],
@@ -41,6 +45,7 @@ class ControlActorSpec extends AkkaSpecification(
           Props(classOf[NullActor]),
           false),
         ControlActor.CONTROL_ACTOR_NAME)
+      ControlActor.addListener(controlActor, statusProbe.ref)
 
       val zeroTime = TimePoint.ZERO
 
@@ -57,6 +62,8 @@ class ControlActorSpec extends AkkaSpecification(
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
+      statusProbe.expectMsg(StatusUpdate(LOCALIZING))
+
       val backwardImpulse = actuator.expectImpulse
       backwardImpulse must be equalTo(PolarImpulse(0.5, 500.milliseconds, PI))
 
@@ -67,6 +74,8 @@ class ControlActorSpec extends AkkaSpecification(
       controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)
       controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
 
+      statusProbe.expectMsg(StatusUpdate(ORIENTING))
+
       val orientationImpulse = actuator.expectImpulse
       orientationImpulse must be equalTo(
         PolarImpulse(0.5, 500.milliseconds, 0.0))
@@ -75,6 +84,7 @@ class ControlActorSpec extends AkkaSpecification(
         BodyDetector.BodyDetectedMsg(orientationPos, orientationTime)
 
       actuator.expectTwirlMsg.theta must be closeTo(0.38 +/- 0.01)
+      statusProbe.expectMsg(StatusUpdate(BEHAVING))
 
       controlActor ! CheckVisibilityMsg(orientationTime)
       actuator.expectColor
@@ -87,6 +97,8 @@ class ControlActorSpec extends AkkaSpecification(
 
       controlActor ! CheckVisibilityMsg(invisibleTime)
       actuator.expectColor
+
+      statusProbe.expectMsg(StatusUpdate(PANIC))
 
       val panicImpulse = actuator.expectImpulse
       panicImpulse.speed must be closeTo(0.5 +/- 0.01)

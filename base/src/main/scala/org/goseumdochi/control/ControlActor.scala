@@ -21,12 +21,19 @@ import org.goseumdochi.perception._
 
 import akka.actor._
 import akka.event._
+import akka.routing._
 
 import scala.concurrent.duration._
 
 object ControlActor
 {
-  // sent messages
+  object ControlStatus extends Enumeration {
+    type ControlStatus = Value
+    val LOCALIZING, ORIENTING, BEHAVING, PANIC = Value
+  }
+  import ControlStatus._
+
+  // sent messages (to behavior)
   // VisionActor.ActivateAnalyzersMsg
   final case class CameraAcquiredMsg(
     bottomRight : RetinalPos, eventTime : TimePoint)
@@ -37,6 +44,9 @@ object ControlActor
   final case class PanicAttackMsg(
     eventTime : TimePoint)
       extends EventMsg
+
+  // sent messages (to listeners)
+  final case class StatusUpdate(status : ControlStatus)
 
   // internal messages
   final case class CheckVisibilityMsg(
@@ -107,15 +117,21 @@ object ControlActor
         Seq(PerceptualEvent("orientation", "controlActor", "futureSelf", msg)))
     }
   }
+
+  def addListener(controlActor : ActorRef, listener : ActorRef)
+  {
+    controlActor ! Listen(listener)
+  }
 }
 
 class ControlActor(
   actuator : Actuator,
   visionProps : Props,
   monitorVisibility : Boolean)
-    extends Actor
+    extends Actor with Listeners
 {
   import ControlActor._
+  import ControlStatus._
   import context.dispatcher
 
   private val log = Logging(context.system, this)
@@ -182,6 +198,9 @@ class ControlActor(
       }
       receiveInput(eventMsg)
     }
+    case m : Any => {
+      listenerManagement(m)
+    }
   })
 
   private def sendOutput(receiver : ActorRef, msg : EventMsg) =
@@ -190,6 +209,12 @@ class ControlActor(
       PerceptualEvent(
         "", getActorString(self), getActorString(receiver), msg))
     receiver ! msg
+  }
+
+  private def updateStatus(status : ControlStatus)
+  {
+    log.info("NEW STATUS:  " + status)
+    gossip(StatusUpdate(status))
   }
 
   private def receiveInput(eventMsg : EventMsg) = eventMsg match
@@ -203,7 +228,7 @@ class ControlActor(
       actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
       orientationActor ! PoisonPill.getInstance
       writeOrientation(settings, calibratedMsg)
-      log.info("ORIENTATION COMPLETE")
+      updateStatus(BEHAVING)
       sendOutput(
         behaviorActor, CameraAcquiredMsg(bottomRight, calibratedMsg.eventTime))
     }
@@ -224,6 +249,7 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       bottomRight = pos
+      updateStatus(LOCALIZING)
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
     // note that this pattern needs to be matched BEFORE the
@@ -259,14 +285,15 @@ class ControlActor(
       if (localizing) {
         localizing = false
         if (orienting) {
+          updateStatus(ORIENTING)
           sendOutput(
             orientationActor, CameraAcquiredMsg(bottomRight, eventTime))
         } else {
+          updateStatus(BEHAVING)
           sendOutput(
             behaviorActor, CameraAcquiredMsg(bottomRight, eventTime))
         }
         localizationActor ! PoisonPill.getInstance
-        log.info("BODY LOCATED")
       }
       sendOutput(visionActor, VisionActor.HintBodyLocationMsg(pos, eventTime))
     }
@@ -289,7 +316,7 @@ class ControlActor(
             if (orienting) {
               // not much we can do yet
             } else {
-              log.info("PANIC!")
+              updateStatus(PANIC)
               sendOutput(behaviorActor, PanicAttackMsg(checkTime))
               moveToCenter(lastSeenPos, checkTime)
             }
