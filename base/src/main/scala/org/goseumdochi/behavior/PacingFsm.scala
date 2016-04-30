@@ -20,20 +20,17 @@ import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._
 
-object SquareFsm
+object PacingFsm
 {
-  private val impulse1 = PolarImpulse(
+  private val forwardImpulse = PolarImpulse(
     0.5, 500.milliseconds, 0.0)
-  private val impulse2 = PolarImpulse(
-    0.5, 500.milliseconds, HALF_PI)
-  private val impulse3 = PolarImpulse(
-    0.5, 500.milliseconds, PI)
-  private val impulse4 = PolarImpulse(
-    0.5, 500.milliseconds, -HALF_PI)
-}
-import SquareFsm._
 
-class SquareFsm() extends CyclicFsm(Array(
-  impulse1, impulse2, impulse3, impulse4))
+  private val backwardImpulse = PolarImpulse(
+    0.5, 500.milliseconds, PI)
+}
+import PacingFsm._
+
+class PacingFsm() extends CyclicFsm(Array(
+  forwardImpulse, forwardImpulse, backwardImpulse, backwardImpulse))
 {
 }
