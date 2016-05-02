@@ -31,13 +31,17 @@ abstract class SpheroActuator extends Actuator
     actuateMotion(impulse, true)
   }
 
-  private def actuateMotion(impulse : PolarImpulse, withStop : Boolean)
+  private def actuateMotion(impulse : PolarImpulse, withBrackets : Boolean)
   {
-    val stopImpulse = PolarImpulse(0.0, 1.seconds, impulse.theta)
     val builder = new SpheroMacroBuilder
+    if (withBrackets) {
+      val spinImpulse = PolarImpulse(0.0, 500.milliseconds, impulse.theta)
+      builder.roll(spinImpulse)
+    }
     builder.roll(impulse)
-    if (withStop) {
-      builder.roll(stopImpulse)
+    if (withBrackets) {
+      builder.stop
+      builder.waitUntilStopped(10.seconds)
     }
     builder.end()
 

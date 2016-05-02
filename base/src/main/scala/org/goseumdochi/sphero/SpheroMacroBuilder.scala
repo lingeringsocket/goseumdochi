@@ -84,6 +84,14 @@ class SpheroMacroBuilder
     appendByte(0x0)
   }
 
+  def waitUntilStopped(timeout : TimeSpan)
+  {
+    val millis = timeout.toMillis.toInt
+    appendByte(0x19)
+    appendByte((millis >> 8).toByte)
+    appendByte(millis.toByte)
+  }
+
   def delay(duration : TimeSpan)
   {
     val millis = duration.toMillis.toInt
