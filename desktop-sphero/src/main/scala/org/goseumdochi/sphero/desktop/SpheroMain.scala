@@ -19,21 +19,13 @@ import org.goseumdochi.common._
 import org.goseumdochi.control._
 import org.goseumdochi.vision._
 
-import se.nicklasgavelin.bluetooth._
 import se.nicklasgavelin.sphero._
-import se.nicklasgavelin.sphero.exception._
-import se.nicklasgavelin.sphero.RobotListener.EVENT_CODE
-import se.nicklasgavelin.sphero.command._
-import se.nicklasgavelin.sphero.response._
-import se.nicklasgavelin.sphero.response.ResponseMessage.RESPONSE_CODE
-
-import java.util._
 
 import akka.actor._
 
 import com.typesafe.config._
 
-object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
+object SpheroMain extends App with DesktopSpheroBase
 {
   var systemOpt : Option[ActorSystem] = None
 
@@ -55,15 +47,6 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
     val settings = ActorSettings(system)
 
     val id = settings.Sphero.bluetoothId
-    if (id.isEmpty) {
-      System.err.println(
-        "Required property goseumdochi.sphero.bluetooth-id is not set.")
-      System.err.println(
-        "In base/src/main/resources, copy application.conf.template to ")
-      System.err.println("application.conf, then edit for your configuration.")
-      system.shutdown
-      return
-    }
     var robotOpt : Option[Robot] = None
     try {
       if (settings.Bluetooth.debug) {
@@ -97,87 +80,14 @@ object SpheroMain extends App with BluetoothDiscoveryListener with RobotListener
       systemOpt = None
       robotOpt.foreach(_.disconnect)
       println("Shutdown complete")
-      // sphero+bluetooth shutdown may cause a hang, so use a hard stop
-      System.runFinalization
-      Runtime.getRuntime.halt(0)
+      hardStop
     }
   }
 
-  private def connectToRobot(id : String) : Robot =
-  {
-    val bt = new Bluetooth(this, Bluetooth.SERIAL_COM)
-    val btd = new BluetoothDevice(
-      bt, "btspp://" + id + ":1;authenticate=true;encrypt=false;master=false")
-    val robot = new Robot(btd)
-    robot.addListener(this)
-
-    while (true) {
-      try {
-        robot.connect(true)
-        return robot
-      } catch {
-        case ex : RobotInitializeConnectionFailed => {
-          println("RETRY...")
-          Thread.sleep(200)
-        }
-      }
-    }
-    return robot
-  }
-
-  override def deviceSearchStarted()
-  {
-    println("START DEVICE SEARCH")
-  }
-
-  override def deviceSearchFailed(error: Bluetooth.EVENT)
-  {
-    println("FAILED DEVICE SEARCH")
-    println("MESSAGE = " + error.getErrorMessage)
-  }
-
-  override def deviceDiscovered(device : BluetoothDevice)
-  {
-    println("DISCOVERED DEVICE")
-  }
-
-  override def deviceSearchCompleted(devices : Collection[BluetoothDevice])
-  {
-    println("COMPLETED DEVICE SEARCH")
-  }
-
-  private def stopActor()
+  override protected def onDisconnect()
   {
     systemOpt.foreach(
       system => system.shutdown
     )
-  }
-
-  override def responseReceived(
-    r : Robot, response : ResponseMessage, dc : CommandMessage)
-  {
-    if (response.getResponseCode == RESPONSE_CODE.CODE_ERROR_EXECUTE) {
-      stopActor()
-    }
-    if (response.getResponseCode == RESPONSE_CODE.CODE_ERROR_EXECUTE) {
-      stopActor()
-    }
-  }
-
-  override def event(
-    r : Robot, code : EVENT_CODE)
-  {
-    if (code == EVENT_CODE.CONNECTION_CLOSED_UNEXPECTED) {
-      stopActor()
-    }
-    if (code == EVENT_CODE.CONNECTION_FAILED) {
-      stopActor()
-    }
-  }
-
-  override def informationResponseReceived(
-    r : Robot, reponse : InformationResponseMessage )
-  {
-    println("INFORMATION RESPONSE RECEIVED")
   }
 }

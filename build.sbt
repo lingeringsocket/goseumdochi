@@ -22,7 +22,8 @@ javaOptions += "-Xmx1G"
 
 lazy val base = project
 
-lazy val `desktop-sphero` = project.dependsOn(base)
+lazy val `desktop-sphero` = project.
+  dependsOn(base % "compile->compile;test->test")
 
 lazy val root = (project in file(".")).
   aggregate(base, `desktop-sphero`).
