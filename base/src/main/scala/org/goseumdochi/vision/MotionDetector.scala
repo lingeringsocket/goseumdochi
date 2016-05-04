@@ -37,7 +37,8 @@ abstract class MotionDetector(
 {
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+      : Iterable[MotionDetectedMsg] =
   {
     detectMotion(prevGray, gray).map(
       pos => {

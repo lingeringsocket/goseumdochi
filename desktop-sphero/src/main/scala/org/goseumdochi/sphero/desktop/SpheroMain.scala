@@ -65,8 +65,7 @@ object SpheroMain extends App with DesktopSpheroBase
       val props = Props(
         classOf[ControlActor],
         actuator,
-        Props(classOf[VisionActor], retinalInput, new CanvasTheater),
-        true)
+        Props(classOf[VisionActor], retinalInput, new CanvasTheater))
       val controlActor = system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)
     } catch {
       case ex : Throwable => {

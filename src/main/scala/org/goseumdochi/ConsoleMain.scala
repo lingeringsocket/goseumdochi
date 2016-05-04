@@ -24,11 +24,10 @@ object ConsoleMain extends App
     "simulation" -> "org.goseumdochi.simulation.SimulationMain",
     "capture" -> "org.goseumdochi.vision.CaptureMain",
     "perspective" -> "org.goseumdochi.view.opencv.PerspectiveMain",
-    "blind" -> "org.goseumdochi.control.BlindMain",
     "replay" -> "org.goseumdochi.view.ReplayMain")
 
   if (args.isEmpty) {
-    usage()
+    usage
   } else {
     val key = args.head
     runMap.get(key) match {

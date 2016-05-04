@@ -24,6 +24,8 @@ import org.bytedeco.javacv._
 
 object OpenCvUtil
 {
+  final val BGR_CHANNELS = Array("BLUE", "GREEN", "RED")
+
   def newConverter = new OpenCVFrameConverter.ToIplImage
 
   def convert(img : IplImage) =

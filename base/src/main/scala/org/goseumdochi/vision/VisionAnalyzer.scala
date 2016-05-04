@@ -19,16 +19,18 @@ import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
 
-trait VisionAnalyzer
+trait VisionAnalyzer extends AutoCloseable
 {
   def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
-      : Iterable[Any]
+      : Iterable[VisionActor.AnalyzerResponseMsg]
 
   def settings : Settings
 
   def xform : RetinalTransform
+
+  override def close() {}
 }
 
 class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
@@ -36,7 +38,8 @@ class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
 {
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) : Iterable[Any] =
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+      : Iterable[VisionActor.AnalyzerResponseMsg] =
   {
     None
   }

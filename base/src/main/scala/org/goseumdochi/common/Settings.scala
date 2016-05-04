@@ -53,6 +53,7 @@ class Settings(rootConf : Config)
     val subConf = conf.getConfig("control")
     val orient = subConf.getBoolean("orient")
     val panicDelay = getMillis(subConf, "panic-delay")
+    val monitorVisibility = subConf.getBoolean("monitor-visibility")
     val visibilityCheckFreq = getMillis(subConf, "visibility-check-freq")
   }
 

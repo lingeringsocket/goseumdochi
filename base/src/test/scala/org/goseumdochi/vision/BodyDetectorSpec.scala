@@ -28,7 +28,8 @@ class BodyDetectorSpec extends VisualizableSpecification
     new RoundBodyDetector(settings, FlipRetinalTransform)
   private val flashyBodyDetector =
     new FlashyBodyDetector(settings, FlipRetinalTransform)
-
+  private val colorfulBodyDetector =
+    new ColorfulBodyDetector(settings, FlipRetinalTransform)
 
   "BodyDetector" should
   {
@@ -77,10 +78,12 @@ class BodyDetectorSpec extends VisualizableSpecification
       val img2 = cvLoadImage("data/blinkorange.jpg")
       val gray1 = OpenCvUtil.grayscale(img1)
       val gray2 = OpenCvUtil.grayscale(img2)
-      val msgOpt = flashyBodyDetector.analyzeFrame(
+      val msgs = flashyBodyDetector.analyzeFrame(
         img2, img1, gray2, gray1, TimePoint.ZERO, None)
-      msgOpt must not beEmpty
-      val pos = msgOpt.head.pos
+      msgs.size must be equalTo 2
+      msgs.head must beAnInstanceOf[VisionActor.RequireLightMsg]
+      msgs.last must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
+      val pos = msgs.last.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
       visualize(img2, pos)
 
       pos.x must be closeTo(267.5 +/- 0.1)
@@ -134,6 +137,45 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       pos.x must be closeTo(363.0 +/- 0.1)
       pos.y must be closeTo(-539.0 +/- 0.1)
+    }
+
+    "detect colorful magenta body" in
+    {
+      val img1 = cvLoadImage("data/magenta_off.jpg")
+      val gray1 = OpenCvUtil.grayscale(img1)
+      val img2 = cvLoadImage("data/magenta_on.jpg")
+      val gray2 = OpenCvUtil.grayscale(img2)
+
+      // baseline:  let there be light
+      val msgs1 = colorfulBodyDetector.analyzeFrame(
+        img1, img1, gray1, gray1, TimePoint.ZERO, None)
+      msgs1.size must be equalTo 1
+      msgs1.head must be equalTo VisionActor.RequireLightMsg(
+        NamedColor.MAGENTA, TimePoint.ZERO)
+
+      // too early:  should be ignored
+      val msgs2 = colorfulBodyDetector.analyzeFrame(
+        img2, img1, gray2, gray1, TimePoint.ZERO, None)
+      msgs2 must beEmpty
+
+      // no brightness change:  should be ignored
+      val msgs3 = colorfulBodyDetector.analyzeFrame(
+        img1, img1, gray1, gray1, TimePoint.TEN, None)
+      msgs3 must beEmpty
+
+      // should see the light now
+      val msgs4 = colorfulBodyDetector.analyzeFrame(
+        img2, img1, gray2, gray1, TimePoint.TEN, None)
+
+      // visualize(colorfulBodyDetector.sumOpt.get)
+
+      msgs4.size must be equalTo 1
+      msgs4.head must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
+      val pos = msgs4.head.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
+      visualize(img2, pos)
+
+      pos.x must be closeTo(487.0 +/- 0.1)
+      pos.y must be closeTo(-485.0 +/- 0.1)
     }
   }
 }

@@ -55,6 +55,7 @@ object ControlActor
 
   // received messages
   // VisionActor.DimensionsKnownMsg
+  // VisionActor.RequireLightMsg
   final case class CalibratedMsg(
     bodyMapping : BodyMapping,
     xform : RetinalTransform,
@@ -126,8 +127,7 @@ object ControlActor
 
 class ControlActor(
   actuator : Actuator,
-  visionProps : Props,
-  monitorVisibility : Boolean)
+  visionProps : Props)
     extends Actor with Listeners
 {
   import ControlActor._
@@ -137,6 +137,8 @@ class ControlActor(
   private val log = Logging(context.system, this)
 
   private val settings = ActorSettings(context)
+
+  private val monitorVisibility = settings.Control.monitorVisibility
 
   private val visionActor = context.actorOf(
     visionProps,
@@ -182,8 +184,6 @@ class ControlActor(
   private val visibilityCheckFreq = settings.Control.visibilityCheckFreq
 
   private val sensorDelay = settings.Vision.sensorDelay
-
-  private val random = scala.util.Random
 
   private val perception = new PlanarPerception(settings)
 
@@ -252,6 +252,9 @@ class ControlActor(
       updateStatus(LOCALIZING)
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
+    case VisionActor.RequireLightMsg(color, eventTime) => {
+      actuator.actuateLight(color)
+    }
     // note that this pattern needs to be matched BEFORE the
     // generic ObjDetectedMsg case
     case BodyDetector.BodyDetectedMsg(pos, eventTime) => {
@@ -298,14 +301,6 @@ class ControlActor(
       sendOutput(visionActor, VisionActor.HintBodyLocationMsg(pos, eventTime))
     }
     case CheckVisibilityMsg(checkTime) => {
-      val randomColor = {
-        if (random.nextBoolean) {
-          NamedColor.WHITE
-        } else {
-          NamedColor.BLACK
-        }
-      }
-      actuator.actuateLight(randomColor)
       if (checkTime < movingUntil) {
         // still moving
       } else {

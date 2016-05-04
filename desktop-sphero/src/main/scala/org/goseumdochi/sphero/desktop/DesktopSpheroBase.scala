@@ -41,7 +41,12 @@ trait DesktopSpheroBase extends BluetoothDiscoveryListener with RobotListener
     val btd = new BluetoothDevice(
       bt, "btspp://" + id + ":1;authenticate=true;encrypt=false;master=false")
     val robot = new Robot(btd)
-    robot.addListener(this)
+
+    // FIXME:  re-enable this after dealing with fallout from upgrade
+    // to latest firmware
+    if (false) {
+      robot.addListener(this)
+    }
 
     while (true) {
       try {

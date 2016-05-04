@@ -42,8 +42,7 @@ class ControlActorSpec extends AkkaSpecification(
         Props(
           classOf[ControlActor],
           actuator,
-          Props(classOf[NullActor]),
-          false),
+          Props(classOf[NullActor])),
         ControlActor.CONTROL_ACTOR_NAME)
       ControlActor.addListener(controlActor, statusProbe.ref)
 
@@ -87,16 +86,13 @@ class ControlActorSpec extends AkkaSpecification(
       statusProbe.expectMsg(StatusUpdate(BEHAVING))
 
       controlActor ! CheckVisibilityMsg(orientationTime)
-      actuator.expectColor
 
       controlActor !
         BodyDetector.BodyDetectedMsg(orientationPos, visibleTime)
 
       controlActor ! CheckVisibilityMsg(visibleTime)
-      actuator.expectColor
 
       controlActor ! CheckVisibilityMsg(invisibleTime)
-      actuator.expectColor
 
       statusProbe.expectMsg(StatusUpdate(PANIC))
 

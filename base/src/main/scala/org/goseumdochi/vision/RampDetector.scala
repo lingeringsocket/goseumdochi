@@ -43,7 +43,8 @@ class RampDetector(val settings : Settings, val xform : RetinalTransform)
 {
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+      : Iterable[RampDetectedMsg] =
   {
     detectRamp(img).map(
       ramp => {

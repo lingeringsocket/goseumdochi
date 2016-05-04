@@ -56,8 +56,7 @@ abstract class ScriptedControlSpecification
         Props(
           classOf[ControlActor],
           actuator,
-          Props(classOf[NullActor]),
-          false),
+          Props(classOf[NullActor])),
         ControlActor.CONTROL_ACTOR_NAME)
       Result.unit {
         seq foreach {

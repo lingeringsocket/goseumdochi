@@ -44,6 +44,8 @@ class FlashyBodyDetector(
   val settings : Settings, val xform : RetinalTransform)
     extends BodyDetector
 {
+  private val random = scala.util.Random
+
   class BodyMotionDetector extends MotionDetector(
     settings, xform, settings.MotionDetection.bodyThreshold, true)
 
@@ -51,13 +53,24 @@ class FlashyBodyDetector(
 
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+      : Iterable[VisionActor.AnalyzerResponseMsg] =
   {
-    motionDetector.detectMotion(prevGray, gray).map(
-      pos => {
-        BodyDetectedMsg(pos, frameTime)
+    val randomColor = {
+      if (random.nextBoolean) {
+        NamedColor.WHITE
+      } else {
+        NamedColor.BLACK
       }
-    )
+    }
+    val light = Iterable(VisionActor.RequireLightMsg(randomColor, frameTime))
+    val motion =
+      motionDetector.detectMotion(prevGray, gray).map(
+        pos => {
+          BodyDetectedMsg(pos, frameTime)
+        }
+      )
+    light ++ motion
   }
 }
 
@@ -81,7 +94,8 @@ class RoundBodyDetector(
 
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos]) =
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+      : Iterable[BodyDetectedMsg] =
   {
     hintBodyPos match {
       case Some(hintPos) => {
@@ -181,3 +195,137 @@ class RoundBodyDetector(
     })
   }
 }
+
+class ColorfulBodyDetector(
+  val settings : Settings, val xform : RetinalTransform)
+    extends BodyDetector
+{
+  private var channels : Array[IplImage] = Array.empty
+
+  private var totalDiffsOpt : Option[IplImage] = None
+
+  private var chosenColor : Option[LightColor] = None
+
+  private var baselineMin = 0
+
+  private var maxDiffCutoff = -1
+
+  private var waitUntil = TimePoint.ZERO
+
+  private def totalDiffs = totalDiffsOpt.get
+
+  override def analyzeFrame(
+    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
+    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+      : Iterable[VisionActor.AnalyzerResponseMsg] =
+  {
+    chosenColor match {
+      case Some(color) => {
+        if (frameTime <= waitUntil) {
+          None
+        } else {
+          compareColors(img, color)
+          if (maxDiffCutoff < 0) {
+            val newMin = computeMinDiff
+            if (newMin + 10 > baselineMin) {
+              return None
+            }
+            maxDiffCutoff = (0.95*baselineMin + 0.05*newMin).toInt
+          }
+          cvThreshold(
+            totalDiffs, totalDiffs, maxDiffCutoff, 255,
+            CV_THRESH_BINARY_INV)
+          locateBody(frameTime)
+        }
+      }
+      case _ => {
+        val color = chooseColor(img)
+        chosenColor = Some(color)
+        waitUntil = frameTime + settings.Vision.sensorDelay
+        compareColors(img, color)
+        baselineMin = computeMinDiff
+        Some(VisionActor.RequireLightMsg(color, frameTime))
+      }
+    }
+  }
+
+  private def locateBody(frameTime : TimePoint) =
+  {
+    val buffer = totalDiffs.arrayData
+    var xMin = totalDiffs.width
+    var xMax = 0
+    var yMin = totalDiffs.height
+    var yMax = 0
+    for (y <- 0 until totalDiffs.height) {
+      for (x <- 0 until totalDiffs.width) {
+        val index = y * totalDiffs.widthStep + x
+        val v = buffer.get(index) & 0xFF
+        if (v > 0) {
+          if (x < xMin) {
+            xMin = x
+          }
+          if (x > xMax) {
+            xMax = x
+          }
+          if (y < yMin) {
+            yMin = y
+          }
+          if (y > yMax) {
+            yMax = y
+          }
+        }
+      }
+    }
+    if (xMax > xMin) {
+      val retinalPos = RetinalPos((xMax + xMin) / 2, (yMax + yMin) / 2)
+      val pos = xform.retinaToWorld(retinalPos)
+      Some(BodyDetectedMsg(pos, frameTime))
+    } else {
+      None
+    }
+  }
+
+  override def close()
+  {
+    channels.foreach(_.release)
+    channels = Array.empty
+    totalDiffsOpt.foreach(_.release)
+    totalDiffsOpt = None
+  }
+
+  private def compareColors(img : IplImage, color : LightColor)
+  {
+    val imgSize = cvGetSize(img)
+    if (channels.isEmpty) {
+      channels = OpenCvUtil.BGR_CHANNELS.map(
+        c => AbstractIplImage.create(imgSize, 8, 1))
+    }
+    if (totalDiffsOpt.isEmpty) {
+      totalDiffsOpt = Some(AbstractIplImage.create(imgSize, 8, 1))
+    }
+    cvSplit(img, channels(0), channels(1), channels(2), null)
+    for (i <- 0 until channels.size) {
+      cvAbsDiffS(channels(i), channels(i), cvScalar(color.getVal(i)))
+    }
+    val oneThird = 0.33
+    cvAddWeighted(channels(0), oneThird, channels(1), oneThird, 0.0, totalDiffs)
+    cvScaleAdd(channels(2), cvScalar(oneThird), totalDiffs, totalDiffs)
+  }
+
+  private def computeMinDiff() =
+  {
+    val minVal = new Array[Double](2)
+    val maxVal = new Array[Double](2)
+    val minLoc = new Array[Int](2)
+    val maxLoc = new Array[Int](2)
+    cvMinMaxLoc(totalDiffs, minVal, maxVal, minLoc, maxLoc, null)
+    minVal(0).toInt
+  }
+
+  private def chooseColor(img : IplImage) : LightColor =
+  {
+    // TODO:  choose contrasting color
+    NamedColor.MAGENTA
+  }
+}
+

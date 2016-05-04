@@ -51,8 +51,7 @@ object SimulationMain extends App
     val props = Props(
       classOf[ControlActor],
       actuator,
-      Props(classOf[VisionActor], retinalInput, new CanvasTheater),
-      true)
+      Props(classOf[VisionActor], retinalInput, new CanvasTheater))
     val config = ConfigFactory.load("simulation.conf")
     val system = ActorSystem("SimulationActors", config)
     system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)

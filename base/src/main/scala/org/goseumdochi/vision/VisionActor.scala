@@ -31,7 +31,12 @@ object VisionActor
   final case class DimensionsKnownMsg(
     corner : RetinalPos, eventTime : TimePoint)
       extends EventMsg
-  trait ObjDetectedMsg extends EventMsg
+  trait AnalyzerResponseMsg extends EventMsg
+  trait ObjDetectedMsg extends AnalyzerResponseMsg
+  final case class RequireLightMsg(
+    color : LightColor,
+    eventTime : TimePoint)
+      extends AnalyzerResponseMsg
 
   // internal messages
   final case class GrabFrameMsg(lastTime : TimePoint)
@@ -86,6 +91,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       }
     }
     case ActivateAnalyzersMsg(analyzerClassNames, xform) => {
+      closeAnalyzers
       retinalTransform = xform
       analyzers = analyzerClassNames.map(
         settings.instantiateObject(_, xform).
@@ -180,6 +186,13 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       retinalInput.quit
       theater.quit
     }
+    closeAnalyzers
+  }
+
+  private def closeAnalyzers()
+  {
+    analyzers.foreach(_.close)
+    analyzers = Seq.empty
   }
 
   def onTheaterClick(retinalPos : RetinalPos)

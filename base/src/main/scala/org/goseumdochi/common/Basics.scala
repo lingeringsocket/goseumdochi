@@ -40,6 +40,10 @@ case object TimePoint
   def now = TimePoint(TimeSpan(System.currentTimeMillis - bias, MILLISECONDS))
 
   final val ZERO = TimePoint(TimeSpan(0, MILLISECONDS))
+
+  final val ONE = TimePoint(TimeSpan(1000, MILLISECONDS))
+
+  final val TEN = TimePoint(TimeSpan(10000, MILLISECONDS))
 }
 
 trait EventMsg
