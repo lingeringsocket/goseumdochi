@@ -160,12 +160,12 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       // no brightness change:  should be ignored
       val msgs3 = colorfulBodyDetector.analyzeFrame(
-        img1, img1, gray1, gray1, TimePoint.TEN, None)
+        img1, img1, gray1, gray1, TimePoint.ONE, None)
       msgs3 must beEmpty
 
       // should see the light now
       val msgs4 = colorfulBodyDetector.analyzeFrame(
-        img2, img1, gray2, gray1, TimePoint.TEN, None)
+        img2, img1, gray2, gray1, TimePoint.ONE, None)
 
       // visualize(colorfulBodyDetector.sumOpt.get)
 
@@ -176,6 +176,11 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       pos.x must be closeTo(487.0 +/- 0.1)
       pos.y must be closeTo(-485.0 +/- 0.1)
+
+      // now you see it, now you don't
+      val msgs5 = colorfulBodyDetector.analyzeFrame(
+        img1, img1, gray1, gray1, TimePoint.TEN, None)
+      msgs5 must beEmpty
     }
   }
 }
