@@ -80,14 +80,12 @@ abstract class MotionDetector(
     cvFindContours(diff, storage, contour)
 
     try {
+      var biggest : Option[CvBox2D] = None
       while (contour != null && !contour.isNull) {
         if (contour.elem_size > 0) {
           val box = cvMinAreaRect2(contour, storage)
           if (box != null) {
             val size = box.size
-            // FIXME:  return the largest object instead of the first
-            // over the threshold, and if a body pos hint is available,
-            // pick the one nearest/farthest from the body
             val detected = {
               if (under) {
                 (size.width < threshold) && (size.height < threshold)
@@ -96,30 +94,44 @@ abstract class MotionDetector(
               }
             }
             if (detected) {
-              val center = box.center
-              val halfWidth = size.width / 2
-              val halfHeight = size.height / 2
-              val yOffset = {
-                if (under) {
-                  0
-                } else {
-                  // looking for something big:  use roughly the max y instead of
-                  // the vertical center; this corresponds to the bottom
-                  // after retinal flip
-                  halfHeight
+              biggest match {
+                case Some(prev) => {
+                  val prevArea = prev.size.width * prev.size.height
+                  val area = size.width * size.height
+                  if (area > prevArea) {
+                    biggest = Some(box)
+                  }
+                }
+                case _ => {
+                  biggest = Some(box)
                 }
               }
-              return Some(MotionDetectedMsg(
-                xform.retinaToWorld(RetinalPos(center.x, center.y + yOffset)),
-                RetinalPos(center.x - halfWidth, center.y - halfHeight),
-                RetinalPos(center.x + halfWidth, center.y + halfHeight),
-                frameTime))
             }
           }
         }
         contour = contour.h_next()
       }
-      return None
+      biggest.map(box => {
+        val size = box.size
+        val center = box.center
+        val halfWidth = size.width / 2
+        val halfHeight = size.height / 2
+        val yOffset = {
+          if (under) {
+            0
+          } else {
+            // looking for something big: use roughly the max y
+            // instead of the vertical center; this corresponds
+            // to the bottom after retinal flip
+            halfHeight
+          }
+        }
+        MotionDetectedMsg(
+          xform.retinaToWorld(RetinalPos(center.x, center.y + yOffset)),
+          RetinalPos(center.x - halfWidth, center.y - halfHeight),
+          RetinalPos(center.x + halfWidth, center.y + halfHeight),
+          frameTime)
+      })
     } finally {
       diff.release
       storage.release
