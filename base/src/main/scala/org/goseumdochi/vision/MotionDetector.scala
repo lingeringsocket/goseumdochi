@@ -26,6 +26,13 @@ object MotionDetector
   // result messages
   final case class MotionDetectedMsg(pos : PlanarPos, eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
+  {
+    override def renderOverlay(overlay : RetinalOverlay)
+    {
+      overlay.drawCircle(
+        overlay.xform.worldToRetina(pos), 6, NamedColor.BLUE, 2)
+    }
+  }
 }
 
 import MotionDetector._
@@ -41,11 +48,7 @@ abstract class MotionDetector(
       : Iterable[MotionDetectedMsg] =
   {
     detectMotion(prevGray, gray).map(
-      pos => {
-        val center = OpenCvUtil.point(xform.worldToRetina(pos))
-        cvCircle(img, center, 2, NamedColor.BLUE, 6, CV_AA, 0)
-        MotionDetectedMsg(pos, frameTime)
-      }
+      pos => MotionDetectedMsg(pos, frameTime)
     )
   }
 

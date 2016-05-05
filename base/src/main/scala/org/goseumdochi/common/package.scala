@@ -16,13 +16,13 @@
 package org.goseumdochi
 
 import scala.concurrent.duration._
-import org.bytedeco.javacpp.helper.opencv_core._
+import org.bytedeco.javacpp.opencv_core._
 
 package object common
 {
   type TimeSpan = FiniteDuration
   val TimeSpan = FiniteDuration
-  type LightColor = AbstractCvScalar
+  type LightColor = CvScalar
 
   def resourcePath(resource : String) : String =
     classOf[TimePoint].getResource(resource).getPath

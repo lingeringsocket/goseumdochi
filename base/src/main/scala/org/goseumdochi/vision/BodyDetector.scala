@@ -31,6 +31,13 @@ object BodyDetector
   // result messages
   final case class BodyDetectedMsg(pos : PlanarPos, eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
+  {
+    override def renderOverlay(overlay : RetinalOverlay)
+    {
+      overlay.drawCircle(
+        overlay.xform.worldToRetina(pos), 6, NamedColor.RED, 2)
+    }
+  }
 }
 
 import BodyDetector._

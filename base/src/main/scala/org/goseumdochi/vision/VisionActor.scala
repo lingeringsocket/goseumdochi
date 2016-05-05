@@ -18,12 +18,13 @@ package org.goseumdochi.vision
 import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.opencv_imgproc._
 
 import akka.actor._
 import akka.routing._
 
 import scala.concurrent.duration._
+
+import collection._
 
 object VisionActor
 {
@@ -32,6 +33,10 @@ object VisionActor
     corner : RetinalPos, eventTime : TimePoint)
       extends EventMsg
   trait AnalyzerResponseMsg extends EventMsg
+  {
+    def renderOverlay(overlay : RetinalOverlay)
+    {}
+  }
   trait ObjDetectedMsg extends AnalyzerResponseMsg
   final case class RequireLightMsg(
     color : LightColor,
@@ -105,10 +110,11 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     }
   }
 
-  private def analyzeFrame(img : IplImage, frameTime : TimePoint)
+  private def analyzeFrame(img : IplImage, frameTime : TimePoint) =
   {
     val gray = OpenCvUtil.grayscale(img)
     val copy = img.clone
+    val msgs = new mutable.ArrayBuffer[VisionActor.AnalyzerResponseMsg]
 
     lastGray.foreach(
       prevGray => {
@@ -125,6 +131,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
                   case _ => {}
                 }
                 gossip(msg)
+                msgs += msg
               }
             )
           }
@@ -135,6 +142,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     )
     lastGray = Some(gray)
     lastImg = Some(copy)
+    msgs
   }
 
   private def grabOne(analyze : Boolean)
@@ -150,13 +158,16 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
         gossip(DimensionsKnownMsg(corner, frameTime))
         cornerSeen = true
       }
+      val overlay = new OpenCvRetinalOverlay(img, retinalTransform)
       if (analyze) {
-        analyzeFrame(img, frameTime)
+        val msgs = analyzeFrame(img, frameTime)
+        msgs.foreach(_.renderOverlay(overlay))
       } else {
         hintBodyPos match {
           case Some(pos) => {
-            val center = OpenCvUtil.point(retinalTransform.worldToRetina(pos))
-            cvCircle(img, center, 2, NamedColor.GREEN, 6, CV_AA, 0)
+            overlay.drawCircle(
+              retinalTransform.worldToRetina(pos),
+              6, NamedColor.GREEN, 2)
           }
           case _ => {}
         }

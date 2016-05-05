@@ -34,6 +34,15 @@ object RampDetector
   // result messages
   final case class RampDetectedMsg(ramp : OrientedRamp, eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
+  {
+    override def renderOverlay(overlay : RetinalOverlay)
+    {
+      overlay.drawCircle(
+        overlay.xform.worldToRetina(ramp.center), 6, NamedColor.GREEN, 2)
+      overlay.drawCircle(
+        overlay.xform.worldToRetina(ramp.entry), 6, NamedColor.BLUE, 2)
+    }
+  }
 }
 
 import RampDetector._
@@ -47,15 +56,7 @@ class RampDetector(val settings : Settings, val xform : RetinalTransform)
       : Iterable[RampDetectedMsg] =
   {
     detectRamp(img).map(
-      ramp => {
-        cvCircle(
-          img, OpenCvUtil.point(xform.worldToRetina(ramp.center)),
-          2, NamedColor.GREEN, 6, CV_AA, 0)
-        cvCircle(
-          img, OpenCvUtil.point(xform.worldToRetina(ramp.entry)),
-          2, NamedColor.BLUE, 6, CV_AA, 0)
-        RampDetectedMsg(ramp, frameTime)
-      }
+      ramp => RampDetectedMsg(ramp, frameTime)
     )
   }
 
