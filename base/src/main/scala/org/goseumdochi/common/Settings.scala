@@ -93,6 +93,8 @@ class Settings(rootConf : Config)
     val localizationClassName = subConf.getString("localization-class-name")
     val quietPeriod = getMillis(subConf, "quiet-period")
     val persistenceFile = subConf.getString("persistence-file")
+    val centeringUndershootFactor = subConf.getDouble(
+      "centering-undershoot-factor")
   }
 
   object BodyRecognition

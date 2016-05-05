@@ -24,27 +24,56 @@ trait RetinalOverlay
 {
   def xform : RetinalTransform
 
+  def corner : RetinalPos
+
   def drawCircle(
     center : RetinalPos, radius : Int, color : LightColor, thickness : Int)
+
+  def drawLineSegment(
+    end1 : RetinalPos, end2 : RetinalPos,
+    color : LightColor, thickness : Int)
+  {
+  }
 }
 
 object NullRetinalOverlay extends RetinalOverlay
 {
   override def xform = FlipRetinalTransform
 
+  override def corner = RetinalPos(0, 0)
+
   override def drawCircle(
     center : RetinalPos, radius : Int, color : LightColor, thickness : Int)
   {}
+
+  override def drawLineSegment(
+    end1 : RetinalPos, end2 : RetinalPos,
+    color : LightColor, thickness : Int)
+  {
+  }
 }
 
-class OpenCvRetinalOverlay(img : IplImage, retinalTransform : RetinalTransform)
+class OpenCvRetinalOverlay(
+  img : IplImage, retinalTransform : RetinalTransform, cornerInit : RetinalPos)
     extends RetinalOverlay
 {
   override def xform = retinalTransform
 
+  override def corner = cornerInit
+
   override def drawCircle(
     center : RetinalPos, radius : Int, color : LightColor, thickness : Int)
   {
-    cvCircle(img, OpenCvUtil.point(center), radius, color, thickness, CV_AA, 0)
+    cvCircle(
+      img, OpenCvUtil.point(center), radius, color, thickness, CV_AA, 0)
+  }
+
+  override def drawLineSegment(
+    end1 : RetinalPos, end2 : RetinalPos,
+    color : LightColor, thickness : Int)
+  {
+    cvLine(
+      img, OpenCvUtil.point(end1), OpenCvUtil.point(end2),
+      color, thickness, CV_AA, 0)
   }
 }

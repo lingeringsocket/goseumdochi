@@ -74,7 +74,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
 
   private var lastGray : Option[IplImage] = None
 
-  private var cornerSeen = false
+  private var corner : Option[RetinalPos] = None
 
   private var hintBodyPos : Option[PlanarPos] = None
 
@@ -153,12 +153,12 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       val converted = OpenCvUtil.convert(frame)
       // without this, Android crashes...wish I understood why!
       val img = converted.clone
-      if (!cornerSeen) {
-        val corner = RetinalPos(img.width, img.height)
-        gossip(DimensionsKnownMsg(corner, frameTime))
-        cornerSeen = true
+      if (corner.isEmpty) {
+        val newCorner = RetinalPos(img.width, img.height)
+        gossip(DimensionsKnownMsg(newCorner, frameTime))
+        corner = Some(newCorner)
       }
-      val overlay = new OpenCvRetinalOverlay(img, retinalTransform)
+      val overlay = new OpenCvRetinalOverlay(img, retinalTransform, corner.get)
       if (analyze) {
         val msgs = analyzeFrame(img, frameTime)
         msgs.foreach(_.renderOverlay(overlay))

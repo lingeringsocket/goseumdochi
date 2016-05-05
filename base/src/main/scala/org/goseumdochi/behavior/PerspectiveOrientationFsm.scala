@@ -66,6 +66,8 @@ class PerspectiveOrientationFsm()
 {
   private val settings = ActorSettings(context)
 
+  val centeringUndershootFactor = settings.Orientation.centeringUndershootFactor
+
   private var retinalTransform = FlipRetinalTransform
 
   private val forwardImpulse =
@@ -83,7 +85,8 @@ class PerspectiveOrientationFsm()
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(bottomRight, eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
-        settings.BodyRecognition.className),
+        settings.BodyRecognition.className,
+        classOf[VerticalCenterGuideline].getName),
         eventTime)
       goto(WaitingForStart) using Alignment(0.0, PlanarPos(0, 0), bottomRight)
     }
@@ -147,7 +150,7 @@ class PerspectiveOrientationFsm()
             }
           }
           val bodyMapping = BodyMapping(a.scale, 0.0)
-          val motion = PolarVector(dist, theta)
+          val motion = PolarVector(centeringUndershootFactor * dist, theta)
           val impulse = bodyMapping.transformMotion(
             motion, settings.Motor.defaultSpeed)
           applyImpulse(impulse, a.lastTheta, eventTime)
