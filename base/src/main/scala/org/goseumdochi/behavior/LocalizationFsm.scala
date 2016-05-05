@@ -100,7 +100,7 @@ class LocalizationFsm()
     }
   }
 
-  when(FindingBody, stateTimeout = quietPeriod) {
+  when(FindingBody, stateTimeout = adjustedTimeout) {
     case Event(
       MotionDetector.MotionDetectedMsg(pos, eventTime),
       WithControl(_, waitExpiration, _)) =>
