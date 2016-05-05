@@ -211,6 +211,8 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     gossip(
       MotionDetector.MotionDetectedMsg(
         retinalTransform.retinaToWorld(retinalPos),
+        RetinalPos(retinalPos.x - 10, retinalPos.y - 10),
+        RetinalPos(retinalPos.x + 10, retinalPos.y + 10),
         TimePoint.now))
   }
 

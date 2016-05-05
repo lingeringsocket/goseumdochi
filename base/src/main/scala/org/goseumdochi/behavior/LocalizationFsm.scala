@@ -102,11 +102,11 @@ class LocalizationFsm()
 
   when(FindingBody, stateTimeout = adjustedTimeout) {
     case Event(
-      MotionDetector.MotionDetectedMsg(pos, eventTime),
+      msg : MotionDetector.MotionDetectedMsg,
       WithControl(_, waitExpiration, _)) =>
     {
-      if (eventTime >= waitExpiration) {
-        sender ! VisionActor.HintBodyLocationMsg(pos, eventTime)
+      if (msg.eventTime >= waitExpiration) {
+        sender ! VisionActor.HintBodyLocationMsg(msg.pos, msg.eventTime)
         goto(Done)
       } else {
         stay

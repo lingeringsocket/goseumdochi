@@ -42,8 +42,10 @@ class IntrusionDetectionFsmSpec extends AkkaSpecification
 
       val initialPos = PlanarPos(0, 0)
       val intruderPos = PlanarPos(100, 100)
+      val retinalPos = RetinalPos(0, 0)
 
-      fsm ! MotionDetectedMsg(intruderPos, TimePoint.ZERO)
+      fsm ! MotionDetectedMsg(
+        intruderPos, retinalPos, retinalPos, TimePoint.ZERO)
       fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
 
       val move1 = expectMsgClass(classOf[ControlActor.ActuateMoveMsg])

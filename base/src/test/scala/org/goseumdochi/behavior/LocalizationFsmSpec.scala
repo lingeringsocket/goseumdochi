@@ -57,10 +57,12 @@ class LocalizationFsmSpec extends AkkaSpecification
       forwardImpulse.theta must be closeTo(0.0 +/- 0.01)
 
       val finalPos = PlanarPos(100, 30)
+      val retinalPos = RetinalPos(0, 0)
 
       val finalTime = TimePoint.ZERO + 5.seconds
 
-      fsm ! MotionDetector.MotionDetectedMsg(finalPos, finalTime)
+      fsm ! MotionDetector.MotionDetectedMsg(
+        finalPos, retinalPos, retinalPos, finalTime)
 
       expectMsg(VisionActor.HintBodyLocationMsg(finalPos, finalTime))
 

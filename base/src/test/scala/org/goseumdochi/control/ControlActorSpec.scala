@@ -70,7 +70,9 @@ class ControlActorSpec extends AkkaSpecification(
 
       expectQuiescence
 
-      controlActor ! MotionDetector.MotionDetectedMsg(initialPos, initialTime)
+      val retinalPos = RetinalPos(0, 0)
+      controlActor ! MotionDetector.MotionDetectedMsg(
+        initialPos, retinalPos, retinalPos, initialTime)
       controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
 
       statusProbe.expectMsg(StatusUpdate(ORIENTING))

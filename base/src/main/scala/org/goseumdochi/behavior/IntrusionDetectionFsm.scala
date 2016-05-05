@@ -69,8 +69,8 @@ class IntrusionDetectionFsm()
   }
 
   when(WaitingForIntruder) {
-    case Event(MotionDetectedMsg(pos, _), _) => {
-      goto(ManeuveringToIntruder) using IntruderAt(pos)
+    case Event(msg : MotionDetectedMsg, _) => {
+      goto(ManeuveringToIntruder) using IntruderAt(msg.pos)
     }
     case Event(msg : ControlActor.BodyMovedMsg, _) => {
       stay
@@ -87,7 +87,7 @@ class IntrusionDetectionFsm()
         0.seconds, eventTime)
       goto(WaitingForIntruder) using Empty
     }
-    case Event(MotionDetectedMsg(pos, _), _) => {
+    case Event(msg : MotionDetectedMsg, _) => {
       stay
     }
   }

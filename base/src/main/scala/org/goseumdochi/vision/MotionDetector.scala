@@ -24,13 +24,21 @@ import org.bytedeco.javacpp.opencv_imgproc._
 object MotionDetector
 {
   // result messages
-  final case class MotionDetectedMsg(pos : PlanarPos, eventTime : TimePoint)
+  final case class MotionDetectedMsg(
+    pos : PlanarPos, topLeft : RetinalPos, bottomRight : RetinalPos,
+    eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
   {
     override def renderOverlay(overlay : RetinalOverlay)
     {
       overlay.drawCircle(
         overlay.xform.worldToRetina(pos), 6, NamedColor.BLUE, 2)
+      val topRight = RetinalPos(bottomRight.x, topLeft.y)
+      val bottomLeft = RetinalPos(topLeft.x, bottomRight.y)
+      overlay.drawLineSegment(topLeft, topRight, NamedColor.BLUE, 2)
+      overlay.drawLineSegment(topRight, bottomRight, NamedColor.BLUE, 2)
+      overlay.drawLineSegment(bottomRight, bottomLeft, NamedColor.BLUE, 2)
+      overlay.drawLineSegment(bottomLeft, topLeft, NamedColor.BLUE, 2)
     }
   }
 }
@@ -47,13 +55,18 @@ abstract class MotionDetector(
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
       : Iterable[MotionDetectedMsg] =
   {
-    detectMotion(prevGray, gray).map(
-      pos => MotionDetectedMsg(pos, frameTime)
-    )
+    detectMotionMsg(prevGray, gray, frameTime)
   }
 
-  def detectMotion(beforeImg : IplImage, afterImg : IplImage)
+  private[vision] def detectMotion(beforeImg : IplImage, afterImg : IplImage)
       : Option[PlanarPos] =
+  {
+    detectMotionMsg(beforeImg, afterImg, TimePoint.ZERO).map(_.pos)
+  }
+
+  private[vision] def detectMotionMsg(
+    beforeImg : IplImage, afterImg : IplImage, frameTime : TimePoint)
+      : Option[MotionDetectedMsg] =
   {
     val diff = AbstractIplImage.create(
       beforeImg.width, beforeImg.height, IPL_DEPTH_8U, 1)
@@ -84,15 +97,23 @@ abstract class MotionDetector(
             }
             if (detected) {
               val center = box.center
-              val x = center.x
-              var y = center.y
-              if (!under) {
-                // looking for something big:  use roughly the max y instead of
-                // the vertical center; this corresponds to the bottom
-                // after retinal flip
-                y += (size.height / 2)
+              val halfWidth = size.width / 2
+              val halfHeight = size.height / 2
+              val yOffset = {
+                if (under) {
+                  0
+                } else {
+                  // looking for something big:  use roughly the max y instead of
+                  // the vertical center; this corresponds to the bottom
+                  // after retinal flip
+                  halfHeight
+                }
               }
-              return Some(xform.retinaToWorld(RetinalPos(x, y)))
+              return Some(MotionDetectedMsg(
+                xform.retinaToWorld(RetinalPos(center.x, center.y + yOffset)),
+                RetinalPos(center.x - halfWidth, center.y - halfHeight),
+                RetinalPos(center.x + halfWidth, center.y + halfHeight),
+                frameTime))
             }
           }
         }

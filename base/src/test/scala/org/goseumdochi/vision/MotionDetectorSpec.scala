@@ -15,6 +15,8 @@
 
 package org.goseumdochi.vision
 
+import org.goseumdochi.common._
+
 import org.bytedeco.javacpp.opencv_imgcodecs._
 
 class MotionDetectorSpec extends VisualizableSpecification
@@ -47,12 +49,20 @@ class MotionDetectorSpec extends VisualizableSpecification
       val beforeImg = loadImage("data/baseline1.jpg")
       val afterImg = loadImage("data/intruder.jpg")
 
-      val coarseOpt = coarseDetector.detectMotion(beforeImg, afterImg)
+      val coarseOpt = coarseDetector.detectMotionMsg(
+        beforeImg, afterImg, TimePoint.ZERO)
       coarseOpt must not beEmpty
 
-      val pos = coarseOpt.get
-      visualize(afterImg, pos)
+      val msg = coarseOpt.get
+      if (shouldVisualize) {
+        val overlay = new OpenCvRetinalOverlay(
+          afterImg, coarseDetector.xform,
+          RetinalPos(afterImg.width, afterImg.height))
+        msg.renderOverlay(overlay)
+        visualize(afterImg)
+      }
 
+      val pos = msg.pos
       pos.x must be closeTo(424.3 +/- 0.1)
       pos.y must be closeTo(-202.1 +/- 0.1)
     }
