@@ -13,27 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi
+package org.goseumdochi.android
 
-import scala.concurrent.duration._
-import org.bytedeco.javacpp.opencv_core._
-import scala.io._
+import android.content._
+import android.support.multidex._
+import android.app._
 
-package object common
+class MultidexApplication extends Application
 {
-  type TimeSpan = FiniteDuration
-  val TimeSpan = FiniteDuration
-  type LightColor = CvScalar
-
-  def resourcePath(resource : String) : String =
-    "jar:" + classOf[TimePoint].getResource(resource).getPath
-
-  def sourceFromPath(filePath : String) =
+  override protected def attachBaseContext(base : Context)
   {
-    if (filePath.contains(':')) {
-      Source.fromURL(filePath)
-    } else {
-      Source.fromFile(filePath)
-    }
+    super.attachBaseContext(base)
+    MultiDex.install(this)
   }
 }

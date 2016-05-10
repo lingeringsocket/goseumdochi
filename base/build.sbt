@@ -6,6 +6,8 @@ version := "0.1"
 
 isSnapshot := true
 
+exportJars := true
+
 scalaVersion := "2.11.7"
 
 val javacppVersion = "1.1"

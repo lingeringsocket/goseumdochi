@@ -26,8 +26,17 @@ object PerceptualLog
   private lazy val genson = new ScalaGenson(
     new GensonBuilder().withBundle(new LogGensonBundle).create)
 
+  def sourceFromPath(filePath : String) =
+  {
+    if (filePath.contains(':')) {
+      Source.fromURL(filePath)
+    } else {
+      Source.fromFile(filePath)
+    }
+  }
+
   def readJsonFile(filePath : String) : Seq[PerceptualEvent] =
-    managed(Source.fromFile(filePath)).acquireAndGet(src => {
+    managed(sourceFromPath(filePath)).acquireAndGet(src => {
       genson.fromJson[Array[PerceptualEvent]](src.getLines.mkString)
     })
 

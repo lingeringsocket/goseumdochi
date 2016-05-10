@@ -29,6 +29,8 @@ lazy val root = (project in file(".")).
   aggregate(base, `desktop-sphero`).
   dependsOn(`desktop-sphero`)
 
+lazy val android = project.dependsOn(base)
+
 mainClass in Compile := Some("org.goseumdochi.ConsoleMain")
 
 libraryDependencies ++= Seq(

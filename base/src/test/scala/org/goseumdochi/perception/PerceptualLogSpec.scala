@@ -21,7 +21,6 @@ import org.goseumdochi.control._
 
 import scala.concurrent.duration._
 
-import scala.io._
 import java.io._
 
 import org.specs2.specification.core._
@@ -50,7 +49,7 @@ class PerceptualLogSpec extends VisualizableSpecification
 
     "write event JSON" in
     {
-      val src = Source.fromFile(resourcePath("/unit/event.json"))
+      val src = sourceFromPath(resourcePath("/unit/event.json"))
       val expected = src.getLines.mkString("\n")
       val result = PerceptualLog.toJsonString(firstEvent)
       result must be equalTo expected
