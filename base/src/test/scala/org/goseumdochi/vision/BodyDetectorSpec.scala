@@ -50,9 +50,9 @@ class BodyDetectorSpec extends VisualizableSpecification
       val posOpt = roundBodyDetector.detectBody(img, gray, hintPos)
       posOpt must not beEmpty
 
-      val pos = posOpt.get
-      visualize(img, pos)
+      postVisualize(roundBodyDetector.getDebugImages)
 
+      val pos = posOpt.get
       pos.x must be closeTo(563.0 +/- 0.1)
       pos.y must be closeTo(-451.0 +/- 0.1)
     }
@@ -65,9 +65,9 @@ class BodyDetectorSpec extends VisualizableSpecification
       val posOpt = roundBodyDetector.detectBody(img, gray, hintPos)
       posOpt must not beEmpty
 
-      val pos = posOpt.get
-      visualize(img, pos)
+      postVisualize(roundBodyDetector.getDebugImages)
 
+      val pos = posOpt.get
       pos.x must be closeTo(569.0 +/- 0.1)
       pos.y must be closeTo(-471.0 +/- 0.1)
     }
@@ -83,9 +83,12 @@ class BodyDetectorSpec extends VisualizableSpecification
       msgs.size must be equalTo 2
       msgs.head must beAnInstanceOf[VisionActor.RequireLightMsg]
       msgs.last must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
-      val pos = msgs.last.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
-      visualize(img2, pos)
 
+      postVisualize(
+        flashyBodyDetector.motionDetector.getDebugImages ++
+          flashyBodyDetector.getDebugImages)
+
+      val pos = msgs.last.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
       pos.x must be closeTo(268.0 +/- 0.1)
       pos.y must be closeTo(-371.0 +/- 0.1)
     }
@@ -96,10 +99,8 @@ class BodyDetectorSpec extends VisualizableSpecification
       val gray1 = OpenCvUtil.grayscale(img1)
       val circles = roundBodyDetector.findCircles(gray1)
 
-      if (shouldVisualize) {
-        roundBodyDetector.visualizeCircles(img1, circles)
-        visualize(img1)
-      }
+      roundBodyDetector.visualizeCircles(img1, circles)
+      postVisualize(roundBodyDetector.getDebugImages)
 
       circles.size must be equalTo 31
     }
@@ -124,16 +125,15 @@ class BodyDetectorSpec extends VisualizableSpecification
       val pos = posOpt.get
 
       val circles = roundBodyDetector.findCircles(gray2)
-      if (shouldVisualize) {
-        roundBodyDetector.visualizeCircles(img2, circles)
-        visualize(img2, pos)
-      }
+      roundBodyDetector.visualizeCircles(img2, circles)
 
       // even though we've already done background elimination,
       // multiple circles still show up due to sensitivity
       // in the algorithm, so from there we narrow it down
       // via hint position
       circles.size must be equalTo 5
+
+      postVisualize(roundBodyDetector.getDebugImages)
 
       pos.x must be closeTo(363.0 +/- 0.1)
       pos.y must be closeTo(-539.0 +/- 0.1)
@@ -167,12 +167,11 @@ class BodyDetectorSpec extends VisualizableSpecification
       val msgs4 = colorfulBodyDetector.analyzeFrame(
         img2, img1, gray2, gray1, TimePoint.ONE, None)
 
-      // visualize(colorfulBodyDetector.sumOpt.get)
-
       msgs4.size must be equalTo 1
       msgs4.head must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
       val pos = msgs4.head.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
-      visualize(img2, pos)
+
+      postVisualize(colorfulBodyDetector.getDebugImages)
 
       pos.x must be closeTo(487.0 +/- 0.1)
       pos.y must be closeTo(-485.0 +/- 0.1)

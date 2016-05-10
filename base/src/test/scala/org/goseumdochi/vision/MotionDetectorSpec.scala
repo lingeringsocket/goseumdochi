@@ -112,7 +112,7 @@ class MotionDetectorSpec extends VisualizableSpecification
       fineOpt must not beEmpty
 
       val pos = fineOpt.get
-      visualize(afterImg, pos)
+      postVisualize(fineDetector.getDebugImages)
 
       pos.x must be closeTo(394.0 +/- 0.1)
       pos.y must be closeTo(-433.0 +/- 0.1)

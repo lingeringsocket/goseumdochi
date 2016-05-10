@@ -204,8 +204,7 @@ abstract class MotionDetector(
         OpenCvUtil.pos(farthest.tl),
         OpenCvUtil.pos(farthest.br),
         frameTime)
-      val finalDebugger = newDebugger(afterImg)
-      finalDebugger { overlay =>
+      newDebugger(afterImg) { overlay =>
         msg.renderOverlay(overlay)
       }
       Some(msg)

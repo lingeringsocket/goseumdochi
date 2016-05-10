@@ -57,7 +57,7 @@ class FlashyBodyDetector(
     settings, xform, settings.MotionDetection.bodyThreshold,
     MotionDetector.IGNORE_LARGE, MotionDetector.GravitySorter)
 
-  private val motionDetector = new BodyMotionDetector
+  private [vision] val motionDetector = new BodyMotionDetector
 
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
@@ -75,7 +75,11 @@ class FlashyBodyDetector(
     val motion =
       motionDetector.detectMotion(prevGray, gray).map(
         pos => {
-          BodyDetectedMsg(pos, frameTime)
+          val msg = BodyDetectedMsg(pos, frameTime)
+          newDebugger(img) { overlay =>
+            msg.renderOverlay(overlay)
+          }
+          msg
         }
       )
     light ++ motion
@@ -107,11 +111,7 @@ class RoundBodyDetector(
   {
     hintBodyPos match {
       case Some(hintPos) => {
-        detectBody(img, gray, hintPos).map(
-          pos => {
-            BodyDetectedMsg(pos, frameTime)
-          }
-        )
+        detectBodyMsg(img, gray, hintPos, frameTime)
       }
       case _ => {
         findBackgroundCircles(gray)
@@ -131,6 +131,12 @@ class RoundBodyDetector(
   private[vision] def detectBody(
     img : IplImage, gray : IplImage, hintBodyPos : PlanarPos)
       : Option[PlanarPos] =
+    detectBodyMsg(img, gray, hintBodyPos, TimePoint.ZERO).map(_.pos)
+
+  private[vision] def detectBodyMsg(
+    img : IplImage, gray : IplImage, hintBodyPos : PlanarPos,
+    frameTime : TimePoint)
+      : Option[BodyDetectedMsg] =
   {
     val circles = findCircles(gray)
 
@@ -156,7 +162,14 @@ class RoundBodyDetector(
           minRadius = 1
         }
         maxRadius = c.radius + 8
-        Some(xform.retinaToWorld(RetinalPos(c.centerX, c.centerY)))
+        val msg =
+          BodyDetectedMsg(
+            xform.retinaToWorld(RetinalPos(c.centerX, c.centerY)),
+            frameTime)
+        newDebugger(img) { overlay =>
+          msg.renderOverlay(overlay)
+        }
+        Some(msg)
       }
       case _ => {
         None
@@ -194,13 +207,14 @@ class RoundBodyDetector(
   private[vision] def visualizeCircles(
     img : IplImage, circles : Iterable[RetinalCircle])
   {
-    circles.foreach(c => {
-      val point = new CvPoint2D32f
-      point.x(c.centerX.toFloat)
-      point.y(c.centerY.toFloat)
-      val center = cvPointFrom32f(point)
-      cvCircle(img, center, c.radius, NamedColor.RED, 6, CV_AA, 0)
-    })
+    newDebugger(img) { overlay =>
+      circles.foreach(c => {
+        val point = new CvPoint2D32f
+        point.x(c.centerX.toFloat)
+        point.y(c.centerY.toFloat)
+        overlay.drawCircle(OpenCvUtil.pos(point), c.radius, NamedColor.RED, 6)
+      })
+    }
   }
 }
 
@@ -243,7 +257,13 @@ class ColorfulBodyDetector(
           cvThreshold(
             totalDiffs, totalDiffs, maxDiffCutoff, 255,
             CV_THRESH_BINARY_INV)
-          locateBody(frameTime)
+          val msgOpt = locateBody(frameTime)
+          msgOpt.map { msg =>
+            newDebugger(img) { overlay =>
+              msg.renderOverlay(overlay)
+            }
+          }
+          msgOpt
         }
       }
       case _ => {
@@ -284,10 +304,12 @@ class ColorfulBodyDetector(
         }
       }
     }
+    newDebugger(totalDiffs)
     if (xMax > xMin) {
       val retinalPos = RetinalPos((xMax + xMin) / 2, (yMax + yMin) / 2)
       val pos = xform.retinaToWorld(retinalPos)
-      Some(BodyDetectedMsg(pos, frameTime))
+      val msg = BodyDetectedMsg(pos, frameTime)
+      Some(msg)
     } else {
       None
     }
