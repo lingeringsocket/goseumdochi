@@ -57,7 +57,7 @@ class FlashyBodyDetector(
     settings, xform, settings.MotionDetection.bodyThreshold,
     MotionDetector.IGNORE_LARGE, MotionDetector.GravitySorter)
 
-  private [vision] val motionDetector = new BodyMotionDetector
+  private[vision] val motionDetector = new BodyMotionDetector
 
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
