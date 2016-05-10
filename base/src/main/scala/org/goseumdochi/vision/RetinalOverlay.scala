@@ -29,10 +29,24 @@ trait RetinalOverlay
   def drawCircle(
     center : RetinalPos, radius : Int, color : LightColor, thickness : Int)
 
+  def drawEllipse(
+    center : RetinalPos, majorAxis : Double, minorAxis : Double,
+    angle : Double, color : LightColor, thickness : Int)
+
   def drawLineSegment(
     end1 : RetinalPos, end2 : RetinalPos,
     color : LightColor, thickness : Int)
+
+  def drawRectangle(
+    topLeft : RetinalPos, bottomRight : RetinalPos,
+    color : LightColor, thickness : Int)
   {
+    val topRight = RetinalPos(bottomRight.x, topLeft.y)
+    val bottomLeft = RetinalPos(topLeft.x, bottomRight.y)
+    drawLineSegment(topLeft, topRight, color, thickness)
+    drawLineSegment(topRight, bottomRight, color, thickness)
+    drawLineSegment(bottomRight, bottomLeft, color, thickness)
+    drawLineSegment(bottomLeft, topLeft, color, thickness)
   }
 }
 
@@ -46,11 +60,15 @@ object NullRetinalOverlay extends RetinalOverlay
     center : RetinalPos, radius : Int, color : LightColor, thickness : Int)
   {}
 
+  override def drawEllipse(
+    center : RetinalPos, majorAxis : Double, minorAxis : Double,
+    angle : Double, color : LightColor, thickness : Int)
+  {}
+
   override def drawLineSegment(
     end1 : RetinalPos, end2 : RetinalPos,
     color : LightColor, thickness : Int)
-  {
-  }
+  {}
 }
 
 class OpenCvRetinalOverlay(
@@ -66,6 +84,18 @@ class OpenCvRetinalOverlay(
   {
     cvCircle(
       img, OpenCvUtil.point(center), radius, color, thickness, CV_AA, 0)
+  }
+
+  override def drawEllipse(
+    center : RetinalPos, majorAxis : Double, minorAxis : Double,
+    angle : Double, color : LightColor, thickness : Int)
+  {
+    val box = new CvBox2D(
+      OpenCvUtil.point32f(center),
+      OpenCvUtil.size32f(RetinalPos(majorAxis, minorAxis)),
+      angle.toFloat)
+    cvEllipseBox(
+      img, box, color, thickness, CV_AA, 0)
   }
 
   override def drawLineSegment(

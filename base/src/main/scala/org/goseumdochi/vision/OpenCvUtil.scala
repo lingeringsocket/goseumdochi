@@ -46,13 +46,21 @@ object OpenCvUtil
     gray
   }
 
-  def point(pos : RetinalPos) =
-  {
-    val point = new CvPoint2D32f
-    point.x(pos.x.toFloat)
-    point.y(pos.y.toFloat)
-    cvPointFrom32f(point)
-  }
+  def point32f(pos : RetinalPos) =
+    new CvPoint2D32f(pos.x.toFloat, pos.y.toFloat)
 
-  def pos(point : CvPoint) = RetinalPos(point.x, point.y)
+  def size32f(pos : RetinalPos) =
+    new CvSize2D32f(pos.x.toFloat, pos.y.toFloat)
+
+  def point(pos : RetinalPos) =
+    cvPointFrom32f(point32f(pos))
+
+  def pos(point : CvPoint) =
+    RetinalPos(point.x, point.y)
+
+  def pos(point : Point) =
+    RetinalPos(point.x, point.y)
+
+  def pos(point : CvPoint2D32f) =
+    RetinalPos(point.x, point.y)
 }

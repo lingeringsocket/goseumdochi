@@ -19,8 +19,36 @@ import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
 
+import collection._
+
 trait VisionAnalyzer extends AutoCloseable
 {
+  private val debugImages = new mutable.ArrayBuffer[IplImage]
+
+  type OverylayRenderFunc = (RetinalOverlay) => Unit
+
+  type Debugger = (OverylayRenderFunc) => Unit
+
+  protected def newDebugger(inputImg : IplImage) : Debugger =
+  {
+    if (settings.Test.visualize) {
+      val newImage = inputImg.clone
+      debugImages += newImage
+      val overlay = new OpenCvRetinalOverlay(
+        newImage, xform, RetinalPos(newImage.width, newImage.height))
+      def newDebugger(overlayRenderFunc : OverylayRenderFunc) {
+        overlayRenderFunc(overlay)
+      }
+      newDebugger
+    } else {
+      def nullDebugger(func : OverylayRenderFunc) {
+      }
+      nullDebugger
+    }
+  }
+
+  def getDebugImages = debugImages.toIndexedSeq
+
   def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos])

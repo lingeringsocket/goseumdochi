@@ -18,6 +18,7 @@ package org.goseumdochi.vision
 import org.goseumdochi.common._
 
 import org.specs2.mutable._
+import org.specs2.specification._
 
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacv._
@@ -31,7 +32,7 @@ import akka.testkit._
 import java.util.concurrent.atomic._
 
 abstract class VisualizableSpecification(confFile : String = "test.conf")
-    extends Specification
+    extends Specification with AfterEach
 {
   protected val settings = Settings(loadConfig(confFile))
 
@@ -78,6 +79,20 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
     }
   }
 
+  protected def visualize(imgs : Iterable[IplImage])
+  {
+    if (!shouldVisualize || imgs.isEmpty) {
+      return
+    }
+    val c = loadCanvas
+    val converted = imgs.map(OpenCvUtil.convert(_))
+    val circular = Iterator.continually(converted).flatten
+    while (c.waitKey(-1) == null) {
+      c.showImage(circular.next)
+      Thread.sleep(1000)
+    }
+  }
+
   protected def visualize(img : IplImage, pos : RetinalPos)
   {
     if (!shouldVisualize) {
@@ -121,6 +136,17 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
       extends TestKit(configureSystem(overrideConf))
   {
     protected val settings = ActorSettings(system)
+  }
+
+  private var postVisualizedImages : Iterable[IplImage] = None
+
+  protected def postVisualize(images : Iterable[IplImage])
+  {
+    postVisualizedImages = images
+  }
+
+  def after = {
+    visualize(postVisualizedImages)
   }
 }
 

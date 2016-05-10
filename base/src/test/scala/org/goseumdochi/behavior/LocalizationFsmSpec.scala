@@ -37,7 +37,7 @@ class LocalizationFsmSpec extends AkkaSpecification
       fsm ! ControlActor.CameraAcquiredMsg(DEFAULT_DIMS, TimePoint.ZERO)
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector",
-        "org.goseumdochi.vision.FineMotionDetector"),
+        "org.goseumdochi.vision.FineSizeMotionDetector"),
         TimePoint.ZERO))
 
       expectQuiescence

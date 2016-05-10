@@ -54,7 +54,8 @@ class FlashyBodyDetector(
   private val random = scala.util.Random
 
   class BodyMotionDetector extends MotionDetector(
-    settings, xform, settings.MotionDetection.bodyThreshold, true)
+    settings, xform, settings.MotionDetection.bodyThreshold,
+    MotionDetector.IGNORE_LARGE, MotionDetector.GravitySorter)
 
   private val motionDetector = new BodyMotionDetector
 

@@ -21,14 +21,34 @@ import org.bytedeco.javacpp.opencv_imgcodecs._
 
 class MotionDetectorSpec extends VisualizableSpecification
 {
-  private val coarseDetector = new CoarseMotionDetector(
+  private val coarseGravityDetector = new CoarseGravityMotionDetector(
     settings, FlipRetinalTransform)
 
-  private val fineDetector = new FineMotionDetector(
+  private val coarseSizeDetector = new CoarseSizeMotionDetector(
+    settings, FlipRetinalTransform)
+
+  private val fineDetector = new FineSizeMotionDetector(
     settings, FlipRetinalTransform)
 
   private def loadImage(filename : String) =
     OpenCvUtil.grayscale(cvLoadImage(filename))
+
+  private def detectMotion(
+    motionDetector : MotionDetector,
+    filename0 : String, filename1 : String, filename2 : String) =
+  {
+    val prevImg = loadImage(filename0)
+    val beforeImg = loadImage(filename1)
+    val afterImg = loadImage(filename2)
+
+    motionDetector.detectMotion(prevImg, beforeImg)
+
+    val coarseOpt = motionDetector.detectMotionMsg(
+      beforeImg, afterImg, TimePoint.ZERO)
+    val msg = coarseOpt.get
+    postVisualize(motionDetector.getDebugImages)
+    msg.pos
+  }
 
   "MotionDetector" should
   {
@@ -37,7 +57,7 @@ class MotionDetectorSpec extends VisualizableSpecification
       val beforeImg = loadImage("data/baseline1.jpg")
       val afterImg = loadImage("data/baseline1.jpg")
 
-      val coarseOpt = coarseDetector.detectMotion(beforeImg, afterImg)
+      val coarseOpt = coarseSizeDetector.detectMotion(beforeImg, afterImg)
       coarseOpt must beEmpty
 
       val fineOpt = fineDetector.detectMotion(beforeImg, afterImg)
@@ -46,25 +66,38 @@ class MotionDetectorSpec extends VisualizableSpecification
 
     "detect coarse motion" in
     {
-      val beforeImg = loadImage("data/baseline1.jpg")
-      val afterImg = loadImage("data/intruder.jpg")
+      val pos = detectMotion(
+        coarseSizeDetector,
+        "data/baseline1.jpg", "data/baseline1.jpg", "data/intruder.jpg")
+      pos.x must be closeTo(439.0 +/- 0.1)
+      pos.y must be closeTo(-119.0 +/- 0.1)
+    }
 
-      val coarseOpt = coarseDetector.detectMotionMsg(
-        beforeImg, afterImg, TimePoint.ZERO)
-      coarseOpt must not beEmpty
+    "detect feet appearing" in
+    {
+      val pos = detectMotion(
+        coarseGravityDetector,
+        "data/walk1.jpg", "data/walk1.jpg", "data/walk2.jpg")
+      pos.x must be closeTo(99.0 +/- 0.1)
+      pos.y must be closeTo(-408.0 +/- 0.1)
+    }
 
-      val msg = coarseOpt.get
-      if (shouldVisualize) {
-        val overlay = new OpenCvRetinalOverlay(
-          afterImg, coarseDetector.xform,
-          RetinalPos(afterImg.width, afterImg.height))
-        msg.renderOverlay(overlay)
-        visualize(afterImg)
-      }
+    "detect feet walking" in
+    {
+      val pos = detectMotion(
+        coarseGravityDetector,
+        "data/walk1.jpg", "data/walk2.jpg", "data/walk3.jpg")
+      pos.x must be closeTo(546.0 +/- 0.1)
+      pos.y must be closeTo(-239.0 +/- 0.1)
+    }
 
-      val pos = msg.pos
-      pos.x must be closeTo(424.3 +/- 0.1)
-      pos.y must be closeTo(-202.1 +/- 0.1)
+    "detect feet turning" in
+    {
+      val pos = detectMotion(
+        coarseGravityDetector,
+        "data/walk2.jpg", "data/walk3.jpg", "data/walk4.jpg")
+      pos.x must be closeTo(676.0 +/- 0.1)
+      pos.y must be closeTo(-320.0 +/- 0.1)
     }
 
     "detect fine motion" in
@@ -72,7 +105,7 @@ class MotionDetectorSpec extends VisualizableSpecification
       val beforeImg = loadImage("data/room1.jpg")
       val afterImg = loadImage("data/room2.jpg")
 
-      val coarseOpt = coarseDetector.detectMotion(beforeImg, afterImg)
+      val coarseOpt = coarseSizeDetector.detectMotion(beforeImg, afterImg)
       coarseOpt must beEmpty
 
       val fineOpt = fineDetector.detectMotion(beforeImg, afterImg)
@@ -81,8 +114,8 @@ class MotionDetectorSpec extends VisualizableSpecification
       val pos = fineOpt.get
       visualize(afterImg, pos)
 
-      pos.x must be closeTo(386.5 +/- 0.1)
-      pos.y must be closeTo(-448.0 +/- 0.1)
+      pos.x must be closeTo(394.0 +/- 0.1)
+      pos.y must be closeTo(-433.0 +/- 0.1)
     }
   }
 }
