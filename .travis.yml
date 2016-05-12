@@ -17,5 +17,4 @@ before_install:
 install:
   - sudo apt-get install -qq libopencv-dev libstdc++6
 
-script: sbt ++$TRAVIS_SCALA_VERSION test scalastyle test:scalastyle \
-  android/scalastyle
+script: sbt ++$TRAVIS_SCALA_VERSION test scalastyle test:scalastyle
