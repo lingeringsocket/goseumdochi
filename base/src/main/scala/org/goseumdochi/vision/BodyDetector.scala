@@ -279,39 +279,36 @@ class ColorfulBodyDetector(
 
   private def locateBody(frameTime : TimePoint) =
   {
-    val buffer = totalDiffs.arrayData
-    var xMin = totalDiffs.width
-    var xMax = 0
-    var yMin = totalDiffs.height
-    var yMax = 0
-    for (y <- 0 until totalDiffs.height) {
-      for (x <- 0 until totalDiffs.width) {
-        val index = y * totalDiffs.widthStep + x
-        val v = buffer.get(index) & 0xFF
-        if (v > 0) {
-          if (x < xMin) {
-            xMin = x
-          }
-          if (x > xMax) {
-            xMax = x
-          }
-          if (y < yMin) {
-            yMin = y
-          }
-          if (y > yMax) {
-            yMax = y
-          }
-        }
-      }
-    }
     newDebugger(totalDiffs)
-    if (xMax > xMin) {
+
+    val imgToFrame = OpenCvUtil.newConverter
+    val frameToMat = OpenCvUtil.newMatConverter
+    val frame = imgToFrame.convert(totalDiffs)
+    val mat = frameToMat.convert(frame)
+    val locs = new Mat
+    findNonZero(mat, locs)
+
+    if (locs.empty) {
+      None
+    } else {
+      val channels = new MatVector(2)
+      split(locs, channels)
+      val xChannel = channels.get(0)
+      val yChannel = channels.get(1)
+
+      val minVal = new Array[Double](1)
+      val maxVal = new Array[Double](1)
+      minMaxLoc(xChannel, minVal, maxVal, null, null, null)
+      val xMin = minVal(0)
+      val xMax = maxVal(0)
+      minMaxLoc(yChannel, minVal, maxVal, null, null, null)
+      val yMin = minVal(0)
+      val yMax = maxVal(0)
+
       val retinalPos = RetinalPos((xMax + xMin) / 2, (yMax + yMin) / 2)
       val pos = xform.retinaToWorld(retinalPos)
       val msg = BodyDetectedMsg(pos, frameTime)
       Some(msg)
-    } else {
-      None
     }
   }
 
@@ -344,11 +341,8 @@ class ColorfulBodyDetector(
 
   private def computeMinDiff() =
   {
-    val minVal = new Array[Double](2)
-    val maxVal = new Array[Double](2)
-    val minLoc = new Array[Int](2)
-    val maxLoc = new Array[Int](2)
-    cvMinMaxLoc(totalDiffs, minVal, maxVal, minLoc, maxLoc, null)
+    val minVal = new Array[Double](1)
+    cvMinMaxLoc(totalDiffs, minVal, null, null, null, null)
     minVal(0).toInt
   }
 

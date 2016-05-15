@@ -24,6 +24,7 @@ classpathTypes += "maven-plugin"
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 libraryDependencies ++= Seq(
+  "org.slf4j" % "slf4j-api" % "1.7.21",
   "org.bytedeco"                 % "javacpp"         % javacppVersion % "test",
   "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion)% "test" classifier "",
   "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion)% "test" classifier platform,

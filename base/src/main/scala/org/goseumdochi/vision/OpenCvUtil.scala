@@ -27,6 +27,7 @@ object OpenCvUtil
   final val BGR_CHANNELS = Array("BLUE", "GREEN", "RED")
 
   def newConverter = new OpenCVFrameConverter.ToIplImage
+  def newMatConverter = new OpenCVFrameConverter.ToMat
 
   def convert(img : IplImage) =
   {
