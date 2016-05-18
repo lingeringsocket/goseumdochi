@@ -29,7 +29,7 @@ object ControlActor
 {
   object ControlStatus extends Enumeration {
     type ControlStatus = Value
-    val LOCALIZING, ORIENTING, BEHAVING, PANIC = Value
+    val INITIALIZING, LOCALIZING, ORIENTING, BEHAVING, PANIC = Value
   }
   import ControlStatus._
 
@@ -46,7 +46,11 @@ object ControlActor
       extends EventMsg
 
   // sent messages (to listeners)
-  final case class StatusUpdate(status : ControlStatus)
+  final case class StatusUpdateMsg(
+    status : ControlStatus,
+    voiceMessage : String,
+    eventTime : TimePoint)
+      extends EventMsg
 
   // internal messages
   final case class CheckVisibilityMsg(
@@ -85,8 +89,12 @@ object ControlActor
     analyzerClassNames : Seq[String],
     eventTime : TimePoint)
       extends EventMsg
+  final case class ObservationMsg(
+    voiceMessage : String,
+    eventTime : TimePoint)
+      extends EventMsg
 
-  // pass-through messages
+  // pass-through messages (from vision to behavior)
   // any kind of VisionActor.ObjDetectedMsg
 
   final val CONTROL_ACTOR_NAME = "controlActor"
@@ -122,6 +130,17 @@ object ControlActor
   def addListener(controlActor : ActorRef, listener : ActorRef)
   {
     controlActor ! Listen(listener)
+  }
+
+  def voiceMessageFor(status : ControlStatus) =
+  {
+    status match {
+      case INITIALIZING => "Initializing."
+      case LOCALIZING => "Determining initial location."
+      case ORIENTING => "Calibrating direction."
+      case BEHAVING => "Initialization complete."
+      case PANIC => "Help!"
+    }
   }
 }
 
@@ -189,6 +208,8 @@ class ControlActor(
 
   private var lightRequired = false
 
+  private var status = INITIALIZING
+
   private def getActorString(ref : ActorRef) = ref.path.name
 
   override def receive = LoggingReceive({
@@ -213,10 +234,12 @@ class ControlActor(
     receiver ! msg
   }
 
-  private def updateStatus(status : ControlStatus)
+  private def updateStatus(newStatus : ControlStatus, eventTime : TimePoint)
   {
-    log.info("NEW STATUS:  " + status)
-    gossip(StatusUpdate(status))
+    log.info("NEW STATUS:  " + newStatus)
+    status = newStatus
+    val voiceMessage = voiceMessageFor(status)
+    gossip(StatusUpdateMsg(status, voiceMessage, eventTime))
   }
 
   private def receiveInput(eventMsg : EventMsg) = eventMsg match
@@ -233,7 +256,7 @@ class ControlActor(
       actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
       orientationActor ! PoisonPill.getInstance
       writeOrientation(settings, calibratedMsg)
-      updateStatus(BEHAVING)
+      updateStatus(BEHAVING, calibratedMsg.eventTime)
       sendOutput(
         behaviorActor, CameraAcquiredMsg(bottomRight, calibratedMsg.eventTime))
     }
@@ -254,7 +277,7 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       bottomRight = pos
-      updateStatus(LOCALIZING)
+      updateStatus(LOCALIZING, eventTime)
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
     case VisionActor.RequireLightMsg(color, eventTime) => {
@@ -290,6 +313,9 @@ class ControlActor(
       visionActor ! VisionActor.ActivateAnalyzersMsg(
         analyzers, retinalTransform)
     }
+    case ObservationMsg(voiceMessage, eventTime) => {
+      gossip(StatusUpdateMsg(status, voiceMessage, eventTime))
+    }
     case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
       if (localizing) {
         if (lightRequired) {
@@ -297,11 +323,11 @@ class ControlActor(
         }
         localizing = false
         if (orienting) {
-          updateStatus(ORIENTING)
+          updateStatus(ORIENTING, eventTime)
           sendOutput(
             orientationActor, CameraAcquiredMsg(bottomRight, eventTime))
         } else {
-          updateStatus(BEHAVING)
+          updateStatus(BEHAVING, eventTime)
           sendOutput(
             behaviorActor, CameraAcquiredMsg(bottomRight, eventTime))
         }
@@ -320,7 +346,7 @@ class ControlActor(
             if (orienting) {
               // not much we can do yet
             } else {
-              updateStatus(PANIC)
+              updateStatus(PANIC, checkTime)
               sendOutput(behaviorActor, PanicAttackMsg(checkTime))
               moveToCenter(lastSeenPos, checkTime)
             }

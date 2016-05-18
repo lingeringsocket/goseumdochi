@@ -25,6 +25,7 @@ import android.os._
 import android.util._
 import android.view._
 import android.widget._
+import android.speech.tts._
 import java.io._
 import java.nio._
 import java.util._
@@ -74,14 +75,17 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   private var actorSystem : Option[ActorSystem] = None
 
+  private var tts : Option[TextToSpeech] = None
+
   private var controlStatus = INITIAL_STATUS
 
   class ControlListener extends Actor
   {
     def receive =
     {
-      case ControlActor.StatusUpdate(status) => {
+      case ControlActor.StatusUpdateMsg(status, voiceMessage, _) => {
         controlStatus = status.toString
+        speak(voiceMessage)
       }
     }
   }
@@ -90,6 +94,17 @@ class ControlActivity extends Activity with RobotChangedStateListener
   {
     requestWindowFeature(Window.FEATURE_NO_TITLE)
     super.onCreate(savedInstanceState)
+
+    tts = Some(new TextToSpeech(
+      getApplicationContext, new TextToSpeech.OnInitListener {
+        override def onInit(status : Int)
+        {
+          if (status != TextToSpeech.ERROR) {
+            tts.get.setLanguage(Locale.UK)
+          }
+          speak("Establishing Bluetooth connection.")
+        }
+      }))
 
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -196,6 +211,9 @@ class ControlActivity extends Activity with RobotChangedStateListener
           system.actorOf(Props(classOf[ControlListener], this), "statusActor"))
       }
     } else {
+      if (!robot.isEmpty) {
+        speak("Bluetooth connection lost.")
+      }
       robot = None
     }
   }
@@ -223,6 +241,11 @@ class ControlActivity extends Activity with RobotChangedStateListener
     wakeLock = None
   }
 
+  private def speak(voiceMessage : String)
+  {
+    tts.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_FLUSH, null))
+  }
+
   override protected def onResume()
   {
     super.onResume
@@ -233,6 +256,11 @@ class ControlActivity extends Activity with RobotChangedStateListener
   {
     super.onPause
     releaseWakeLock
+    tts.foreach(t => {
+      t.stop
+      t.shutdown
+    })
+    tts = None
   }
 
   def isRobotConnected = !robot.isEmpty

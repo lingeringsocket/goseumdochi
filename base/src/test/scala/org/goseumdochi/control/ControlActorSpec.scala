@@ -31,6 +31,13 @@ import ControlStatus._
 class ControlActorSpec extends AkkaSpecification(
   "birdseye-orientation-test.conf")
 {
+  private def expectStatusMsg(
+    statusProbe : TestProbe, status : ControlStatus, eventTime : TimePoint)
+  {
+    statusProbe.expectMsg(StatusUpdateMsg(
+      status, ControlActor.voiceMessageFor(status), eventTime))
+  }
+
   "ControlActor" should
   {
     "keep cool" in new AkkaExample
@@ -61,7 +68,7 @@ class ControlActorSpec extends AkkaSpecification(
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
-      statusProbe.expectMsg(StatusUpdate(LOCALIZING))
+      expectStatusMsg(statusProbe, LOCALIZING, initialTime)
 
       val backwardImpulse = actuator.expectImpulse
       backwardImpulse must be equalTo(PolarImpulse(0.5, 500.milliseconds, PI))
@@ -75,7 +82,7 @@ class ControlActorSpec extends AkkaSpecification(
         initialPos, retinalPos, retinalPos, initialTime)
       controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
 
-      statusProbe.expectMsg(StatusUpdate(ORIENTING))
+      expectStatusMsg(statusProbe, ORIENTING, initialTime)
 
       val orientationImpulse = actuator.expectImpulse
       orientationImpulse must be equalTo(
@@ -85,7 +92,7 @@ class ControlActorSpec extends AkkaSpecification(
         BodyDetector.BodyDetectedMsg(orientationPos, orientationTime)
 
       actuator.expectTwirlMsg.theta must be closeTo(0.38 +/- 0.01)
-      statusProbe.expectMsg(StatusUpdate(BEHAVING))
+      expectStatusMsg(statusProbe, BEHAVING, orientationTime)
 
       controlActor ! CheckVisibilityMsg(orientationTime)
 
@@ -96,7 +103,7 @@ class ControlActorSpec extends AkkaSpecification(
 
       controlActor ! CheckVisibilityMsg(invisibleTime)
 
-      statusProbe.expectMsg(StatusUpdate(PANIC))
+      expectStatusMsg(statusProbe, PANIC, invisibleTime)
 
       val panicImpulse = actuator.expectImpulse
       panicImpulse.speed must be closeTo(0.5 +/- 0.01)

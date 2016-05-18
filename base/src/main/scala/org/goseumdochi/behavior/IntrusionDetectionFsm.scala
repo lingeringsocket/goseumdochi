@@ -54,8 +54,6 @@ import MotionDetector._
 class IntrusionDetectionFsm()
     extends BehaviorFsm[State, Data]
 {
-  private val settings = ActorSettings(context)
-
   startWith(Blind, Empty)
 
   when(Blind) {
@@ -70,6 +68,7 @@ class IntrusionDetectionFsm()
 
   when(WaitingForIntruder) {
     case Event(msg : MotionDetectedMsg, _) => {
+      recordObservation("Intruder detected!", msg.eventTime)
       goto(ManeuveringToIntruder) using IntruderAt(msg.pos)
     }
     case Event(msg : ControlActor.BodyMovedMsg, _) => {

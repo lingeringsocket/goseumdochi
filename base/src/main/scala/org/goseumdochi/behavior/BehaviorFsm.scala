@@ -15,10 +15,15 @@
 
 package org.goseumdochi.behavior
 
+import org.goseumdochi.common._
+import org.goseumdochi.control._
+
 import akka.actor._
 
 trait BehaviorFsm[S, D] extends LoggingFSM[S, D]
 {
+  protected val settings = ActorSettings(context)
+
   protected def handleUnknown(event : Any) =
   {
     event match {
@@ -28,5 +33,14 @@ trait BehaviorFsm[S, D] extends LoggingFSM[S, D]
       }
     }
     stay
+  }
+
+  protected def recordObservation(voiceMsg : String, eventTime : TimePoint)
+  {
+    // FIXME:  make this unconditional after updating
+    // test scripts
+    if (!settings.Test.active) {
+      sender ! ControlActor.ObservationMsg(voiceMsg, eventTime)
+    }
   }
 }

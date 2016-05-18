@@ -47,8 +47,6 @@ import CyclicFsm._
 class CyclicFsm(impulses : IndexedSeq[PolarImpulse])
     extends BehaviorFsm[State, Data]
 {
-  private val settings = ActorSettings(context)
-
   startWith(Blind, Empty)
 
   when(Blind) {

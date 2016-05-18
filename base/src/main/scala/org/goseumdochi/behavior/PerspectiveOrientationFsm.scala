@@ -64,8 +64,6 @@ import PerspectiveOrientationFsm._
 class PerspectiveOrientationFsm()
     extends BehaviorFsm[State, Data]
 {
-  private val settings = ActorSettings(context)
-
   val centeringUndershootFactor = settings.Orientation.centeringUndershootFactor
 
   private var retinalTransform = FlipRetinalTransform
@@ -110,6 +108,7 @@ class PerspectiveOrientationFsm()
         val predictedMotion = predictMotion(forwardImpulse)
         val scale = motion.distance / predictedMotion.distance
         applyImpulse(forwardImpulse, correction + PI, eventTime)
+        recordObservation("Centering.", eventTime)
         goto(Centering) using Alignment(correction, pos, a.bottomRight, scale)
       } else {
         val normalizedTheta = {
@@ -138,6 +137,8 @@ class PerspectiveOrientationFsm()
         val dist = abs(delta)
         if (dist < 20.0) {
           applyImpulse(measurementImpulses.head, a.lastTheta, eventTime)
+          recordObservation(
+            "Measuring perspective transformation.", eventTime)
           goto(Measuring) using a.copy(
             lastPos = pos,
             measurements = Vector(retinalTransform.worldToRetina(pos)))
