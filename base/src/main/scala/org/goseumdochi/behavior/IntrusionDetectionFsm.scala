@@ -16,6 +16,7 @@
 package org.goseumdochi.behavior
 
 import org.goseumdochi.common._
+import org.goseumdochi.common.MoreMath._
 import org.goseumdochi.control._
 import org.goseumdochi.vision._
 
@@ -68,7 +69,6 @@ class IntrusionDetectionFsm()
 
   when(WaitingForIntruder) {
     case Event(msg : MotionDetectedMsg, _) => {
-      recordObservation("Intruder detected!", msg.eventTime)
       goto(ManeuveringToIntruder) using IntruderAt(msg.pos)
     }
     case Event(msg : ControlActor.BodyMovedMsg, _) => {
@@ -81,6 +81,15 @@ class IntrusionDetectionFsm()
       ControlActor.BodyMovedMsg(pos, eventTime),
       IntruderAt(intruderPos)) =>
     {
+      // HALF_PI adjusts for screen orientation
+      val theta = normalizeRadiansPositive(
+        polarMotion(pos, intruderPos).theta + HALF_PI)
+      var heading = ((theta * 12) / TWO_PI).toInt
+      if (heading == 0) {
+        heading = 12
+      }
+      recordObservation(
+        "Intruder detected at " + heading + " o'clock!", eventTime)
       sender ! ControlActor.ActuateMoveMsg(
         pos, intruderPos, settings.Motor.defaultSpeed,
         0.seconds, eventTime)

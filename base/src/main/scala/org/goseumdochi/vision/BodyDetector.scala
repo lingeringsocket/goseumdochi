@@ -249,7 +249,7 @@ class ColorfulBodyDetector(
           compareColors(img, color)
           if (maxDiffCutoff < 0) {
             val newMin = computeMinDiff
-            if (newMin + 10 > baselineMin) {
+            if (newMin + 3 > baselineMin) {
               return None
             }
             maxDiffCutoff = (0.95*baselineMin + 0.05*newMin).toInt
