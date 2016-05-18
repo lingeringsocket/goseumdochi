@@ -19,33 +19,37 @@ import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
 
-object VerticalCenterGuideline
+object CrosshairsGuideline
 {
   // result messages
-  final case class VerticalCenterOverlayMsg(eventTime : TimePoint)
+  final case class CrosshairsOverlayMsg(eventTime : TimePoint)
       extends VisionActor.AnalyzerResponseMsg
   {
     override def renderOverlay(overlay : RetinalOverlay)
     {
-      val center = overlay.corner.x / 2
-      val top = RetinalPos(center, 0)
-      val bottom = RetinalPos(center, overlay.corner.y)
+      val xCenter = overlay.corner.x / 2
+      val yCenter = overlay.corner.y / 2
+      val top = RetinalPos(xCenter, 0)
+      val bottom = RetinalPos(xCenter, overlay.corner.y)
+      val left = RetinalPos(0, yCenter)
+      val right = RetinalPos(overlay.corner.x, yCenter)
       overlay.drawLineSegment(top, bottom, NamedColor.YELLOW, 1)
+      overlay.drawLineSegment(left, right, NamedColor.YELLOW, 1)
     }
   }
 }
-import VerticalCenterGuideline._
+import CrosshairsGuideline._
 
-class VerticalCenterGuideline(
+class CrosshairsGuideline(
   val settings : Settings, val xform : RetinalTransform)
     extends VisionAnalyzer
 {
   override def analyzeFrame(
     img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
     frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
-      : Iterable[VerticalCenterOverlayMsg] =
+      : Iterable[CrosshairsOverlayMsg] =
   {
-    Some(VerticalCenterOverlayMsg(frameTime))
+    Some(CrosshairsOverlayMsg(frameTime))
   }
 }
 

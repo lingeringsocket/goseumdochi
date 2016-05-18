@@ -170,7 +170,7 @@
     "@class":"org.goseumdochi.control.ControlActor$UseVisionAnalyzersMsg",
     "analyzerClassNames":[
       "org.goseumdochi.vision.FlashyBodyDetector",
-      "org.goseumdochi.vision.VerticalCenterGuideline"
+      "org.goseumdochi.vision.CrosshairsGuideline"
     ],
     "eventTime":{
       "millis":5325

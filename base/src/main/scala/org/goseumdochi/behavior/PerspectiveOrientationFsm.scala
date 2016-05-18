@@ -86,7 +86,7 @@ class PerspectiveOrientationFsm()
     case Event(ControlActor.CameraAcquiredMsg(bottomRight, eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
-        classOf[VerticalCenterGuideline].getName),
+        classOf[CrosshairsGuideline].getName),
         eventTime)
       goto(WaitingForStart) using Alignment(0.0, PlanarPos(0, 0), bottomRight)
     }
