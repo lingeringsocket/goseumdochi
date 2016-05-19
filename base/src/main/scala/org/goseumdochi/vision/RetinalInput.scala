@@ -25,11 +25,9 @@ import scala.concurrent.duration._
 
 trait RetinalInput
 {
-  def beforeNext() {}
-
   def nextFrame() : (Frame, TimePoint)
 
-  def afterNext() {}
+  def frameToImage(frame : Frame) = OpenCvUtil.convert(frame)
 
   def quit() {}
 }
@@ -66,7 +64,7 @@ class HttpRetinalInput(settings : Settings) extends RetinalInput
 {
   private var frameGrabber : Option[IPCameraFrameGrabber] = None
 
-  override def beforeNext()
+  private def startGrabber()
   {
     val url = settings.Vision.remoteInputUrl
     if (url.isEmpty) {
@@ -79,19 +77,22 @@ class HttpRetinalInput(settings : Settings) extends RetinalInput
     frameGrabber = Some(grabber)
   }
 
-  override def nextFrame() =
+  private def stopGrabber()
   {
-    (frameGrabber.get.grab, TimePoint.now)
+    frameGrabber.foreach(_.stop)
+    frameGrabber = None
   }
 
-  override def afterNext()
+  override def nextFrame() =
   {
-    frameGrabber.get.stop
-    frameGrabber = None
+    stopGrabber
+    startGrabber
+    (frameGrabber.get.grab, TimePoint.now)
   }
 
   override def quit()
   {
+    stopGrabber
   }
 }
 

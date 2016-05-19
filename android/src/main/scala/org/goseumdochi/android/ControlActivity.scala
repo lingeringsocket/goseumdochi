@@ -75,9 +75,11 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   private var actorSystem : Option[ActorSystem] = None
 
-  private var tts : Option[TextToSpeech] = None
+  private var textToSpeech : Option[TextToSpeech] = None
 
   private var controlStatus = INITIAL_STATUS
+
+  private var lastVoiceMessage = ""
 
   class ControlListener extends Actor
   {
@@ -95,16 +97,18 @@ class ControlActivity extends Activity with RobotChangedStateListener
     requestWindowFeature(Window.FEATURE_NO_TITLE)
     super.onCreate(savedInstanceState)
 
-    tts = Some(new TextToSpeech(
+    var newTextToSpeech : TextToSpeech = null
+    newTextToSpeech = new TextToSpeech(
       getApplicationContext, new TextToSpeech.OnInitListener {
         override def onInit(status : Int)
         {
           if (status != TextToSpeech.ERROR) {
-            tts.get.setLanguage(Locale.UK)
+            newTextToSpeech.setLanguage(Locale.UK)
+            textToSpeech = Some(newTextToSpeech)
           }
           speak("Establishing Bluetooth connection.")
         }
-      }))
+      })
 
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -243,7 +247,8 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   private def speak(voiceMessage : String)
   {
-    tts.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_FLUSH, null))
+    lastVoiceMessage = voiceMessage
+    textToSpeech.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_FLUSH, null))
   }
 
   override protected def onResume()
@@ -256,11 +261,11 @@ class ControlActivity extends Activity with RobotChangedStateListener
   {
     super.onPause
     releaseWakeLock
-    tts.foreach(t => {
+    textToSpeech.foreach(t => {
       t.stop
       t.shutdown
     })
-    tts = None
+    textToSpeech = None
   }
 
   def isRobotConnected = !robot.isEmpty
@@ -268,6 +273,8 @@ class ControlActivity extends Activity with RobotChangedStateListener
   def getRobot = robot
 
   def getControlStatus = controlStatus
+
+  def getVoiceMessage = lastVoiceMessage
 }
 
 class ControlView(
@@ -343,9 +350,11 @@ class ControlView(
         "WAITING FOR CONNECTION"
       }
     }
+    val lastVoiceMessage = context.getVoiceMessage
 
     canvas.drawText("Frame:  " + frameNumber, 20, 20 + height, paint)
     canvas.drawText("Sphero:  " + robotState, 20, 20 + 3*height, paint)
+    canvas.drawText("Message:  " + lastVoiceMessage, 20, 20 + 5*height, paint)
     frameNumber += 1
   }
 }
@@ -421,6 +430,13 @@ class AndroidRetinalInput extends RetinalInput
     inputQueue.take
   }
 
+  override def frameToImage(frame : Frame) =
+  {
+    val img = super.frameToImage(frame)
+    cvCvtColor(img, img, COLOR_RGBA2BGRA)
+    img
+  }
+
   def isReady() : Boolean =
   {
     !inputQueue.isEmpty
@@ -441,7 +457,13 @@ class AndroidTheater(
   view : View, outputQueue : ArrayBlockingQueue[Bitmap])
     extends RetinalTheater
 {
-  def display(frame : Frame)
+  override def imageToFrame(img : IplImage) =
+  {
+    cvCvtColor(img, img, COLOR_BGRA2RGBA)
+    super.imageToFrame(img)
+  }
+
+  override def display(frame : Frame)
   {
     val converter = new AndroidFrameConverter
     val bitmap = converter.convert(frame)

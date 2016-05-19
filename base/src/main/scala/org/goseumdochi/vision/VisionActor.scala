@@ -148,9 +148,8 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
   private def grabOne(analyze : Boolean)
   {
     try {
-      retinalInput.beforeNext()
-      val (frame, frameTime) = retinalInput.nextFrame()
-      val converted = OpenCvUtil.convert(frame)
+      val (frame, frameTime) = retinalInput.nextFrame
+      val converted = retinalInput.frameToImage(frame)
       // without this, Android crashes...wish I understood why!
       val img = converted.clone
       if (corner.isEmpty) {
@@ -172,7 +171,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
           case _ => {}
         }
       }
-      val result = OpenCvUtil.convert(img)
+      val result = theater.imageToFrame(img)
       theater.display(result)
       img.release
       converted.release
@@ -180,8 +179,6 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       case ex : Throwable => {
         ex.printStackTrace
       }
-    } finally {
-      retinalInput.afterNext()
     }
   }
 

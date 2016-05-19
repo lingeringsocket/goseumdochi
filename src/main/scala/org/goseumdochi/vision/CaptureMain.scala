@@ -37,9 +37,7 @@ object CaptureMain extends App
     val retinalInput =
       settings.instantiateObject(settings.Vision.inputClass).
         asInstanceOf[RetinalInput]
-    retinalInput.beforeNext
-    val img = OpenCvUtil.convert(grabOneFrame(retinalInput))
-    retinalInput.afterNext
+    val img = retinalInput.frameToImage(grabOneFrame(retinalInput))
     cvSaveImage(outFileName, img)
   }
 
@@ -64,11 +62,10 @@ object CaptureMain extends App
     println("Click mouse inside webcam window to capture; " +
       "close webcam window to quit")
     while (running) {
-      retinalInput.beforeNext
       val frame = grabOneFrame(retinalInput)
       canvas.showImage(frame)
       if (capture) {
-        val img = OpenCvUtil.convert(frame)
+        val img = retinalInput.frameToImage(frame)
         val outFileName = "frame" + nextSuffix + ".jpg"
         nextSuffix += 1
         cvSaveImage(outFileName, img)
@@ -76,7 +73,6 @@ object CaptureMain extends App
         println("Captured " + outFileName)
         img.release
       }
-      retinalInput.afterNext
     }
   }
 

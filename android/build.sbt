@@ -83,6 +83,7 @@ proguardOptions in Android ++= Seq(
   "-keepattributes EnclosingMethod",
   "-keep @interface org.bytedeco.javacpp.annotation.*,javax.inject.*",
   "-keepattributes *Annotation*, Exceptions, Signature, Deprecated, SourceFile, SourceDir, LineNumberTable, LocalVariableTable, LocalVariableTypeTable, Synthetic, EnclosingMethod, RuntimeVisibleAnnotations, RuntimeInvisibleAnnotations, RuntimeVisibleParameterAnnotations, RuntimeInvisibleParameterAnnotations, AnnotationDefault, InnerClasses",
+  "-keep class com.orbotix.** {*;}",
   "-keep class org.bytedeco.javacpp.* {*;}",
   "-keep class org.bytedeco.javacpp.helper.* {*;}",
   "-dontwarn java.awt.**",

@@ -16,6 +16,7 @@
 package org.goseumdochi.vision
 
 import org.bytedeco.javacv._
+import org.bytedeco.javacpp.opencv_core._
 
 trait RetinalTheater
 {
@@ -25,6 +26,8 @@ trait RetinalTheater
   {
     visionActor = Some(actor)
   }
+
+  def imageToFrame(img : IplImage) = OpenCvUtil.convert(img)
 
   def display(frame : Frame)
 

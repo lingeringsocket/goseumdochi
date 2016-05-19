@@ -287,8 +287,8 @@ class ControlActor(
     // note that this pattern needs to be matched BEFORE the
     // generic ObjDetectedMsg case
     case BodyDetector.BodyDetectedMsg(pos, eventTime) => {
-      val moveMsg = BodyMovedMsg(pos, eventTime)
       if (eventTime > movingUntil) {
+        val moveMsg = BodyMovedMsg(pos, eventTime)
         if (localizing) {
           sendOutput(localizationActor, moveMsg)
         } else if (orienting) {

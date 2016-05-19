@@ -58,9 +58,7 @@ object SpheroMain extends App with DesktopSpheroBase
           asInstanceOf[RetinalInput]
       // pull and discard one frame as a test to make sure we have a
       // good connection
-      retinalInput.beforeNext
       retinalInput.nextFrame
-      retinalInput.afterNext
       val actuator = new DesktopSpheroActuator(robotOpt.get)
       val props = Props(
         classOf[ControlActor],

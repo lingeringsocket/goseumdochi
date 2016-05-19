@@ -44,16 +44,11 @@ object PerspectiveMain extends App
 
     println("Close webcam window to quit")
     while (running) {
-      retinalInput.beforeNext
-      val frame = grabOneFrame(retinalInput)
-      val img = OpenCvUtil.convert(frame)
+      val frame = retinalInput.nextFrame._1
+      val img = retinalInput.frameToImage(frame)
       perspective.visualize(img)
       canvas.showImage(OpenCvUtil.convert(img))
       img.release
-      retinalInput.afterNext
     }
   }
-
-  private def grabOneFrame(retinalInput : RetinalInput) =
-    retinalInput.nextFrame._1
 }
