@@ -42,6 +42,7 @@ object OpenCvUtil
   def grayscale(img : IplImage) =
   {
     val gray = AbstractIplImage.create(cvGetSize(img), 8, 1)
+    // FIXME:  this should probably be CV_BGR2GRAY instead
     cvCvtColor(img, gray, CV_RGB2GRAY)
     cvSmooth(gray, gray, CV_GAUSSIAN, 3, 3, 0, 0)
     gray

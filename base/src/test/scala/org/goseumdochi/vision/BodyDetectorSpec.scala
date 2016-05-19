@@ -173,8 +173,8 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       postVisualize(colorfulBodyDetector.getDebugImages)
 
-      pos.x must be closeTo(487.0 +/- 0.1)
-      pos.y must be closeTo(-485.0 +/- 0.1)
+      pos.x must be closeTo(485.5 +/- 0.1)
+      pos.y must be closeTo(-501.0 +/- 0.1)
 
       // now you see it, now you don't
       val msgs5 = colorfulBodyDetector.analyzeFrame(

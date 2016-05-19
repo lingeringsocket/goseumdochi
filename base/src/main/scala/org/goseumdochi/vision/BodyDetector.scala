@@ -226,6 +226,8 @@ class ColorfulBodyDetector(
 
   private var totalDiffsOpt : Option[IplImage] = None
 
+  private var hsvOpt : Option[IplImage] = None
+
   private var chosenColor : Option[LightColor] = None
 
   private var baselineMin = 0
@@ -291,6 +293,7 @@ class ColorfulBodyDetector(
     if (locs.empty) {
       None
     } else {
+      // TODO:  use cvMoments instead
       val channels = new MatVector(2)
       split(locs, channels)
       val xChannel = channels.get(0)
@@ -318,6 +321,8 @@ class ColorfulBodyDetector(
     channels = Array.empty
     totalDiffsOpt.foreach(_.release)
     totalDiffsOpt = None
+    hsvOpt.foreach(_.release)
+    hsvOpt = None
   }
 
   private def compareColors(img : IplImage, color : LightColor)
@@ -330,13 +335,23 @@ class ColorfulBodyDetector(
     if (totalDiffsOpt.isEmpty) {
       totalDiffsOpt = Some(AbstractIplImage.create(imgSize, 8, 1))
     }
-    cvSplit(img, channels(0), channels(1), channels(2), null)
-    for (i <- 0 until channels.size) {
-      cvAbsDiffS(channels(i), channels(i), cvScalar(color.getVal(i)))
+    if (hsvOpt.isEmpty) {
+      hsvOpt = Some(AbstractIplImage.create(imgSize, 8, 3))
     }
-    val oneThird = 0.33
-    cvAddWeighted(channels(0), oneThird, channels(1), oneThird, 0.0, totalDiffs)
-    cvScaleAdd(channels(2), cvScalar(oneThird), totalDiffs, totalDiffs)
+
+    val hsv = hsvOpt.get
+    val save = cvGet2D(img, 0, 0)
+    cvSet2D(img, 0, 0, color)
+    cvCvtColor(img, hsv, CV_BGR2HSV)
+    cvSet2D(img, 0, 0, save)
+    val hsvTarget = cvGet2D(hsv, 0, 0)
+    cvSplit(hsv, channels(0), channels(1), channels(2), null)
+    cvThreshold(channels(1), channels(1), 60, 1, THRESH_BINARY)
+    cvThreshold(channels(2), channels(2), 180, 1, THRESH_BINARY)
+    cvMul(channels(0), channels(1), channels(0))
+    cvMul(channels(0), channels(2), channels(0))
+    cvAbsDiffS(channels(0), totalDiffs, cvScalar(hsvTarget.getVal(0)))
+    cvSet2D(totalDiffs, 0, 0, cvScalar(255))
   }
 
   private def computeMinDiff() =
