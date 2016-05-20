@@ -68,7 +68,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       postVisualize(roundBodyDetector.getDebugImages)
 
       val pos = posOpt.get
-      pos.x must be closeTo(569.0 +/- 0.1)
+      pos.x must be closeTo(567.0 +/- 0.1)
       pos.y must be closeTo(-471.0 +/- 0.1)
     }
 
@@ -90,7 +90,7 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       val pos = msgs.last.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
       pos.x must be closeTo(268.0 +/- 0.1)
-      pos.y must be closeTo(-371.0 +/- 0.1)
+      pos.y must be closeTo(-372.0 +/- 0.1)
     }
 
     "find circles for round body background elimination" in
@@ -102,7 +102,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       roundBodyDetector.visualizeCircles(img1, circles)
       postVisualize(roundBodyDetector.getDebugImages)
 
-      circles.size must be equalTo 31
+      circles.size must be equalTo 30
     }
 
     "detect round body after background elimination" in
@@ -131,7 +131,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       // multiple circles still show up due to sensitivity
       // in the algorithm, so from there we narrow it down
       // via hint position
-      circles.size must be equalTo 5
+      circles.size must be equalTo 6
 
       postVisualize(roundBodyDetector.getDebugImages)
 
