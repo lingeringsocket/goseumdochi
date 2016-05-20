@@ -248,7 +248,7 @@ class ControlActivity extends Activity with RobotChangedStateListener
   private def speak(voiceMessage : String)
   {
     lastVoiceMessage = voiceMessage
-    textToSpeech.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_FLUSH, null))
+    textToSpeech.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_ADD, null))
   }
 
   override protected def onResume()

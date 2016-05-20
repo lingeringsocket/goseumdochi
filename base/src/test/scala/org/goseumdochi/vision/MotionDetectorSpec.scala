@@ -21,6 +21,9 @@ import org.bytedeco.javacpp.opencv_imgcodecs._
 
 class MotionDetectorSpec extends VisualizableSpecification
 {
+  // motion detectors are mutable, so we need isolation
+  isolated
+
   private val coarseGravityDetector = new CoarseGravityMotionDetector(
     settings, FlipRetinalTransform)
 
