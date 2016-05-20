@@ -23,7 +23,7 @@ import collection._
 
 class ImageDeck
 {
-  private def NO_CONVERSION = 0
+  private val NO_CONVERSION = 0
 
   private val buf = new mutable.ArrayBuffer[mutable.Map[Int, IplImage]]
 
