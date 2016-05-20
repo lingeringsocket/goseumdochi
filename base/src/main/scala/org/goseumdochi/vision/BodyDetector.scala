@@ -60,8 +60,8 @@ class FlashyBodyDetector(
   private[vision] val motionDetector = new BodyMotionDetector
 
   override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+    imageDeck : ImageDeck, frameTime : TimePoint,
+    hintBodyPos : Option[PlanarPos])
       : Iterable[VisionActor.AnalyzerResponseMsg] =
   {
     val randomColor = {
@@ -73,10 +73,11 @@ class FlashyBodyDetector(
     }
     val light = Iterable(VisionActor.RequireLightMsg(randomColor, frameTime))
     val motion =
-      motionDetector.detectMotion(prevGray, gray).map(
+      motionDetector.detectMotion(
+        imageDeck.previousGray, imageDeck.currentGray).map(
         pos => {
           val msg = BodyDetectedMsg(pos, frameTime)
-          newDebugger(img) { overlay =>
+          newDebugger(imageDeck.currentBgr) { overlay =>
             msg.renderOverlay(overlay)
           }
           msg
@@ -105,16 +106,18 @@ class RoundBodyDetector(
   private val filteredCircles = new mutable.LinkedHashSet[RetinalCircle]
 
   override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+    imageDeck : ImageDeck, frameTime : TimePoint,
+    hintBodyPos : Option[PlanarPos])
       : Iterable[BodyDetectedMsg] =
   {
+    val currentGray = imageDeck.currentGray
     hintBodyPos match {
       case Some(hintPos) => {
-        detectBodyMsg(img, gray, hintPos, frameTime)
+        detectBodyMsg(
+          imageDeck.currentBgr, currentGray, hintPos, frameTime)
       }
       case _ => {
-        findBackgroundCircles(gray)
+        findBackgroundCircles(currentGray)
         Iterable.empty
       }
     }
@@ -239,16 +242,17 @@ class ColorfulBodyDetector(
   private def totalDiffs = totalDiffsOpt.get
 
   override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+    imageDeck : ImageDeck, frameTime : TimePoint,
+    hintBodyPos : Option[PlanarPos])
       : Iterable[VisionActor.AnalyzerResponseMsg] =
   {
+    val currentBgr = imageDeck.currentBgr
     chosenColor match {
       case Some(color) => {
         if (frameTime <= waitUntil) {
           None
         } else {
-          compareColors(img, color)
+          compareColors(currentBgr, color)
           if (maxDiffCutoff < 0) {
             val newMin = computeMinDiff
             if (newMin + 3 > baselineMin) {
@@ -261,7 +265,7 @@ class ColorfulBodyDetector(
             CV_THRESH_BINARY_INV)
           val msgOpt = locateBody(frameTime)
           msgOpt.map { msg =>
-            newDebugger(img) { overlay =>
+            newDebugger(currentBgr) { overlay =>
               msg.renderOverlay(overlay)
             }
           }
@@ -269,10 +273,10 @@ class ColorfulBodyDetector(
         }
       }
       case _ => {
-        val color = chooseColor(img)
+        val color = chooseColor(currentBgr)
         chosenColor = Some(color)
         waitUntil = frameTime + settings.Vision.sensorDelay
-        compareColors(img, color)
+        compareColors(currentBgr, color)
         baselineMin = computeMinDiff
         Some(VisionActor.RequireLightMsg(color, frameTime))
       }

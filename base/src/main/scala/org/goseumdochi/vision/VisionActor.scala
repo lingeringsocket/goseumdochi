@@ -70,9 +70,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
 
   private var analyzers : Seq[VisionAnalyzer] = Seq.empty
 
-  private var lastImg : Option[IplImage] = None
-
-  private var lastGray : Option[IplImage] = None
+  private val imageDeck = new ImageDeck
 
   private var corner : Option[RetinalPos] = None
 
@@ -112,37 +110,29 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
 
   private def analyzeFrame(img : IplImage, frameTime : TimePoint) =
   {
-    val gray = OpenCvUtil.grayscale(img)
     val copy = img.clone
-    val msgs = new mutable.ArrayBuffer[VisionActor.AnalyzerResponseMsg]
+    val allMsgs = new mutable.ArrayBuffer[VisionActor.AnalyzerResponseMsg]
 
-    lastGray.foreach(
-      prevGray => {
-        val prevImg = lastImg.get
-        analyzers.map(
-          analyzer => {
-            analyzer.analyzeFrame(
-              img, prevImg, gray, prevGray, frameTime, hintBodyPos).
-              foreach(msg => {
-                msg match {
-                  case BodyDetector.BodyDetectedMsg(pos, _) => {
-                    hintBodyPos = Some(pos)
-                  }
-                  case _ => {}
-                }
-                gossip(msg)
-                msgs += msg
+    imageDeck.cycle(copy)
+    if (imageDeck.isReady) {
+      analyzers.map(
+        analyzer => {
+          val analyzerMsgs = analyzer.analyzeFrame(
+            imageDeck, frameTime, hintBodyPos)
+          analyzerMsgs.foreach(msg => {
+            msg match {
+              case BodyDetector.BodyDetectedMsg(pos, _) => {
+                hintBodyPos = Some(pos)
               }
-            )
-          }
-        )
-        prevGray.release
-        prevImg.release
-      }
-    )
-    lastGray = Some(gray)
-    lastImg = Some(copy)
-    msgs
+              case _ => {}
+            }
+            gossip(msg)
+            allMsgs += msg
+          })
+        }
+      )
+    }
+    allMsgs
   }
 
   private def grabOne(analyze : Boolean)

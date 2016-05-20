@@ -76,10 +76,11 @@ class BodyDetectorSpec extends VisualizableSpecification
     {
       val img1 = cvLoadImage("data/blinkoff.jpg")
       val img2 = cvLoadImage("data/blinkorange.jpg")
-      val gray1 = OpenCvUtil.grayscale(img1)
-      val gray2 = OpenCvUtil.grayscale(img2)
+      val imageDeck = new ImageDeck
+      imageDeck.cycle(img1)
+      imageDeck.cycle(img2)
       val msgs = flashyBodyDetector.analyzeFrame(
-        img2, img1, gray2, gray1, TimePoint.ZERO, None)
+        imageDeck, TimePoint.ZERO, None)
       msgs.size must be equalTo 2
       msgs.head must beAnInstanceOf[VisionActor.RequireLightMsg]
       msgs.last must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
@@ -142,30 +143,36 @@ class BodyDetectorSpec extends VisualizableSpecification
     "detect colorful magenta body" in
     {
       val img1 = cvLoadImage("data/magenta_off.jpg")
-      val gray1 = OpenCvUtil.grayscale(img1)
       val img2 = cvLoadImage("data/magenta_on.jpg")
-      val gray2 = OpenCvUtil.grayscale(img2)
+
+      val imageDeck = new ImageDeck
 
       // baseline:  let there be light
+      imageDeck.cycle(img1)
+      imageDeck.cycle(img1)
       val msgs1 = colorfulBodyDetector.analyzeFrame(
-        img1, img1, gray1, gray1, TimePoint.ZERO, None)
+        imageDeck, TimePoint.ZERO, None)
       msgs1.size must be equalTo 1
       msgs1.head must be equalTo VisionActor.RequireLightMsg(
         NamedColor.MAGENTA, TimePoint.ZERO)
 
       // too early:  should be ignored
+      imageDeck.cycle(img2)
       val msgs2 = colorfulBodyDetector.analyzeFrame(
-        img2, img1, gray2, gray1, TimePoint.ZERO, None)
+        imageDeck, TimePoint.ZERO, None)
       msgs2 must beEmpty
 
       // no brightness change:  should be ignored
+      imageDeck.cycle(img1)
+      imageDeck.cycle(img1)
       val msgs3 = colorfulBodyDetector.analyzeFrame(
-        img1, img1, gray1, gray1, TimePoint.ONE, None)
+        imageDeck, TimePoint.ONE, None)
       msgs3 must beEmpty
 
       // should see the light now
+      imageDeck.cycle(img2)
       val msgs4 = colorfulBodyDetector.analyzeFrame(
-        img2, img1, gray2, gray1, TimePoint.ONE, None)
+        imageDeck, TimePoint.ONE, None)
 
       msgs4.size must be equalTo 1
       msgs4.head must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
@@ -177,8 +184,10 @@ class BodyDetectorSpec extends VisualizableSpecification
       pos.y must be closeTo(-501.0 +/- 0.1)
 
       // now you see it, now you don't
+      imageDeck.cycle(img1)
+      imageDeck.cycle(img1)
       val msgs5 = colorfulBodyDetector.analyzeFrame(
-        img1, img1, gray1, gray1, TimePoint.TEN, None)
+        imageDeck, TimePoint.TEN, None)
       msgs5 must beEmpty
     }
   }

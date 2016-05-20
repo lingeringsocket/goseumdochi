@@ -126,11 +126,11 @@ abstract class MotionDetector(
   private val storage = AbstractCvMemStorage.create
 
   override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+    imageDeck : ImageDeck, frameTime : TimePoint,
+    hintBodyPos : Option[PlanarPos])
       : Iterable[MotionDetectedMsg] =
   {
-    detectMotionMsg(prevGray, gray, frameTime)
+    detectMotionMsg(imageDeck.previousGray, imageDeck.currentGray, frameTime)
   }
 
   private[vision] def detectMotion(beforeImg : IplImage, afterImg : IplImage)

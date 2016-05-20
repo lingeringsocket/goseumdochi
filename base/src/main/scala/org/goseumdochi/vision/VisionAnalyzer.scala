@@ -50,8 +50,8 @@ trait VisionAnalyzer extends AutoCloseable
   def getDebugImages = debugImages.toIndexedSeq
 
   def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+    imageDeck : ImageDeck, frameTime : TimePoint,
+    hintBodyPos : Option[PlanarPos])
       : Iterable[VisionActor.AnalyzerResponseMsg]
 
   def settings : Settings
@@ -65,8 +65,8 @@ class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
     extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+    imageDeck : ImageDeck, frameTime : TimePoint,
+    hintBodyPos : Option[PlanarPos])
       : Iterable[VisionActor.AnalyzerResponseMsg] =
   {
     None

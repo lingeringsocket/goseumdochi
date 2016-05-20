@@ -17,8 +17,6 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
-import org.bytedeco.javacpp.opencv_core._
-
 object CrosshairsGuideline
 {
   // result messages
@@ -45,8 +43,8 @@ class CrosshairsGuideline(
     extends VisionAnalyzer
 {
   override def analyzeFrame(
-    img : IplImage, prevImg : IplImage, gray : IplImage, prevGray : IplImage,
-    frameTime : TimePoint, hintBodyPos : Option[PlanarPos])
+    imageDeck : ImageDeck, frameTime : TimePoint,
+    hintBodyPos : Option[PlanarPos])
       : Iterable[CrosshairsOverlayMsg] =
   {
     Some(CrosshairsOverlayMsg(frameTime))
