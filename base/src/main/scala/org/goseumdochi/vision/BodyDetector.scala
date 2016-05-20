@@ -229,7 +229,7 @@ class ColorfulBodyDetector(
 
   private var totalDiffsOpt : Option[IplImage] = None
 
-  private var hsvOpt : Option[IplImage] = None
+  private var hueOpt : Option[CvScalar] = None
 
   private var chosenColor : Option[LightColor] = None
 
@@ -247,12 +247,13 @@ class ColorfulBodyDetector(
       : Iterable[VisionActor.AnalyzerResponseMsg] =
   {
     val currentBgr = imageDeck.currentBgr
+    val currentHsv = imageDeck.currentHsv
     chosenColor match {
       case Some(color) => {
         if (frameTime <= waitUntil) {
           None
         } else {
-          compareColors(currentBgr, color)
+          compareColors(currentHsv, color)
           if (maxDiffCutoff < 0) {
             val newMin = computeMinDiff
             if (newMin + 3 > baselineMin) {
@@ -276,7 +277,7 @@ class ColorfulBodyDetector(
         val color = chooseColor(currentBgr)
         chosenColor = Some(color)
         waitUntil = frameTime + settings.Vision.sensorDelay
-        compareColors(currentBgr, color)
+        compareColors(currentHsv, color)
         baselineMin = computeMinDiff
         Some(VisionActor.RequireLightMsg(color, frameTime))
       }
@@ -325,13 +326,11 @@ class ColorfulBodyDetector(
     channels = Array.empty
     totalDiffsOpt.foreach(_.release)
     totalDiffsOpt = None
-    hsvOpt.foreach(_.release)
-    hsvOpt = None
   }
 
-  private def compareColors(img : IplImage, color : LightColor)
+  private def compareColors(hsv : IplImage, color : LightColor)
   {
-    val imgSize = cvGetSize(img)
+    val imgSize = cvGetSize(hsv)
     if (channels.isEmpty) {
       channels = OpenCvUtil.BGR_CHANNELS.map(
         c => AbstractIplImage.create(imgSize, 8, 1))
@@ -339,23 +338,23 @@ class ColorfulBodyDetector(
     if (totalDiffsOpt.isEmpty) {
       totalDiffsOpt = Some(AbstractIplImage.create(imgSize, 8, 1))
     }
-    if (hsvOpt.isEmpty) {
-      hsvOpt = Some(AbstractIplImage.create(imgSize, 8, 3))
-    }
 
-    val hsv = hsvOpt.get
-    val save = cvGet2D(img, 0, 0)
-    cvSet2D(img, 0, 0, color)
-    cvCvtColor(img, hsv, CV_BGR2HSV)
-    cvSet2D(img, 0, 0, save)
-    val hsvTarget = cvGet2D(hsv, 0, 0)
+    if (hueOpt.isEmpty) {
+      val onePixel = AbstractIplImage.create(1, 1, 8, 3)
+      cvSet2D(onePixel, 0, 0, color)
+      cvCvtColor(onePixel, onePixel, CV_BGR2HSV)
+      val hsvTarget = cvGet2D(onePixel, 0, 0)
+      onePixel.release
+      hueOpt = Some(cvScalar(hsvTarget.getVal(0)))
+    }
+    val hue = hueOpt.get
+
     cvSplit(hsv, channels(0), channels(1), channels(2), null)
     cvThreshold(channels(1), channels(1), 60, 1, THRESH_BINARY)
     cvThreshold(channels(2), channels(2), 180, 1, THRESH_BINARY)
     cvMul(channels(0), channels(1), channels(0))
     cvMul(channels(0), channels(2), channels(0))
-    cvAbsDiffS(channels(0), totalDiffs, cvScalar(hsvTarget.getVal(0)))
-    cvSet2D(totalDiffs, 0, 0, cvScalar(255))
+    cvAbsDiffS(channels(0), totalDiffs, hue)
   }
 
   private def computeMinDiff() =
