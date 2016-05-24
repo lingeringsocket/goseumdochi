@@ -1,0 +1,23 @@
+akka {
+  actor {
+    debug {
+      receive = off
+      fsm = off
+      lifecycle = off
+    }
+  }
+  loglevel = "INFO"
+}
+
+goseumdochi {
+  sphero {
+    bluetooth-id = "ABCDEF012345"
+  }
+  vision {
+    input-class-name = "org.goseumdochi.vision.HttpRetinalInput"
+    remote-input-url = "http://192.168.43.1:8080/videofeed"
+  }
+  behavior {
+    class-name = "org.goseumdochi.behavior.IntrusionDetectionFsm"
+  }
+}

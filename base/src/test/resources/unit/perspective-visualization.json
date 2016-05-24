@@ -1,0 +1,41 @@
+[
+{
+  "description":"orientation",
+  "sender":"controlActor",
+  "receiver":"futureSelf",
+  "msg":{
+    "@class":"org.goseumdochi.control.ControlActor$CalibratedMsg",
+    "bodyMapping":{
+      "scale":1.0,
+      "thetaOffset":0.40736069181668927
+    },
+    "xform":{
+      "@class":"org.goseumdochi.vision.RestrictedPerspectiveTransform",
+      "nearCenter":{
+        "x":497.75006103515625,
+        "y":298.7500305175781
+      },
+      "farCenter":{
+        "x":485.50006103515625,
+        "y":217.00003051757812
+      },
+      "distantCenter":{
+        "x":487.25006103515625,
+        "y":150.25001525878906
+      },
+      "nearRight":{
+        "x":663.3524780273438,
+        "y":275.6229553222656
+      },
+      "farRight":{
+        "x":628.5000610351562,
+        "y":223.00003051757812
+      },
+      "worldDist":0.25
+    },
+    "eventTime":{
+      "millis":130357
+    }
+  }
+}
+]

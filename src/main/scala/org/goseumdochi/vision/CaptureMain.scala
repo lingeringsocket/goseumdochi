@@ -17,6 +17,7 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
+import org.bytedeco.javacpp.opencv_imgcodecs._
 import org.bytedeco.javacpp.opencv_highgui._
 import org.bytedeco.javacv._
 
@@ -26,19 +27,17 @@ import java.awt.event._
 
 object CaptureMain extends App
 {
-  val config = ConfigFactory.load()
-  val settings = Settings(config)
+  private val config = ConfigFactory.load()
+  private val settings = Settings(config)
 
   captureFrameOnClick()
 
   def captureOneFrame(outFileName : String)
   {
-    val videoStream =
-      settings.instantiateObject(settings.Vision.cameraClass).
-        asInstanceOf[VideoStream]
-    videoStream.beforeNext
-    val img = OpenCvUtil.convert(grabOneFrame(videoStream))
-    videoStream.afterNext
+    val retinalInput =
+      settings.instantiateObject(settings.Vision.inputClass).
+        asInstanceOf[RetinalInput]
+    val img = retinalInput.frameToImage(grabOneFrame(retinalInput))
     cvSaveImage(outFileName, img)
   }
 
@@ -46,10 +45,10 @@ object CaptureMain extends App
   {
     val canvas = new CanvasFrame("Webcam")
     canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
-    val videoStream =
-      settings.instantiateObject(settings.Vision.cameraClass).
-        asInstanceOf[VideoStream]
-    var running = true
+    val retinalInput =
+      settings.instantiateObject(settings.Vision.inputClass).
+        asInstanceOf[RetinalInput]
+    val running = true
     var capture = false
     var nextSuffix = 1
 
@@ -63,26 +62,20 @@ object CaptureMain extends App
     println("Click mouse inside webcam window to capture; " +
       "close webcam window to quit")
     while (running) {
-      videoStream.beforeNext
-      val frame = grabOneFrame(videoStream)
+      val frame = grabOneFrame(retinalInput)
       canvas.showImage(frame)
-      val img = OpenCvUtil.convert(frame)
       if (capture) {
+        val img = retinalInput.frameToImage(frame)
         val outFileName = "frame" + nextSuffix + ".jpg"
         nextSuffix += 1
         cvSaveImage(outFileName, img)
         capture = false
         println("Captured " + outFileName)
-      }
-      videoStream.afterNext
-      if (canvas.waitKey(-1) != null) {
-        println("Done")
-        videoStream.quit
-        running = false
+        img.release
       }
     }
   }
 
-  private def grabOneFrame(videoStream : VideoStream) =
-    videoStream.nextFrame._1
+  private def grabOneFrame(retinalInput : RetinalInput) =
+    retinalInput.nextFrame._1
 }

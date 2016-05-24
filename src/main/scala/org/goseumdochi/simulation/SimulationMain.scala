@@ -31,31 +31,30 @@ object SimulationMain extends App
 
   private def run()
   {
-    val videoStream = new PlaybackStream(
+    val retinalInput = new KeyFrameRetinalInput(
       Array(
-        ("data/table1.jpg", 1.second),
-        ("data/table1.jpg", 1.second),
-        ("data/table1.jpg", 1.second),
-        ("data/table1.jpg", 1.second),
-        ("data/table2.jpg", 1.second),
-        ("data/table2.jpg", 1.second),
-        ("data/table2.jpg", 1.second),
-        ("data/table2.jpg", 1.second),
-        ("data/empty.jpg", 1.second),
-        ("data/empty.jpg", 1.second),
-        ("data/empty.jpg", 1.second),
-        ("data/empty.jpg", 1.second),
-        ("data/empty.jpg", 1.second)),
+        ("base/data/table1.jpg", 1.second),
+        ("base/data/table1.jpg", 1.second),
+        ("base/data/table1.jpg", 1.second),
+        ("base/data/table1.jpg", 1.second),
+        ("base/data/table2.jpg", 1.second),
+        ("base/data/table2.jpg", 1.second),
+        ("base/data/table2.jpg", 1.second),
+        ("base/data/table2.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second),
+        ("base/data/empty.jpg", 1.second)),
       true)
     val actuator = NullActuator
     val props = Props(
       classOf[ControlActor],
       actuator,
-      Props(classOf[VisionActor], videoStream),
-      true)
+      Props(classOf[VisionActor], retinalInput, new CanvasTheater))
     val config = ConfigFactory.load("simulation.conf")
     val system = ActorSystem("SimulationActors", config)
     system.actorOf(props, ControlActor.CONTROL_ACTOR_NAME)
-    Await.result(system.whenTerminated, Duration.Inf)
+    system.awaitTermination
   }
 }

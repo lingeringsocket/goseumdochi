@@ -1,36 +1,16 @@
-name := "goseumdochi"
+name := "goseumdochi-root"
 
-organization := "org.goseumdochi"
-
-val javacppVersion = "0.11"
+val javacppVersion = "1.1"
 
 version := "0.1"
 
+isSnapshot := true
+
 scalaVersion := "2.11.7"
-
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint",
-  "-Xfatal-warnings", "-Ywarn-unused-import")
-
-scalacOptions in Test ++= Seq("-Yrangepos")
 
 lazy val platform = org.bytedeco.javacpp.Loader.getPlatform
 
 classpathTypes += "maven-plugin"
-
-resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
-
-libraryDependencies ++= Seq(
-  "com.jsuereth" %% "scala-arm" % "1.4",
-  "org.json4s" %% "json4s-native" % "3.3.0",
-  "com.typesafe.akka"      %% "akka-actor"     % "2.4.1",
-  "com.typesafe.akka"      %% "akka-testkit"     % "2.4.1" % "test",
-  "org.bytedeco"                 % "javacpp"         % javacppVersion,
-  "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "org.bytedeco.javacpp-presets" % "opencv" % ("2.4.11-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % ("2.4.11-" + javacppVersion) classifier platform,
-  "org.scalafx" %% "scalafx" % "8.0.60-R9",
-  "org.specs2"        %% "specs2-core"             % "3.7.2"           % "test"
-)
 
 autoCompilerPlugins := true
 
@@ -40,10 +20,25 @@ fork := true
 
 javaOptions += "-Xmx1G"
 
-maxErrors := 99
+lazy val base = project
 
-traceLevel := 10
+lazy val `desktop-sphero` = project.
+  dependsOn(base % "compile->compile;test->test")
 
-scalastyleFailOnError := true
+lazy val root = (project in file(".")).
+  aggregate(base, `desktop-sphero`).
+  dependsOn(`desktop-sphero`)
+
+lazy val android = project.dependsOn(base)
 
 mainClass in Compile := Some("org.goseumdochi.ConsoleMain")
+
+libraryDependencies ++= Seq(
+  "org.bytedeco"                 % "javacpp"         % javacppVersion,
+  "org.bytedeco"                 % "javacv"          % javacppVersion,
+  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier "",
+  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier platform,
+  "org.scalafx" %% "scalafx" % "8.0.60-R9"
+)
+
+publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath+"/.ivy2/local/org.goseumdochi")))
