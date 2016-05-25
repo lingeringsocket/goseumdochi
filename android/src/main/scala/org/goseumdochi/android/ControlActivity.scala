@@ -17,6 +17,7 @@ package org.goseumdochi.android
 
 import android._
 import android.app._
+import android.bluetooth._
 import android.content._
 import android.content.pm._
 import android.graphics._
@@ -53,7 +54,9 @@ import com.orbotix.common._
 
 class ControlActivity extends Activity with RobotChangedStateListener
 {
-  private final val PERMISSION_REQUEST_CODE = 42
+  private final val PERMISSION_REQUEST = 42
+
+  private final val ENABLE_BT_REQUEST = 43
 
   private final val INITIAL_STATUS = "CONNECTED"
 
@@ -81,6 +84,12 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   private var lastVoiceMessage = ""
 
+  private var bluetoothEnabled = false
+
+  private var discoveryStarted = false
+
+  private var connectionStatus = "WAITING FOR CONNECTION"
+
   class ControlListener extends Actor
   {
     def receive =
@@ -105,10 +114,18 @@ class ControlActivity extends Activity with RobotChangedStateListener
           if (status != TextToSpeech.ERROR) {
             newTextToSpeech.setLanguage(Locale.UK)
             textToSpeech = Some(newTextToSpeech)
+            speak("Establishing Bluetooth connection.")
           }
-          speak("Establishing Bluetooth connection.")
         }
       })
+
+    val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter
+    if (!bluetoothAdapter.isEnabled) {
+      val intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+      startActivityForResult(intent, ENABLE_BT_REQUEST)
+    } else {
+      bluetoothEnabled = true
+    }
 
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
     var gotCameraPermission = true
@@ -127,12 +144,27 @@ class ControlActivity extends Activity with RobotChangedStateListener
         requestPermissions(
           permissions.toArray(
             new Array[String](permissions.size)),
-          PERMISSION_REQUEST_CODE)
+          PERMISSION_REQUEST)
       }
     }
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
     if (gotCameraPermission) {
       startCamera
+    }
+  }
+
+  override protected def onActivityResult(
+    requestCode : Int, resultCode : Int, intent : Intent)
+  {
+    if (requestCode == ENABLE_BT_REQUEST) {
+      if (resultCode == Activity.RESULT_OK) {
+        bluetoothEnabled = true
+        startDiscovery
+      } else {
+        connectionStatus = "BLUETOOTH NOT ENABLED"
+        speak("Pretty please?")
+        toastLong("Watchdog cannot run without Bluetooth enabled. ")
+      }
     }
   }
 
@@ -158,12 +190,22 @@ class ControlActivity extends Activity with RobotChangedStateListener
       (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
   }
 
+  private def toastLong(msg : String)
+  {
+    Toast.makeText(getApplicationContext, msg, Toast.LENGTH_LONG).show
+  }
+
   override def onRequestPermissionsResult(
     requestCode : Int, permissions : Array[String], grantResults : Array[Int])
   {
-    if (requestCode == PERMISSION_REQUEST_CODE) {
+    if (requestCode == PERMISSION_REQUEST) {
       for (i <- 0 until permissions.length) {
         if (grantResults(i) != PackageManager.PERMISSION_GRANTED) {
+          connectionStatus = "CANNOT CONNECT WITHOUT PERMISSION"
+          speak("Pretty please?")
+          toastLong(
+            "Watchdog cannot run until all requested permissions " +
+              "have been granted.")
           return
         }
         permissions(i) match {
@@ -180,18 +222,15 @@ class ControlActivity extends Activity with RobotChangedStateListener
   override protected def onStart()
   {
     super.onStart
-
-    if (hasLocationPermission) {
-      startDiscovery
-    }
+    startDiscovery
   }
-
 
   private def startDiscovery()
   {
-    if(!DualStackDiscoveryAgent.getInstance.isDiscovering) {
+    if (bluetoothEnabled && !discoveryStarted && hasLocationPermission) {
       DualStackDiscoveryAgent.getInstance.startDiscovery(
         getApplicationContext)
+      discoveryStarted = true
     }
   }
 
@@ -243,6 +282,7 @@ class ControlActivity extends Activity with RobotChangedStateListener
       }
     } else {
       if (!robot.isEmpty) {
+        connectionStatus = "DISCONNECTED"
         speak("Bluetooth connection lost.")
       }
       robot = None
@@ -299,7 +339,13 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   def getRobot = robot
 
-  def getControlStatus = controlStatus
+  def getRobotState = {
+    if (isRobotConnected) {
+      controlStatus
+    } else {
+      connectionStatus
+    }
+  }
 
   def getVoiceMessage = lastVoiceMessage
 }
@@ -370,13 +416,7 @@ class ControlView(
       canvas.drawBitmap(bitmap, 0, 0, paint)
     }
 
-    val robotState = {
-      if (context.isRobotConnected) {
-        context.getControlStatus
-      } else {
-        "WAITING FOR CONNECTION"
-      }
-    }
+    val robotState = context.getRobotState
     val lastVoiceMessage = context.getVoiceMessage
 
     canvas.drawText("Frame:  " + frameNumber, 20, 20 + height, paint)
