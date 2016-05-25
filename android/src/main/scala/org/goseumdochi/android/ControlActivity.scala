@@ -53,7 +53,7 @@ import com.orbotix.common._
 
 class ControlActivity extends Activity with RobotChangedStateListener
 {
-  private final val REQUEST_CODE_LOCATION_PERMISSION = 42
+  private final val PERMISSION_REQUEST_CODE = 42
 
   private final val INITIAL_STATUS = "CONNECTED"
 
@@ -111,20 +111,33 @@ class ControlActivity extends Activity with RobotChangedStateListener
       })
 
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
+    var gotCameraPermission = true
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      val hasLocationPermission = checkSelfPermission(
-        Manifest.permission.ACCESS_COARSE_LOCATION )
-      if (hasLocationPermission != PackageManager.PERMISSION_GRANTED) {
+      gotCameraPermission = hasCameraPermission
+      val gotLocationPermission = hasLocationPermission
+      val gotPermissions = gotCameraPermission && gotLocationPermission
+      if (!gotPermissions) {
         val permissions = new ArrayList[String]
-        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (!gotCameraPermission) {
+          permissions.add(Manifest.permission.CAMERA)
+        }
+        if (!gotLocationPermission) {
+          permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+        }
         requestPermissions(
           permissions.toArray(
             new Array[String](permissions.size)),
-          REQUEST_CODE_LOCATION_PERMISSION)
+          PERMISSION_REQUEST_CODE)
       }
     }
-
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+    if (gotCameraPermission) {
+      startCamera
+    }
+  }
+
+  private def startCamera()
+  {
     val layout = new FrameLayout(this)
     val preview = new ControlPreview(this, controlView)
     layout.addView(preview)
@@ -133,13 +146,30 @@ class ControlActivity extends Activity with RobotChangedStateListener
     controlView.setOnTouchListener(controlView)
   }
 
+  private def hasCameraPermission =
+    hasPermission(Manifest.permission.CAMERA)
+
+  private def hasLocationPermission =
+    hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+
+  private def hasPermission(permission : String) =
+  {
+    (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) ||
+      (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
+  }
+
   override def onRequestPermissionsResult(
     requestCode : Int, permissions : Array[String], grantResults : Array[Int])
   {
-    if (requestCode == REQUEST_CODE_LOCATION_PERMISSION) {
-      for ( i <- 0 until permissions.length) {
-        if (grantResults(i) == PackageManager.PERMISSION_GRANTED) {
-          startDiscovery
+    if (requestCode == PERMISSION_REQUEST_CODE) {
+      for (i <- 0 until permissions.length) {
+        if (grantResults(i) != PackageManager.PERMISSION_GRANTED) {
+          return
+        }
+        permissions(i) match {
+          case Manifest.permission.ACCESS_COARSE_LOCATION => startDiscovery
+          case Manifest.permission.CAMERA => startCamera
+          case _ =>
         }
       }
     } else {
@@ -151,10 +181,7 @@ class ControlActivity extends Activity with RobotChangedStateListener
   {
     super.onStart
 
-    if((Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-      || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION ) ==
-      PackageManager.PERMISSION_GRANTED )
-    {
+    if (hasLocationPermission) {
       startDiscovery
     }
   }
