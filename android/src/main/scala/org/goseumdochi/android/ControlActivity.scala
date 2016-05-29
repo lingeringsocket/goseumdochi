@@ -59,7 +59,7 @@ class ControlActivity extends Activity with RobotChangedStateListener
   private lazy val controlView =
     new ControlView(this, retinalInput, outputQueue)
 
-  lazy val theater = new AndroidTheater(controlView, outputQueue)
+  private lazy val theater = new AndroidTheater(controlView, outputQueue)
 
   private val actuator = new AndroidSpheroActuator(this)
 
@@ -311,4 +311,6 @@ class ControlActivity extends Activity with RobotChangedStateListener
   }
 
   def getVoiceMessage = lastVoiceMessage
+
+  def getVisionActor = theater.getVisionActor
 }

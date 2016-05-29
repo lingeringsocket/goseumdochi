@@ -38,7 +38,7 @@ class ControlView(
 
   override def onTouch(v : View, e : MotionEvent) =
   {
-    context.theater.getVisionActor.foreach(
+    context.getVisionActor.foreach(
       _.onTheaterClick(RetinalPos(e.getX, e.getY)))
     true
   }
