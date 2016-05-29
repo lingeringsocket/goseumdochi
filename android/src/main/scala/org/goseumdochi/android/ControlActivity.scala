@@ -51,8 +51,6 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   private var robot : Option[ConvenienceRobot] = None
 
-  private var wakeLock : Option[PowerManager#WakeLock] = None
-
   private val outputQueue =
     new java.util.concurrent.ArrayBlockingQueue[Bitmap](1)
 
@@ -137,6 +135,7 @@ class ControlActivity extends Activity with RobotChangedStateListener
       }
     }
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+    getWindow.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     if (gotCameraPermission) {
       startCamera
     }
@@ -278,29 +277,6 @@ class ControlActivity extends Activity with RobotChangedStateListener
     }
   }
 
-  private def acquireWakeLock()
-  {
-    if (wakeLock.isEmpty) {
-      val pm = getSystemService(Context.POWER_SERVICE).
-        asInstanceOf[PowerManager]
-      val wl = pm.newWakeLock(
-        PowerManager.SCREEN_DIM_WAKE_LOCK,
-        getClass.getCanonicalName)
-      wl.acquire
-      wakeLock = Some(wl)
-    }
-  }
-
-  private def releaseWakeLock()
-  {
-    wakeLock.foreach(wl => {
-      if (wl.isHeld) {
-        wl.release
-      }
-    })
-    wakeLock = None
-  }
-
   private def speak(voiceMessage : String)
   {
     lastVoiceMessage = voiceMessage
@@ -310,13 +286,11 @@ class ControlActivity extends Activity with RobotChangedStateListener
   override protected def onResume()
   {
     super.onResume
-    acquireWakeLock
   }
 
   override protected def onPause()
   {
     super.onPause
-    releaseWakeLock
     textToSpeech.foreach(t => {
       t.stop
       t.shutdown
