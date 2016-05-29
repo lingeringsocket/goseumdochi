@@ -131,7 +131,8 @@ class MainActivity extends Activity
 
   private def tryStartControl() =
   {
-    if (startRequested && bluetoothEnabled && cameraEnabled && locationEnabled) {
+    if (startRequested && bluetoothEnabled && cameraEnabled && locationEnabled)
+    {
       val intent = new Intent(this, classOf[ControlActivity])
       startActivity(intent)
       true
