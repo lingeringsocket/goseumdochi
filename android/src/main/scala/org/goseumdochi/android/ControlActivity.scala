@@ -15,19 +15,15 @@
 
 package org.goseumdochi.android
 
-import android._
 import android.app._
-import android.bluetooth._
-import android.content._
-import android.content.pm._
 import android.graphics._
 import android.os._
+import android.preference._
 import android.view._
 import android.widget._
 import android.speech.tts._
 
 import java.io._
-import java.util._
 
 import android.hardware.Camera
 
@@ -43,10 +39,6 @@ import com.orbotix.common._
 
 class ControlActivity extends Activity with RobotChangedStateListener
 {
-  private final val PERMISSION_REQUEST = 42
-
-  private final val ENABLE_BT_REQUEST = 43
-
   private final val INITIAL_STATUS = "CONNECTED"
 
   private var robot : Option[ConvenienceRobot] = None
@@ -71,8 +63,6 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   private var lastVoiceMessage = ""
 
-  private var bluetoothEnabled = false
-
   private var discoveryStarted = false
 
   private var connectionStatus = "WAITING FOR CONNECTION"
@@ -83,7 +73,28 @@ class ControlActivity extends Activity with RobotChangedStateListener
     {
       case ControlActor.StatusUpdateMsg(status, voiceMessage, _) => {
         controlStatus = status.toString
-        speak(voiceMessage)
+        var actualMessage = voiceMessage
+        val prefix = "INTRUDER"
+        if (voiceMessage.startsWith(prefix)) {
+          val prefs = PreferenceManager.getDefaultSharedPreferences(
+            ControlActivity.this)
+          // FIXME:  get this from XML
+          val defaultValue = "Intruder detected"
+          actualMessage = prefs.getString(
+            SettingsActivity.KEY_PREF_INTRUDER_ALERT, defaultValue)
+          if (actualMessage == defaultValue) {
+            val suffix = voiceMessage.stripPrefix(prefix)
+            actualMessage = actualMessage + suffix
+          }
+        } else {
+          val resourceName = "utterance_" + voiceMessage
+          val resourceId = getResources.getIdentifier(
+            resourceName, "id", getPackageName)
+          if (resourceId != 0) {
+            actualMessage = getString(resourceId)
+          }
+        }
+        speak(actualMessage)
       }
     }
   }
@@ -94,66 +105,28 @@ class ControlActivity extends Activity with RobotChangedStateListener
     super.onCreate(savedInstanceState)
 
     var newTextToSpeech : TextToSpeech = null
-    newTextToSpeech = new TextToSpeech(
-      getApplicationContext, new TextToSpeech.OnInitListener {
-        override def onInit(status : Int)
-        {
-          if (status != TextToSpeech.ERROR) {
-            newTextToSpeech.setLanguage(Locale.UK)
-            textToSpeech = Some(newTextToSpeech)
-            speak("Establishing Bluetooth connection.")
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    val enableVoice = prefs.getBoolean(
+      SettingsActivity.KEY_PREF_ENABLE_VOICE, true)
+    if (enableVoice) {
+      newTextToSpeech = new TextToSpeech(
+        getApplicationContext, new TextToSpeech.OnInitListener {
+          override def onInit(status : Int)
+          {
+            if (status != TextToSpeech.ERROR) {
+              textToSpeech = Some(newTextToSpeech)
+              speak(R.string.utterance_bluetooth_connection)
+            }
           }
-        }
-      })
-
-    val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter
-    if (!bluetoothAdapter.isEnabled) {
-      val intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-      startActivityForResult(intent, ENABLE_BT_REQUEST)
+        })
     } else {
-      bluetoothEnabled = true
+      speak(R.string.utterance_bluetooth_connection)
     }
 
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
-    var gotCameraPermission = true
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      gotCameraPermission = hasCameraPermission
-      val gotLocationPermission = hasLocationPermission
-      val gotPermissions = gotCameraPermission && gotLocationPermission
-      if (!gotPermissions) {
-        val permissions = new ArrayList[String]
-        if (!gotCameraPermission) {
-          permissions.add(Manifest.permission.CAMERA)
-        }
-        if (!gotLocationPermission) {
-          permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
-        }
-        requestPermissions(
-          permissions.toArray(
-            new Array[String](permissions.size)),
-          PERMISSION_REQUEST)
-      }
-    }
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    if (gotCameraPermission) {
-      startCamera
-    }
-  }
-
-  override protected def onActivityResult(
-    requestCode : Int, resultCode : Int, intent : Intent)
-  {
-    if (requestCode == ENABLE_BT_REQUEST) {
-      if (resultCode == Activity.RESULT_OK) {
-        bluetoothEnabled = true
-        startDiscovery
-      } else {
-        connectionStatus = "BLUETOOTH NOT ENABLED"
-        speak("Pretty please?")
-        toastLong("Watchdog cannot run without Bluetooth enabled. ")
-      }
-    }
+    startCamera
   }
 
   private def startCamera()
@@ -166,47 +139,6 @@ class ControlActivity extends Activity with RobotChangedStateListener
     controlView.setOnTouchListener(controlView)
   }
 
-  private def hasCameraPermission =
-    hasPermission(Manifest.permission.CAMERA)
-
-  private def hasLocationPermission =
-    hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-
-  private def hasPermission(permission : String) =
-  {
-    (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) ||
-      (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
-  }
-
-  private def toastLong(msg : String)
-  {
-    Toast.makeText(getApplicationContext, msg, Toast.LENGTH_LONG).show
-  }
-
-  override def onRequestPermissionsResult(
-    requestCode : Int, permissions : Array[String], grantResults : Array[Int])
-  {
-    if (requestCode == PERMISSION_REQUEST) {
-      for (i <- 0 until permissions.length) {
-        if (grantResults(i) != PackageManager.PERMISSION_GRANTED) {
-          connectionStatus = "CANNOT CONNECT WITHOUT PERMISSION"
-          speak("Pretty please?")
-          toastLong(
-            "Watchdog cannot run until all requested permissions " +
-              "have been granted.")
-          return
-        }
-        permissions(i) match {
-          case Manifest.permission.ACCESS_COARSE_LOCATION => startDiscovery
-          case Manifest.permission.CAMERA => startCamera
-          case _ =>
-        }
-      }
-    } else {
-      super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-  }
-
   override protected def onStart()
   {
     super.onStart
@@ -215,7 +147,7 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   private def startDiscovery()
   {
-    if (bluetoothEnabled && !discoveryStarted && hasLocationPermission) {
+    if (!discoveryStarted) {
       DualStackDiscoveryAgent.getInstance.startDiscovery(
         getApplicationContext)
       discoveryStarted = true
@@ -271,7 +203,7 @@ class ControlActivity extends Activity with RobotChangedStateListener
     } else {
       if (!robot.isEmpty) {
         connectionStatus = "DISCONNECTED"
-        speak("Bluetooth connection lost.")
+        speak(R.string.utterance_bluetooth_lost)
       }
       robot = None
     }
@@ -281,6 +213,11 @@ class ControlActivity extends Activity with RobotChangedStateListener
   {
     lastVoiceMessage = voiceMessage
     textToSpeech.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_ADD, null))
+  }
+
+  private def speak(voiceMessageId : Int)
+  {
+    speak(getString(voiceMessageId))
   }
 
   override protected def onResume()

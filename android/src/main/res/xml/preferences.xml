@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <CheckBoxPreference android:title="@string/pref_title_enable_voice"
+                      android:defaultValue="true"
+                      android:summary="@string/pref_summary_enable_voice"
+                      android:key="pref_key_enable_voice" />
+  <EditTextPreference android:title="@string/pref_title_intruder_alert"
+                      android:defaultValue="@string/pref_default_intruder_alert"
+                      android:key="pref_key_intruder_alert"
+                      android:summary="@string/pref_summary_intruder_alert"></EditTextPreference>
+</PreferenceScreen>

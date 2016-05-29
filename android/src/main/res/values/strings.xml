@@ -1,3 +1,34 @@
 <resources>
-    <string name="app_name">Watchdog for Sphero</string>
+  <string name="app_name">Watchdog for Sphero</string>
+  <string name="settings_label">Settings</string>
+  <string name="about_label">About</string>
+  <string name="help_label">Help</string>  
+  <string name="start_label">Start</string>
+  <string name="about_title">About Watchdog for Sphero</string>
+  <string name="prefs_title">Watchdog for Sphero Settings</string>
+  <string name="about_text">
+With Watchdog for Sphero, you can position your phone for surveillance of an area of your home, and whenever the camera detects any motion in that area, Sphero will roll towards the intruder with a challenge.  Good fun for pets, friends, and family members, but don\'t rely on it to protect the family jewels :) 
+  </string>
+  <string name="about_version">Watchdog for Sphero v0.3</string>
+  <string name="about_copyright">&#169;2016 Lingering Socket Labs</string>
+  <string name="about_author_email">info@goseumdochi.org</string>
+  <string name="about_project_url">http://goseumdochi.org</string>
+  <string name="help_url">http://goseumdochi.org/watchdog-help</string>
+  <string name="ok">OK</string>
+
+  <string name="pref_title_enable_voice">Enable Voice</string>
+  <string name="pref_summary_enable_voice">Announce all watchdog activity out loud (using your phone\'s current text-to-speech preferences).</string>
+  <string name="pref_title_intruder_alert">Intruder Alert Message</string>
+  <string name="pref_summary_intruder_alert">The phrase to speak when an intruder is detected</string>
+  <string name="pref_default_intruder_alert">Intruder detected</string>
+
+  <string name="utterance_bluetooth_connection">Establishing Bluetooth connection.</string>
+  <string name="utterance_bluetooth_lost">Bluetooth connection lost.</string>
+  <string name="utterance_INITIALIZING">Initializing.</string>
+  <string name="utterance_LOCALIZING">Determining initial location.</string>
+  <string name="utterance_ORIENTING">Calibrating direction.</string>
+  <string name="utterance_BEHAVING">Initialization complete.</string>
+  <string name="utterance_PANIC">Help!</string>
+  <string name="utterance_CENTERING">Centering.</string>
+  <string name="utterance_MEASURING">Measuring perspective transformation.</string>
 </resources>

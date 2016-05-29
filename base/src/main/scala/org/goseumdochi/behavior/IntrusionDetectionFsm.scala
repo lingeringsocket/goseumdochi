@@ -89,7 +89,7 @@ class IntrusionDetectionFsm()
         heading = 12
       }
       recordObservation(
-        "Intruder detected at " + heading + " o'clock!", eventTime)
+        "INTRUDER at " + heading + " o'clock!", eventTime)
       sender ! ControlActor.ActuateMoveMsg(
         pos, intruderPos, settings.Motor.defaultSpeed,
         0.seconds, eventTime)
