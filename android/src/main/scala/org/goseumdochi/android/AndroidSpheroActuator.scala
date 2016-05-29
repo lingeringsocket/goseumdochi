@@ -18,8 +18,6 @@ package org.goseumdochi.android
 import org.goseumdochi.common._
 import org.goseumdochi.sphero._
 
-import com.orbotix._
-import com.orbotix.common._
 import com.orbotix.command._
 import com.orbotix.`macro`._
 

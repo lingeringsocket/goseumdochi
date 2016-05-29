@@ -1,0 +1,105 @@
+// goseumdochi:  experiments with incarnation
+// Copyright 2016 John V. Sichi
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.goseumdochi.android
+
+import android.graphics._
+import android.hardware._
+import android.view._
+
+import java.io._
+import java.util.concurrent._
+
+import android.hardware.Camera
+
+import org.bytedeco.javacv._
+
+import org.goseumdochi.common._
+
+class ControlView(
+  context : ControlActivity,
+  retinalInput : AndroidRetinalInput,
+  outputQueue : ArrayBlockingQueue[Bitmap])
+    extends View(context) with Camera.PreviewCallback with View.OnTouchListener
+{
+  private var frameNumber = 0
+
+  override def onTouch(v : View, e : MotionEvent) =
+  {
+    context.theater.getVisionActor.foreach(
+      _.onTheaterClick(RetinalPos(e.getX, e.getY)))
+    true
+  }
+
+  override def onPreviewFrame(data : Array[Byte], camera : Camera)
+  {
+    try {
+      if (context.isRobotConnected) {
+        if (retinalInput.needsFrame) {
+          val size = camera.getParameters.getPreviewSize
+          val result = convertToFrame(data, size)
+          retinalInput.pushFrame(result)
+        }
+      } else {
+        postInvalidate
+      }
+      camera.addCallbackBuffer(data)
+    } catch {
+      // need to swallow these to prevent spurious crashes
+      case e : RuntimeException =>
+    }
+  }
+
+  private def convertToFrame(data : Array[Byte], size : Camera#Size) =
+  {
+    val out = new ByteArrayOutputStream
+    val yuv = new YuvImage(
+      data, ImageFormat.NV21, size.width, size.height, null)
+    yuv.compressToJpeg(
+      new android.graphics.Rect(0, 0, size.width, size.height), 50, out)
+    val bytes = out.toByteArray
+    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
+    val converter = new AndroidFrameConverter
+    converter.convert(bitmap)
+  }
+
+  override protected def onDraw(canvas : Canvas)
+  {
+    if (context.isRobotConnected) {
+      // janky way to hide the underlying camera preview...
+      // apparently these days we should be using SurfaceTexture instead
+      // (and camera2 API for that matter)
+      canvas.drawARGB(255, 0, 0, 0)
+    }
+
+    val paint = new Paint
+    paint.setColor(Color.RED)
+    val height = 50
+    paint.setTextSize(height)
+
+    if (!outputQueue.isEmpty) {
+      val bitmap = outputQueue.take
+      canvas.drawBitmap(bitmap, 0, 0, paint)
+    }
+
+    val robotState = context.getRobotState
+    val lastVoiceMessage = context.getVoiceMessage
+
+    canvas.drawText("Frame:  " + frameNumber, 20, 20 + height, paint)
+    canvas.drawText("Sphero:  " + robotState, 20, 20 + 3*height, paint)
+    canvas.drawText("Message:  " + lastVoiceMessage, 20, 20 + 5*height, paint)
+    frameNumber += 1
+  }
+}
