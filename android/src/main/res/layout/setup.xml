@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              >
+  <FrameLayout
+      android:id="@+id/setup_preview"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:layout_weight="1"
+      >
+
+    <TextView android:id="@+id/setup_instructions"
+              android:elevation="1dp"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/setup_instructions_text"
+              android:textSize="20dip"
+              android:layout_marginTop="10dp"
+              android:layout_marginLeft="10dp"
+              android:layout_gravity="top|left"
+              android:textColor="@color/blue"
+              />
+
+    <Button
+        android:id="@+id/button_start"
+        android:text="@string/connect_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:onClick="onConnectClicked"
+        />
+  </FrameLayout>
+</LinearLayout>

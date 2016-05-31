@@ -24,7 +24,7 @@ object SettingsActivity
   final val KEY_PREF_INTRUDER_ALERT = "pref_key_intruder_alert"
 }
 
-class SettingsActivity extends PreferenceActivity
+class SettingsActivity extends PreferenceActivity with TypedFindView
 {
   override def onCreate(savedInstanceState : Bundle)
   {

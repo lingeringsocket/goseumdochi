@@ -26,7 +26,7 @@ import android.hardware.Camera
 
 import scala.collection.JavaConverters._
 
-class ControlPreview(
+class CameraPreview(
   context : Context, previewCallback : Camera.PreviewCallback)
     extends SurfaceView(context) with SurfaceHolder.Callback
 {

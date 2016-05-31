@@ -20,6 +20,8 @@ import android.hardware._
 import android.view._
 
 import java.io._
+import java.text._
+import java.util._
 import java.util.concurrent._
 
 import android.hardware.Camera
@@ -35,6 +37,20 @@ class ControlView(
     extends View(context) with Camera.PreviewCallback with View.OnTouchListener
 {
   private var frameNumber = 0
+
+  private val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z")
+
+  private val linearLayout = context.findView(TR.control_linear_layout)
+
+  private val timeTextView = context.findView(TR.control_status_time)
+
+  private val frameTextView = context.findView(TR.control_status_frame)
+
+  private val robotTextView = context.findView(TR.control_status_robot)
+
+  private val msgTextView = context.findView(TR.control_status_message)
+
+  private val paint = new Paint
 
   override def onTouch(v : View, e : MotionEvent) =
   {
@@ -77,29 +93,32 @@ class ControlView(
 
   override protected def onDraw(canvas : Canvas)
   {
-    if (context.isRobotConnected) {
-      // janky way to hide the underlying camera preview...
-      // apparently these days we should be using SurfaceTexture instead
-      // (and camera2 API for that matter)
-      canvas.drawARGB(255, 0, 0, 0)
-    }
-
-    val paint = new Paint
-    paint.setColor(Color.RED)
-    val height = 50
-    paint.setTextSize(height)
+    // janky way to hide the underlying camera preview...
+    // apparently these days we should be using SurfaceTexture instead
+    // (and camera2 API for that matter)
+    canvas.drawARGB(255, 0, 0, 0)
 
     if (!outputQueue.isEmpty) {
       val bitmap = outputQueue.take
-      canvas.drawBitmap(bitmap, 0, 0, paint)
+      val offsetX = (canvas.getWidth - bitmap.getWidth) / 2
+      val offsetY = (canvas.getHeight - bitmap.getHeight) / 2
+      linearLayout.setPadding(offsetX, offsetY, 0, 0)
+      canvas.drawBitmap(bitmap, offsetX, offsetY, paint)
+      frameNumber += 1
     }
 
+    val timeStamp = sdf.format(Calendar.getInstance.getTime)
     val robotState = context.getRobotState
     val lastVoiceMessage = context.getVoiceMessage
 
-    canvas.drawText("Frame:  " + frameNumber, 20, 20 + height, paint)
-    canvas.drawText("Sphero:  " + robotState, 20, 20 + 3*height, paint)
-    canvas.drawText("Message:  " + lastVoiceMessage, 20, 20 + 5*height, paint)
-    frameNumber += 1
+    timeTextView.setText(
+      context.getString(R.string.control_status_time_text) + " " + timeStamp)
+    frameTextView.setText(
+      context.getString(R.string.control_status_frame_text) + " " + frameNumber)
+    robotTextView.setText(
+      context.getString(R.string.control_status_robot_text) + " " + robotState)
+    msgTextView.setText(
+      context.getString(R.string.control_status_message_text) +
+        " " + lastVoiceMessage)
   }
 }

@@ -28,7 +28,7 @@ import android.widget._
 
 import java.util._
 
-class MainActivity extends Activity
+class MainActivity extends Activity with TypedFindView
 {
   private final val PERMISSION_REQUEST = 42
 
@@ -40,7 +40,7 @@ class MainActivity extends Activity
 
   private var locationEnabled = false
 
-  private var startRequested = false
+  private var setupRequested = false
 
   override protected def onCreate(savedInstanceState : Bundle)
   {
@@ -121,19 +121,21 @@ class MainActivity extends Activity
     }
   }
 
-  def onStartClicked(v : View)
+  def onSetupClicked(v : View)
   {
-    startRequested = true
+    setupRequested = true
     if (!tryStartControl) {
       requestPrerequisites
     }
   }
 
+  private def allPrerequisitesMet =
+    bluetoothEnabled && cameraEnabled && locationEnabled
+
   private def tryStartControl() =
   {
-    if (startRequested && bluetoothEnabled && cameraEnabled && locationEnabled)
-    {
-      val intent = new Intent(this, classOf[ControlActivity])
+    if (setupRequested && allPrerequisitesMet) {
+      val intent = new Intent(this, classOf[SetupActivity])
       startActivity(intent)
       true
     } else {

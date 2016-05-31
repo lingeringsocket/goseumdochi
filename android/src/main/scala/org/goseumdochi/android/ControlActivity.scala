@@ -20,7 +20,6 @@ import android.graphics._
 import android.os._
 import android.preference._
 import android.view._
-import android.widget._
 import android.speech.tts._
 
 import java.io._
@@ -37,7 +36,8 @@ import com.typesafe.config._
 import com.orbotix._
 import com.orbotix.common._
 
-class ControlActivity extends Activity with RobotChangedStateListener
+class ControlActivity extends Activity
+    with RobotChangedStateListener with TypedFindView
 {
   private final val INITIAL_STATUS = "CONNECTED"
 
@@ -131,11 +131,11 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   private def startCamera()
   {
-    val layout = new FrameLayout(this)
-    val preview = new ControlPreview(this, controlView)
+    setContentView(R.layout.control)
+    val preview = new CameraPreview(this, controlView)
+    val layout = findView(TR.control_preview)
     layout.addView(preview)
     layout.addView(controlView)
-    setContentView(layout)
     controlView.setOnTouchListener(controlView)
   }
 

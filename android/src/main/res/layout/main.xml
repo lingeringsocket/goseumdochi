@@ -6,10 +6,10 @@
     android:layout_height="fill_parent"
     android:gravity="center">
 
-  <Button android:text="@string/start_label"
+  <Button android:text="@string/setup_label"
           android:layout_width="wrap_content" 
           android:layout_height="wrap_content"
           android:gravity="center"
-          android:onClick="onStartClicked" />
+          android:onClick="onSetupClicked" />
 
 </LinearLayout>

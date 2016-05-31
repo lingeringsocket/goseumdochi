@@ -17,37 +17,33 @@ package org.goseumdochi.android
 
 import android.app._
 import android.content._
-import android.net._
 import android.os._
 import android.view._
 
-class AboutActivity extends Activity
-    with View.OnClickListener with TypedFindView
+class SetupActivity extends Activity with TypedFindView
 {
   override protected def onCreate(savedInstanceState : Bundle)
   {
+    requestWindowFeature(Window.FEATURE_NO_TITLE)
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.about)
 
-    val okButton = findView(TR.about_ok)
-    okButton.setOnClickListener(this)
-    val projectUrl = findView(TR.project_url)
-    projectUrl.setOnClickListener(this)
+    getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+    getWindow.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    startCamera
   }
 
-  def onClick(v : View)
+  private def startCamera()
   {
-    v.getId match {
-      case R.id.about_ok => finish
-      case R.id.project_url => openProjectUrlInBrowser
-      case _ =>
-    }
+    setContentView(R.layout.setup)
+    val setupView = new SetupView(this)
+    val preview = new CameraPreview(this, setupView)
+    val layout = findView(TR.setup_preview)
+    layout.addView(preview)
+    layout.addView(setupView)
   }
 
-  private def openProjectUrlInBrowser()
+  def onConnectClicked(v : View)
   {
-    val uri = Uri.parse(getString(R.string.about_project_url))
-    val intent = new Intent(Intent.ACTION_VIEW, uri)
-    startActivity(intent)
+    startActivity(new Intent(this, classOf[ControlActivity]))
   }
 }
