@@ -132,16 +132,7 @@ object ControlActor
     controlActor ! Listen(listener)
   }
 
-  def voiceMessageFor(status : ControlStatus) =
-  {
-    status match {
-      case INITIALIZING => "Initializing."
-      case LOCALIZING => "Determining initial location."
-      case ORIENTING => "Calibrating direction."
-      case BEHAVING => "Initialization complete."
-      case PANIC => "Help!"
-    }
-  }
+  def voiceMessageFor(status : ControlStatus) = status.toString
 }
 
 class ControlActor(

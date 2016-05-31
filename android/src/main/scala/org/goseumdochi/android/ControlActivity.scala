@@ -15,32 +15,19 @@
 
 package org.goseumdochi.android
 
-import android._
 import android.app._
 import android.content._
-import android.content.pm._
 import android.graphics._
 import android.hardware._
 import android.os._
-import android.util._
-import android.view._
-import android.widget._
+import android.preference._
 import android.speech.tts._
+import android.view._
+
 import java.io._
-import java.nio._
-import java.util._
-import java.util.concurrent._
 
 import android.hardware.Camera
 
-import scala.collection.JavaConverters._
-
-import org.bytedeco.javacv._
-import org.bytedeco.javacpp.opencv_core._
-import org.bytedeco.javacpp.helper.opencv_core._
-import org.bytedeco.javacpp.opencv_imgproc._
-
-import org.goseumdochi.common._
 import org.goseumdochi.vision._
 import org.goseumdochi.control._
 
@@ -51,15 +38,12 @@ import com.typesafe.config._
 import com.orbotix._
 import com.orbotix.common._
 
-class ControlActivity extends Activity with RobotChangedStateListener
+class ControlActivity extends Activity
+    with RobotChangedStateListener with SensorEventListener with TypedFindView
 {
-  private final val REQUEST_CODE_LOCATION_PERMISSION = 42
-
   private final val INITIAL_STATUS = "CONNECTED"
 
   private var robot : Option[ConvenienceRobot] = None
-
-  private var wakeLock : Option[PowerManager#WakeLock] = None
 
   private val outputQueue =
     new java.util.concurrent.ArrayBlockingQueue[Bitmap](1)
@@ -69,7 +53,7 @@ class ControlActivity extends Activity with RobotChangedStateListener
   private lazy val controlView =
     new ControlView(this, retinalInput, outputQueue)
 
-  lazy val theater = new AndroidTheater(controlView, outputQueue)
+  private lazy val theater = new AndroidTheater(controlView, outputQueue)
 
   private val actuator = new AndroidSpheroActuator(this)
 
@@ -81,13 +65,52 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   private var lastVoiceMessage = ""
 
+  private var discoveryStarted = false
+
+  private var connectionStatus = "WAITING FOR CONNECTION"
+
+  private var sensorMgr : Option[SensorManager] = None
+
+  private var accelerometer : Option[Sensor] = None
+
+  private var gyroscope : Option[Sensor] = None
+
+  private var mAccel = 0.0f
+
+  private var mAccelCurrent = SensorManager.GRAVITY_EARTH
+
+  private var mAccelLast = SensorManager.GRAVITY_EARTH
+
+  private var detectBumps = false
+
   class ControlListener extends Actor
   {
     def receive =
     {
       case ControlActor.StatusUpdateMsg(status, voiceMessage, _) => {
         controlStatus = status.toString
-        speak(voiceMessage)
+        var actualMessage = voiceMessage
+        val prefix = "INTRUDER"
+        if (voiceMessage.startsWith(prefix)) {
+          val prefs = PreferenceManager.getDefaultSharedPreferences(
+            ControlActivity.this)
+          // FIXME:  get this from XML
+          val defaultValue = "Intruder detected"
+          actualMessage = prefs.getString(
+            SettingsActivity.KEY_PREF_INTRUDER_ALERT, defaultValue)
+          if (actualMessage == defaultValue) {
+            val suffix = voiceMessage.stripPrefix(prefix)
+            actualMessage = actualMessage + suffix
+          }
+        } else {
+          val resourceName = "utterance_" + voiceMessage
+          val resourceId = getResources.getIdentifier(
+            resourceName, "id", getPackageName)
+          if (resourceId != 0) {
+            actualMessage = getString(resourceId)
+          }
+        }
+        speak(actualMessage)
       }
     }
   }
@@ -97,74 +120,64 @@ class ControlActivity extends Activity with RobotChangedStateListener
     requestWindowFeature(Window.FEATURE_NO_TITLE)
     super.onCreate(savedInstanceState)
 
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    detectBumps = prefs.getBoolean(
+      SettingsActivity.KEY_PREF_DETECT_BUMPS, true)
+
+    if (detectBumps) {
+      val sm =
+        getSystemService(Context.SENSOR_SERVICE).asInstanceOf[SensorManager]
+      sensorMgr = Some(sm)
+      accelerometer = Some(sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER))
+      gyroscope = Some(sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE))
+    }
+
     var newTextToSpeech : TextToSpeech = null
-    newTextToSpeech = new TextToSpeech(
-      getApplicationContext, new TextToSpeech.OnInitListener {
-        override def onInit(status : Int)
-        {
-          if (status != TextToSpeech.ERROR) {
-            newTextToSpeech.setLanguage(Locale.UK)
-            textToSpeech = Some(newTextToSpeech)
+    val enableVoice = prefs.getBoolean(
+      SettingsActivity.KEY_PREF_ENABLE_VOICE, true)
+    if (enableVoice) {
+      newTextToSpeech = new TextToSpeech(
+        getApplicationContext, new TextToSpeech.OnInitListener {
+          override def onInit(status : Int)
+          {
+            if (status != TextToSpeech.ERROR) {
+              textToSpeech = Some(newTextToSpeech)
+              speak(R.string.utterance_bluetooth_connection)
+            }
           }
-          speak("Establishing Bluetooth connection.")
-        }
-      })
+        })
+    } else {
+      speak(R.string.utterance_bluetooth_connection)
+    }
 
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      val hasLocationPermission = checkSelfPermission(
-        Manifest.permission.ACCESS_COARSE_LOCATION )
-      if (hasLocationPermission != PackageManager.PERMISSION_GRANTED) {
-        val permissions = new ArrayList[String]
-        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
-        requestPermissions(
-          permissions.toArray(
-            new Array[String](permissions.size)),
-          REQUEST_CODE_LOCATION_PERMISSION)
-      }
-    }
-
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-    val layout = new FrameLayout(this)
-    val preview = new ControlPreview(this, controlView)
-    layout.addView(preview)
-    layout.addView(controlView)
-    setContentView(layout)
-    controlView.setOnTouchListener(controlView)
+    getWindow.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    startCamera
   }
 
-  override def onRequestPermissionsResult(
-    requestCode : Int, permissions : Array[String], grantResults : Array[Int])
+  private def startCamera()
   {
-    if (requestCode == REQUEST_CODE_LOCATION_PERMISSION) {
-      for ( i <- 0 until permissions.length) {
-        if (grantResults(i) == PackageManager.PERMISSION_GRANTED) {
-          startDiscovery
-        }
-      }
-    } else {
-      super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
+    setContentView(R.layout.control)
+    val preview = new CameraPreview(this, controlView)
+    val layout = findView(TR.control_preview)
+    layout.addView(preview)
+    layout.addView(controlView)
+    controlView.setOnTouchListener(controlView)
   }
 
   override protected def onStart()
   {
     super.onStart
-
-    if((Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-      || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION ) ==
-      PackageManager.PERMISSION_GRANTED )
-    {
-      startDiscovery
-    }
+    startDiscovery
   }
-
 
   private def startDiscovery()
   {
-    if(!DualStackDiscoveryAgent.getInstance.isDiscovering) {
+    if (!discoveryStarted) {
       DualStackDiscoveryAgent.getInstance.startDiscovery(
         getApplicationContext)
+      discoveryStarted = true
     }
   }
 
@@ -216,33 +229,11 @@ class ControlActivity extends Activity with RobotChangedStateListener
       }
     } else {
       if (!robot.isEmpty) {
-        speak("Bluetooth connection lost.")
+        connectionStatus = "DISCONNECTED"
+        speak(R.string.utterance_bluetooth_lost)
       }
       robot = None
     }
-  }
-
-  private def acquireWakeLock()
-  {
-    if (wakeLock.isEmpty) {
-      val pm = getSystemService(Context.POWER_SERVICE).
-        asInstanceOf[PowerManager]
-      val wl = pm.newWakeLock(
-        PowerManager.SCREEN_DIM_WAKE_LOCK,
-        getClass.getCanonicalName)
-      wl.acquire
-      wakeLock = Some(wl)
-    }
-  }
-
-  private def releaseWakeLock()
-  {
-    wakeLock.foreach(wl => {
-      if (wl.isHeld) {
-        wl.release
-      }
-    })
-    wakeLock = None
   }
 
   private def speak(voiceMessage : String)
@@ -251,16 +242,24 @@ class ControlActivity extends Activity with RobotChangedStateListener
     textToSpeech.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_ADD, null))
   }
 
+  private def speak(voiceMessageId : Int)
+  {
+    speak(getString(voiceMessageId))
+  }
+
   override protected def onResume()
   {
     super.onResume
-    acquireWakeLock
+    sensorMgr.foreach(_.registerListener(
+      this, accelerometer.get, SensorManager.SENSOR_DELAY_UI))
+    sensorMgr.foreach(_.registerListener(
+      this, gyroscope.get, SensorManager.SENSOR_DELAY_UI))
   }
 
   override protected def onPause()
   {
     super.onPause
-    releaseWakeLock
+    sensorMgr.foreach(_.unregisterListener(this))
     textToSpeech.foreach(t => {
       t.stop
       t.shutdown
@@ -272,204 +271,54 @@ class ControlActivity extends Activity with RobotChangedStateListener
 
   def getRobot = robot
 
-  def getControlStatus = controlStatus
+  def getRobotState = {
+    if (isRobotConnected) {
+      controlStatus
+    } else {
+      connectionStatus
+    }
+  }
 
   def getVoiceMessage = lastVoiceMessage
-}
 
-class ControlView(
-  context : ControlActivity,
-  retinalInput : AndroidRetinalInput,
-  outputQueue : ArrayBlockingQueue[Bitmap])
-    extends View(context) with Camera.PreviewCallback with View.OnTouchListener
-{
-  private var frameNumber = 0
+  def getVisionActor = theater.getVisionActor
 
-  override def onTouch(v : View, e : MotionEvent) =
+  override def onSensorChanged(event : SensorEvent)
   {
-    context.theater.getVisionActor.foreach(
-      _.onTheaterClick(RetinalPos(e.getX, e.getY)))
-    true
-  }
-
-  override def onPreviewFrame(data : Array[Byte], camera : Camera)
-  {
-    try {
-      if (context.isRobotConnected) {
-        if (retinalInput.needsFrame) {
-          val size = camera.getParameters.getPreviewSize
-          val result = convertToFrame(data, size)
-          retinalInput.pushFrame(result)
+    var bumpDetected = false
+    event.sensor.getType match {
+      case Sensor.TYPE_ACCELEROMETER => {
+        val vAccel = event.values.clone
+        val x = vAccel(0).toDouble
+        val y = vAccel(1).toDouble
+        val z = vAccel(2).toDouble
+        mAccelLast = mAccelCurrent
+        mAccelCurrent = Math.sqrt(x*x + y*y + z*z).toFloat
+        val delta = mAccelCurrent - mAccelLast
+        mAccel = mAccel * 0.9f + delta
+        if (mAccel > 0.15) {
+          bumpDetected = true
         }
-      } else {
-        postInvalidate
       }
-      camera.addCallbackBuffer(data)
-    } catch {
-      // need to swallow these to prevent spurious crashes
-      case e : RuntimeException =>
-    }
-  }
-
-  private def convertToFrame(data : Array[Byte], size : Camera#Size) =
-  {
-    val out = new ByteArrayOutputStream
-    val yuv = new YuvImage(
-      data, ImageFormat.NV21, size.width, size.height, null)
-    yuv.compressToJpeg(
-      new android.graphics.Rect(0, 0, size.width, size.height), 50, out)
-    val bytes = out.toByteArray
-    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
-    val converter = new AndroidFrameConverter
-    converter.convert(bitmap)
-  }
-
-  override protected def onDraw(canvas : Canvas)
-  {
-    if (context.isRobotConnected) {
-      // janky way to hide the underlying camera preview...
-      // apparently these days we should be using SurfaceTexture instead
-      // (and camera2 API for that matter)
-      canvas.drawARGB(255, 0, 0, 0)
-    }
-
-    val paint = new Paint
-    paint.setColor(Color.RED)
-    val height = 50
-    paint.setTextSize(height)
-
-    if (!outputQueue.isEmpty) {
-      val bitmap = outputQueue.take
-      canvas.drawBitmap(bitmap, 0, 0, paint)
-    }
-
-    val robotState = {
-      if (context.isRobotConnected) {
-        context.getControlStatus
-      } else {
-        "WAITING FOR CONNECTION"
+      case Sensor.TYPE_GYROSCOPE => {
+        val vAccel = event.values.clone
+        for (i <- 0 until 3) {
+          val accel = vAccel(i).toDouble
+          if (Math.abs(accel) > 0.05) {
+            bumpDetected = true
+          }
+        }
       }
+      case _ =>
     }
-    val lastVoiceMessage = context.getVoiceMessage
-
-    canvas.drawText("Frame:  " + frameNumber, 20, 20 + height, paint)
-    canvas.drawText("Sphero:  " + robotState, 20, 20 + 3*height, paint)
-    canvas.drawText("Message:  " + lastVoiceMessage, 20, 20 + 5*height, paint)
-    frameNumber += 1
-  }
-}
-
-class ControlPreview(
-  context : Context, previewCallback : Camera.PreviewCallback)
-    extends SurfaceView(context) with SurfaceHolder.Callback
-{
-  private val surfaceHolder = createHolder
-  private var camera : Option[Camera] = None
-
-  private def createHolder() =
-  {
-    val holder = getHolder
-    holder.addCallback(this)
-    holder
-  }
-
-  override def surfaceCreated(holder : SurfaceHolder)
-  {
-    val newCamera = Camera.open
-    camera = Some(newCamera)
-    try {
-      newCamera.setPreviewDisplay(holder)
-    } catch {
-      case exception : IOException => {
-        newCamera.release
-        camera = None
-      }
+    if (bumpDetected) {
+      val intent = new Intent(this, classOf[BumpActivity])
+      finish
+      startActivity(intent)
     }
   }
 
-  override def surfaceDestroyed(holder : SurfaceHolder)
+  override def onAccuracyChanged(sensor : Sensor, accuracy : Int)
   {
-    camera.foreach(c => {
-      c.stopPreview
-      c.release
-    })
-    camera = None
   }
-
-  override def surfaceChanged(
-    holder : SurfaceHolder, format : Int,
-    w : Int, h : Int)
-  {
-    camera.foreach(c => {
-      val parameters = c.getParameters
-
-      val sizes = parameters.getSupportedPreviewSizes.asScala
-      val optimalSize = sizes.maxBy(_.height)
-      parameters.setPreviewSize(optimalSize.width, optimalSize.height)
-      parameters.setFocusMode("continuous-video")
-
-      c.setParameters(parameters)
-      c.setPreviewCallbackWithBuffer(previewCallback)
-      val size = parameters.getPreviewSize
-      val data = new Array[Byte](
-        size.width * size.height *
-          ImageFormat.getBitsPerPixel(parameters.getPreviewFormat()) / 8)
-      c.addCallbackBuffer(data)
-      c.startPreview
-    })
-  }
-}
-
-class AndroidRetinalInput extends RetinalInput
-{
-  private val inputQueue =
-    new ArrayBlockingQueue[(Frame, TimePoint)](1)
-
-  override def nextFrame() =
-  {
-    inputQueue.take
-  }
-
-  override def frameToImage(frame : Frame) =
-  {
-    val img = super.frameToImage(frame)
-    cvCvtColor(img, img, COLOR_RGBA2BGRA)
-    img
-  }
-
-  def isReady() : Boolean =
-  {
-    !inputQueue.isEmpty
-  }
-
-  def needsFrame() : Boolean =
-  {
-    inputQueue.remainingCapacity > 0
-  }
-
-  def pushFrame(frame : Frame)
-  {
-    inputQueue.put((frame, TimePoint.now))
-  }
-}
-
-class AndroidTheater(
-  view : View, outputQueue : ArrayBlockingQueue[Bitmap])
-    extends RetinalTheater
-{
-  override def imageToFrame(img : IplImage) =
-  {
-    cvCvtColor(img, img, COLOR_BGRA2RGBA)
-    super.imageToFrame(img)
-  }
-
-  override def display(frame : Frame)
-  {
-    val converter = new AndroidFrameConverter
-    val bitmap = converter.convert(frame)
-    outputQueue.put(bitmap)
-    view.postInvalidate
-  }
-
-  def getVisionActor = visionActor
 }

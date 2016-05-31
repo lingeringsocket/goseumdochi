@@ -12,6 +12,10 @@ version := "0.1"
 
 scalaVersion := "2.11.7"
 
+// FIXME:  add back in "-deprecation", "-Xfatal-warnings"
+scalacOptions ++= Seq("-unchecked", "-feature", "-Xlint",
+  "-Ywarn-unused-import")
+
 autoCompilerPlugins := true
 
 resolvers ++= Seq(Resolver.mavenLocal,

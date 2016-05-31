@@ -108,7 +108,7 @@ class PerspectiveOrientationFsm()
         val predictedMotion = predictMotion(forwardImpulse)
         val scale = motion.distance / predictedMotion.distance
         applyImpulse(forwardImpulse, correction + PI, eventTime)
-        recordObservation("Centering.", eventTime)
+        recordObservation("CENTERING", eventTime)
         goto(Centering) using Alignment(correction, pos, a.bottomRight, scale)
       } else {
         val normalizedTheta = {
@@ -137,8 +137,7 @@ class PerspectiveOrientationFsm()
         val dist = abs(delta)
         if (dist < 20.0) {
           applyImpulse(measurementImpulses.head, a.lastTheta, eventTime)
-          recordObservation(
-            "Measuring perspective transformation.", eventTime)
+          recordObservation("MEASURING", eventTime)
           goto(Measuring) using a.copy(
             lastPos = pos,
             measurements = Vector(retinalTransform.worldToRetina(pos)))
