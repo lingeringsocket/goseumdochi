@@ -16,11 +16,13 @@
 package org.goseumdochi.android
 
 import android.app._
+import android.content._
 import android.graphics._
+import android.hardware._
 import android.os._
 import android.preference._
-import android.view._
 import android.speech.tts._
+import android.view._
 
 import java.io._
 
@@ -37,7 +39,7 @@ import com.orbotix._
 import com.orbotix.common._
 
 class ControlActivity extends Activity
-    with RobotChangedStateListener with TypedFindView
+    with RobotChangedStateListener with SensorEventListener with TypedFindView
 {
   private final val INITIAL_STATUS = "CONNECTED"
 
@@ -66,6 +68,20 @@ class ControlActivity extends Activity
   private var discoveryStarted = false
 
   private var connectionStatus = "WAITING FOR CONNECTION"
+
+  private var sensorMgr : Option[SensorManager] = None
+
+  private var accelerometer : Option[Sensor] = None
+
+  private var gyroscope : Option[Sensor] = None
+
+  private var mAccel = 0.0f
+
+  private var mAccelCurrent = SensorManager.GRAVITY_EARTH
+
+  private var mAccelLast = SensorManager.GRAVITY_EARTH
+
+  private var detectBumps = false
 
   class ControlListener extends Actor
   {
@@ -104,8 +120,19 @@ class ControlActivity extends Activity
     requestWindowFeature(Window.FEATURE_NO_TITLE)
     super.onCreate(savedInstanceState)
 
-    var newTextToSpeech : TextToSpeech = null
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    detectBumps = prefs.getBoolean(
+      SettingsActivity.KEY_PREF_DETECT_BUMPS, true)
+
+    if (detectBumps) {
+      val sm =
+        getSystemService(Context.SENSOR_SERVICE).asInstanceOf[SensorManager]
+      sensorMgr = Some(sm)
+      accelerometer = Some(sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER))
+      gyroscope = Some(sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE))
+    }
+
+    var newTextToSpeech : TextToSpeech = null
     val enableVoice = prefs.getBoolean(
       SettingsActivity.KEY_PREF_ENABLE_VOICE, true)
     if (enableVoice) {
@@ -223,11 +250,16 @@ class ControlActivity extends Activity
   override protected def onResume()
   {
     super.onResume
+    sensorMgr.foreach(_.registerListener(
+      this, accelerometer.get, SensorManager.SENSOR_DELAY_UI))
+    sensorMgr.foreach(_.registerListener(
+      this, gyroscope.get, SensorManager.SENSOR_DELAY_UI))
   }
 
   override protected def onPause()
   {
     super.onPause
+    sensorMgr.foreach(_.unregisterListener(this))
     textToSpeech.foreach(t => {
       t.stop
       t.shutdown
@@ -250,4 +282,43 @@ class ControlActivity extends Activity
   def getVoiceMessage = lastVoiceMessage
 
   def getVisionActor = theater.getVisionActor
+
+  override def onSensorChanged(event : SensorEvent)
+  {
+    var bumpDetected = false
+    event.sensor.getType match {
+      case Sensor.TYPE_ACCELEROMETER => {
+        val vAccel = event.values.clone
+        val x = vAccel(0).toDouble
+        val y = vAccel(1).toDouble
+        val z = vAccel(2).toDouble
+        mAccelLast = mAccelCurrent
+        mAccelCurrent = Math.sqrt(x*x + y*y + z*z).toFloat
+        val delta = mAccelCurrent - mAccelLast
+        mAccel = mAccel * 0.9f + delta
+        if (mAccel > 0.15) {
+          bumpDetected = true
+        }
+      }
+      case Sensor.TYPE_GYROSCOPE => {
+        val vAccel = event.values.clone
+        for (i <- 0 until 3) {
+          val accel = vAccel(i).toDouble
+          if (Math.abs(accel) > 0.05) {
+            bumpDetected = true
+          }
+        }
+      }
+      case _ =>
+    }
+    if (bumpDetected) {
+      val intent = new Intent(this, classOf[BumpActivity])
+      finish
+      startActivity(intent)
+    }
+  }
+
+  override def onAccuracyChanged(sensor : Sensor, accuracy : Int)
+  {
+  }
 }

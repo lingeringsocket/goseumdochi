@@ -1,15 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:gravity="center">
-
-  <Button android:text="@string/setup_label"
-          android:layout_width="wrap_content" 
-          android:layout_height="wrap_content"
-          android:gravity="center"
-          android:onClick="onSetupClicked" />
-
-</LinearLayout>
+    android:layout_height="fill_parent">
+  <ImageView
+      android:id="@+id/cctv"
+      android:layout_width="100dp"
+      android:layout_height="100dp"
+      android:scaleType="fitCenter"
+      android:adjustViewBounds="true"
+      android:layout_alignParentRight="true"
+      android:layout_alignParentTop="true"
+      android:src="@drawable/cctv" />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/main_step_1_text"
+      android:layout_alignParentLeft="true"
+      android:layout_below="@+id/cctv"
+      android:layout_marginLeft="10dp"/>
+      android:layout_marginRight="10dp"/>
+      android:layout_marginTop="10dp"/>
+  <ImageView
+      android:id="@+id/ballface"
+      android:layout_width="100dp"
+      android:layout_height="100dp"
+      android:scaleType="fitCenter"
+      android:adjustViewBounds="true"
+      android:layout_centerHorizontal="true"
+      android:layout_centerVertical="true"
+      android:src="@drawable/ballface" />
+  <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/main_step_2_text"
+      android:layout_alignParentLeft="true"
+      android:layout_below="@+id/ballface"
+      android:layout_marginLeft="10dp"/>
+      android:layout_marginRight="10dp"/>
+      android:layout_marginTop="10dp"/>
+  <Button
+      android:id="@+id/setup_button"
+      android:text="@string/setup_label"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:layout_centerHorizontal="true"
+      android:layout_marginBottom="10dp"
+      android:onClick="onSetupClicked" />
+  <TextView
+      android:id="@+id/step_3_text"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/main_step_3_text"
+      android:layout_alignParentLeft="true"
+      android:layout_above="@+id/setup_button"
+      android:layout_marginLeft="10dp"
+      android:layout_marginRight="10dp"
+      android:layout_marginBottom="10dp"/>
+  <ImageView
+      android:id="@+id/thief"
+      android:layout_width="100dp"
+      android:layout_height="100dp"
+      android:scaleType="fitCenter"
+      android:layout_marginLeft="10dp"
+      android:layout_marginBottom="10dp"
+      android:adjustViewBounds="true"
+      android:layout_above="@+id/step_3_text"
+      android:src="@drawable/thief" />
+</RelativeLayout>

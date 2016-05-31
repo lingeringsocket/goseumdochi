@@ -8,8 +8,9 @@
   <string name="about_title">About Watchdog for Sphero</string>
   <string name="prefs_title">Watchdog for Sphero Preferences</string>
   <string name="setup_title">Set Up Watchdog for Sphero</string>
+  <string name="bump_title">Watchdog for Sphero:  Camera Motion Detected</string>
   <string name="about_text">
-With Watchdog for Sphero, you can position your phone for surveillance of an area of your home, and whenever the camera detects any motion in that area, Sphero will roll towards the intruder with a challenge.  Good fun for pets, friends, and family members, but don\'t rely on it to protect the family jewels :) 
+With Watchdog for Sphero, you can position your Android device for surveillance of an area of your home, and whenever the camera detects any motion in that area, Sphero will roll towards the intruder with a challenge.  Good fun for pets, friends, and family members, but don\'t rely on it to protect the family jewels :) 
   </string>
   <string name="about_version">Watchdog for Sphero v0.3</string>
   <string name="about_copyright">&#169;2016 Lingering Socket Labs</string>
@@ -18,16 +19,25 @@ With Watchdog for Sphero, you can position your phone for surveillance of an are
   <string name="help_url">http://goseumdochi.org/watchdog-help</string>
   <string name="ok">OK</string>
   <string name="setup_instructions_text">Position camera so that crosshairs are centered on area to be monitored, wake up your Sphero and place it in the center, then press Connect</string>
+  <string name="bump_text">
+Camera motion was detected, causing surveillance to end.  Each time your Android device moves, the new camera position must be recalibrated.  If you think this is being triggered in error, disable motion detection from the preferences menu.
+  </string>
   <string name="control_status_time_text">Time:</string>
   <string name="control_status_frame_text">Frame:</string>
   <string name="control_status_robot_text">Sphero:</string>
   <string name="control_status_message_text">Message:</string>
 
+  <string name="main_step_1_text">1. Position your Android device\'s camera to monitor an area.  If you don\'t have a phone holder, maybe you can build one out of LEGO bricks?</string>
+  <string name="main_step_2_text">2. Activate Sphero in the middle of the area being monitored.</string>
+  <string name="main_step_3_text">3. Sit back and watch what happens when intruders enter!</string>
+
   <string name="pref_title_enable_voice">Enable Voice</string>
-  <string name="pref_summary_enable_voice">Announce all watchdog activity out loud (using your phone\'s current text-to-speech preferences).</string>
+  <string name="pref_summary_enable_voice">Announce all watchdog activity out loud (using your Android device\'s current text-to-speech preferences).</string>
   <string name="pref_title_intruder_alert">Intruder Alert Message</string>
   <string name="pref_summary_intruder_alert">The phrase to speak when an intruder is detected</string>
   <string name="pref_default_intruder_alert">Intruder detected</string>
+  <string name="pref_title_detect_bumps">Stop On Camera Motion</string>
+  <string name="pref_summary_detect_bumps">Automatically stop surveillance when camera motion is detected</string>
 
   <string name="utterance_bluetooth_connection">Establishing Bluetooth connection.</string>
   <string name="utterance_bluetooth_lost">Bluetooth connection lost.</string>

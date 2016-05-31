@@ -20,7 +20,6 @@ import android.app._
 import android.bluetooth._
 import android.content._
 import android.content.pm._
-import android.net._
 import android.os._
 import android.preference._
 import android.view._
@@ -28,7 +27,7 @@ import android.widget._
 
 import java.util._
 
-class MainActivity extends Activity with TypedFindView
+class MainActivity extends MainMenuActivityBase
 {
   private final val PERMISSION_REQUEST = 42
 
@@ -92,32 +91,6 @@ class MainActivity extends Activity with TypedFindView
       } else {
         toastLong("Watchdog cannot run without Bluetooth enabled. ")
       }
-    }
-  }
-
-  override def onCreateOptionsMenu(menu : Menu) =
-  {
-    super.onCreateOptionsMenu(menu)
-    val inflater = getMenuInflater
-    inflater.inflate(R.menu.main_menu, menu)
-    true
-  }
-
-  override def onOptionsItemSelected(item : MenuItem) =
-  {
-    item.getItemId match {
-      case R.id.about =>
-        startActivity(new Intent(this, classOf[AboutActivity]))
-        true
-      case R.id.help =>
-        val uri = Uri.parse(getString(R.string.help_url))
-        startActivity(new Intent(Intent.ACTION_VIEW, uri))
-        true
-      case R.id.settings =>
-        startActivity(new Intent(this, classOf[SettingsActivity]))
-        true
-      case _ =>
-        false
     }
   }
 

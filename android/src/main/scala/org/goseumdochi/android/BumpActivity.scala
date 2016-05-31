@@ -15,21 +15,22 @@
 
 package org.goseumdochi.android
 
-import android.preference._
+import android.content._
 import android.os._
+import android.view._
 
-object SettingsActivity
+class BumpActivity extends MainMenuActivityBase
 {
-  final val KEY_PREF_ENABLE_VOICE = "pref_key_enable_voice"
-  final val KEY_PREF_INTRUDER_ALERT = "pref_key_intruder_alert"
-  final val KEY_PREF_DETECT_BUMPS = "pref_key_detect_bumps"
-}
-
-class SettingsActivity extends PreferenceActivity with TypedFindView
-{
-  override def onCreate(savedInstanceState : Bundle)
+  override protected def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
-    addPreferencesFromResource(R.xml.preferences)
+    setContentView(R.layout.bump)
+  }
+
+  def onOkClicked(v : View)
+  {
+    val intent = new Intent(this, classOf[SetupActivity])
+    finish
+    startActivity(intent)
   }
 }
