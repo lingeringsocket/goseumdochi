@@ -12,7 +12,7 @@
   <string name="about_text">
 With Watchdog for Sphero, you can position your Android device for surveillance of an area of your home, and whenever the camera detects any motion in that area, Sphero will roll towards the intruder with a challenge.  Good fun for pets, friends, and family members, but don\'t rely on it to protect the family jewels :) 
   </string>
-  <string name="about_version">Watchdog for Sphero v0.3</string>
+  <string name="about_version">Watchdog for Sphero v0.4</string>
   <string name="about_copyright">&#169;2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">http://goseumdochi.org</string>
