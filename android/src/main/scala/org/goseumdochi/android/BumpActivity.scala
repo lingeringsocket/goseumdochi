@@ -30,6 +30,7 @@ class BumpActivity extends MainMenuActivityBase
   def onOkClicked(v : View)
   {
     val intent = new Intent(this, classOf[SetupActivity])
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     finish
     startActivity(intent)
   }

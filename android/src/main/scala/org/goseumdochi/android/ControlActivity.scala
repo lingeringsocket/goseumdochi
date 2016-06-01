@@ -296,7 +296,7 @@ class ControlActivity extends Activity
         mAccelCurrent = Math.sqrt(x*x + y*y + z*z).toFloat
         val delta = mAccelCurrent - mAccelLast
         mAccel = mAccel * 0.9f + delta
-        if (mAccel > 0.15) {
+        if (mAccel > 0.3) {
           bumpDetected = true
         }
       }
@@ -304,7 +304,7 @@ class ControlActivity extends Activity
         val vAccel = event.values.clone
         for (i <- 0 until 3) {
           val accel = vAccel(i).toDouble
-          if (Math.abs(accel) > 0.05) {
+          if (Math.abs(accel) > 0.1) {
             bumpDetected = true
           }
         }
@@ -313,6 +313,7 @@ class ControlActivity extends Activity
     }
     if (bumpDetected) {
       val intent = new Intent(this, classOf[BumpActivity])
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
       finish
       startActivity(intent)
     }

@@ -34,14 +34,18 @@ class MainMenuActivityBase extends Activity with TypedFindView
   {
     item.getItemId match {
       case R.id.about =>
-        startActivity(new Intent(this, classOf[AboutActivity]))
+        val intent = new Intent(this, classOf[AboutActivity])
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(intent)
         true
       case R.id.help =>
         val uri = Uri.parse(getString(R.string.help_url))
         startActivity(new Intent(Intent.ACTION_VIEW, uri))
         true
       case R.id.settings =>
-        startActivity(new Intent(this, classOf[SettingsActivity]))
+        val intent = new Intent(this, classOf[SettingsActivity])
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(intent)
         true
       case _ =>
         false

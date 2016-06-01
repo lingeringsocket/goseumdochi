@@ -111,6 +111,7 @@ class MainActivity extends MainMenuActivityBase
   {
     if (setupRequested && allPrerequisitesMet) {
       val intent = new Intent(this, classOf[SetupActivity])
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
       startActivity(intent)
       true
     } else {

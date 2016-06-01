@@ -56,6 +56,11 @@ class CameraPreview(
 
   override def surfaceDestroyed(holder : SurfaceHolder)
   {
+    closeCamera
+  }
+
+  def closeCamera()
+  {
     camera.foreach(c => {
       c.stopPreview
       c.release
@@ -71,7 +76,8 @@ class CameraPreview(
       val parameters = c.getParameters
 
       val sizes = parameters.getSupportedPreviewSizes.asScala
-      val optimalSize = sizes.maxBy(_.height)
+      val optimalSize =
+        sizes.filter(s => (s.width <= w) && (s.height <= h)).maxBy(_.height)
       parameters.setPreviewSize(optimalSize.width, optimalSize.height)
       parameters.setFocusMode("continuous-video")
 
