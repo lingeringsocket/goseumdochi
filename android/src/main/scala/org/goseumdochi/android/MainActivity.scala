@@ -22,6 +22,7 @@ import android.content._
 import android.content.pm._
 import android.os._
 import android.preference._
+import android.text.method._
 import android.view._
 import android.widget._
 
@@ -46,6 +47,7 @@ class MainActivity extends MainMenuActivityBase
     super.onCreate(savedInstanceState)
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
     setContentView(R.layout.main)
+    findView(TR.cctv_text).setMovementMethod(LinkMovementMethod.getInstance)
     requestPrerequisites
   }
 
