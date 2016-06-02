@@ -47,8 +47,19 @@ class MainActivity extends MainMenuActivityBase
     super.onCreate(savedInstanceState)
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
     setContentView(R.layout.main)
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    val enableVoice = prefs.getBoolean(
+      SettingsActivity.KEY_PREF_ENABLE_VOICE, true)
+    if (enableVoice) {
+      GlobalTts.init(getApplicationContext)
+    }
     findView(TR.cctv_text).setMovementMethod(LinkMovementMethod.getInstance)
     requestPrerequisites
+  }
+
+  override protected def onDestroy()
+  {
+    GlobalTts.shutdown
   }
 
   private def requestPrerequisites()

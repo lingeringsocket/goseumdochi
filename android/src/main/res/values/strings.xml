@@ -41,6 +41,7 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
 
   <string name="utterance_bluetooth_connection">Establishing Bluetooth connection.</string>
   <string name="utterance_bluetooth_lost">Bluetooth connection lost.</string>
+  <string name="utterance_bump_detected">Camera motion detected.</string>
   <string name="utterance_INITIALIZING">Initializing.</string>
   <string name="utterance_LOCALIZING">Determining initial location.</string>
   <string name="utterance_ORIENTING">Calibrating direction.</string>

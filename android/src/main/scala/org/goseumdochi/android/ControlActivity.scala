@@ -21,7 +21,6 @@ import android.graphics._
 import android.hardware._
 import android.os._
 import android.preference._
-import android.speech.tts._
 import android.view._
 
 import java.io._
@@ -58,8 +57,6 @@ class ControlActivity extends Activity
   private val actuator = new AndroidSpheroActuator(this)
 
   private var actorSystem : Option[ActorSystem] = None
-
-  private var textToSpeech : Option[TextToSpeech] = None
 
   private var controlStatus = INITIAL_STATUS
 
@@ -132,23 +129,7 @@ class ControlActivity extends Activity
       gyroscope = Some(sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE))
     }
 
-    var newTextToSpeech : TextToSpeech = null
-    val enableVoice = prefs.getBoolean(
-      SettingsActivity.KEY_PREF_ENABLE_VOICE, true)
-    if (enableVoice) {
-      newTextToSpeech = new TextToSpeech(
-        getApplicationContext, new TextToSpeech.OnInitListener {
-          override def onInit(status : Int)
-          {
-            if (status != TextToSpeech.ERROR) {
-              textToSpeech = Some(newTextToSpeech)
-              speak(R.string.utterance_bluetooth_connection)
-            }
-          }
-        })
-    } else {
-      speak(R.string.utterance_bluetooth_connection)
-    }
+    speak(R.string.utterance_bluetooth_connection)
 
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
@@ -239,7 +220,7 @@ class ControlActivity extends Activity
   private def speak(voiceMessage : String)
   {
     lastVoiceMessage = voiceMessage
-    textToSpeech.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_ADD, null))
+    GlobalTts.speak(voiceMessage)
   }
 
   private def speak(voiceMessageId : Int)
@@ -260,11 +241,6 @@ class ControlActivity extends Activity
   {
     super.onPause
     sensorMgr.foreach(_.unregisterListener(this))
-    textToSpeech.foreach(t => {
-      t.stop
-      t.shutdown
-    })
-    textToSpeech = None
   }
 
   def isRobotConnected = !robot.isEmpty
@@ -312,6 +288,7 @@ class ControlActivity extends Activity
       case _ =>
     }
     if (bumpDetected) {
+      speak(R.string.utterance_bump_detected)
       val intent = new Intent(this, classOf[BumpActivity])
       intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
       finish
