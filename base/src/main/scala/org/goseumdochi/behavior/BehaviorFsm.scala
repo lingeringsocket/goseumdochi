@@ -35,12 +35,15 @@ trait BehaviorFsm[S, D] extends LoggingFSM[S, D]
     stay
   }
 
-  protected def recordObservation(voiceMsg : String, eventTime : TimePoint)
+  protected def recordObservation(
+    messageKey : String, eventTime : TimePoint,
+    messageParams : Seq[Any] = Seq.empty)
   {
     // FIXME:  make this unconditional after updating
     // test scripts
     if (!settings.Test.active) {
-      sender ! ControlActor.ObservationMsg(voiceMsg, eventTime)
+      sender ! ControlActor.ObservationMsg(
+        messageKey, eventTime, messageParams)
     }
   }
 }

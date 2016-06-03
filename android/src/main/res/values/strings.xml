@@ -35,18 +35,19 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="pref_summary_enable_voice">Announce all watchdog activity out loud (using your Android device\'s current text-to-speech preferences).</string>
   <string name="pref_title_intruder_alert">Intruder Alert Message</string>
   <string name="pref_summary_intruder_alert">The phrase to speak when an intruder is detected</string>
-  <string name="pref_default_intruder_alert">Intruder detected</string>
+  <string name="pref_default_intruder_alert">Intruder detected at %1$d o\'clock!</string>
   <string name="pref_title_detect_bumps">Stop On Camera Motion</string>
   <string name="pref_summary_detect_bumps">Automatically stop surveillance when camera motion is detected</string>
 
-  <string name="utterance_bluetooth_connection">Establishing Bluetooth connection.</string>
-  <string name="utterance_bluetooth_lost">Bluetooth connection lost.</string>
-  <string name="utterance_bump_detected">Camera motion detected.</string>
-  <string name="utterance_INITIALIZING">Initializing.</string>
-  <string name="utterance_LOCALIZING">Determining initial location.</string>
-  <string name="utterance_ORIENTING">Calibrating direction.</string>
-  <string name="utterance_BEHAVING">Initialization complete.</string>
-  <string name="utterance_PANIC">Help!</string>
-  <string name="utterance_CENTERING">Centering.</string>
-  <string name="utterance_MEASURING">Measuring perspective transformation.</string>
+  <string name="speech_bluetooth_connection">Establishing Bluetooth connection.</string>
+  <string name="speech_bluetooth_lost">Bluetooth connection lost.</string>
+  <string name="speech_bump_detected">Camera motion detected.</string>
+  <string name="speech_invalid_format">Invalid format string.</string>
+  <string name="speech_INITIALIZING">Initializing.</string>
+  <string name="speech_LOCALIZING">Determining initial location.</string>
+  <string name="speech_ORIENTING">Calibrating direction.</string>
+  <string name="speech_ACTIVE">Initialization complete.</string>
+  <string name="speech_PANIC">Help!</string>
+  <string name="speech_CENTERING">Centering.</string>
+  <string name="speech_MEASURING">Measuring perspective transformation.</string>
 </resources>

@@ -88,8 +88,7 @@ class IntrusionDetectionFsm()
       if (heading == 0) {
         heading = 12
       }
-      recordObservation(
-        "INTRUDER at " + heading + " o'clock!", eventTime)
+      recordObservation("INTRUDER", eventTime, Seq(heading))
       sender ! ControlActor.ActuateMoveMsg(
         pos, intruderPos, settings.Motor.defaultSpeed,
         0.seconds, eventTime)

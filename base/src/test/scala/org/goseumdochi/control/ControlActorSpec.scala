@@ -35,7 +35,7 @@ class ControlActorSpec extends AkkaSpecification(
     statusProbe : TestProbe, status : ControlStatus, eventTime : TimePoint)
   {
     statusProbe.expectMsg(StatusUpdateMsg(
-      status, ControlActor.voiceMessageFor(status), eventTime))
+      status, ControlActor.messageKeyFor(status), eventTime))
   }
 
   "ControlActor" should
@@ -92,7 +92,7 @@ class ControlActorSpec extends AkkaSpecification(
         BodyDetector.BodyDetectedMsg(orientationPos, orientationTime)
 
       actuator.expectTwirlMsg.theta must be closeTo(0.38 +/- 0.01)
-      expectStatusMsg(statusProbe, BEHAVING, orientationTime)
+      expectStatusMsg(statusProbe, ACTIVE, orientationTime)
 
       controlActor ! CheckVisibilityMsg(orientationTime)
 

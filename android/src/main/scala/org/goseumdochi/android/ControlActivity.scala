@@ -39,11 +39,18 @@ import com.orbotix.common._
 
 import collection._
 
-class ControlActivity extends Activity
-    with RobotChangedStateListener with SensorEventListener with TypedFindView
+object ControlActivity
 {
   private final val INITIAL_STATUS = "CONNECTED"
 
+  private final val SPEECH_RESOURCE_PREFIX = "speech_"
+}
+
+import ControlActivity._
+
+class ControlActivity extends Activity
+    with RobotChangedStateListener with SensorEventListener with TypedFindView
+{
   private var robot : Option[ConvenienceRobot] = None
 
   private val outputQueue =
@@ -76,36 +83,34 @@ class ControlActivity extends Activity
 
   private var gyroscopeBaseline = new mutable.ArrayBuffer[Float]
 
-  var gyroscopeMax = 0.0f
-
   private var detectBumps = false
 
   class ControlListener extends Actor
   {
     def receive =
     {
-      case ControlActor.StatusUpdateMsg(status, voiceMessage, _) => {
-        controlStatus = status.toString
-        var actualMessage = voiceMessage
-        val prefix = "INTRUDER"
-        if (voiceMessage.startsWith(prefix)) {
+      case msg : ControlActor.StatusUpdateMsg => {
+        controlStatus = msg.status.toString
+        var actualMessage = msg.messageKey
+        if (msg.messageKey == "INTRUDER") {
           val prefs = PreferenceManager.getDefaultSharedPreferences(
             ControlActivity.this)
-          // FIXME:  get this from XML
-          val defaultValue = "Intruder detected"
+          val defaultValue = getString(R.string.pref_default_intruder_alert)
           actualMessage = prefs.getString(
             SettingsActivity.KEY_PREF_INTRUDER_ALERT, defaultValue)
-          if (actualMessage == defaultValue) {
-            val suffix = voiceMessage.stripPrefix(prefix)
-            actualMessage = actualMessage + suffix
-          }
         } else {
-          val resourceName = "utterance_" + voiceMessage
+          val resourceName = SPEECH_RESOURCE_PREFIX + msg.messageKey
           val resourceId = getResources.getIdentifier(
-            resourceName, "id", getPackageName)
+            resourceName, "string", getPackageName)
           if (resourceId != 0) {
             actualMessage = getString(resourceId)
           }
+        }
+        if (!msg.messageParams.isEmpty) {
+          actualMessage =
+            SettingsActivity.applyFormat(
+              ControlActivity.this, actualMessage,
+              msg.messageParams)
         }
         speak(actualMessage)
       }
@@ -129,7 +134,7 @@ class ControlActivity extends Activity
         Option(sysSensorMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE))
     }
 
-    speak(R.string.utterance_bluetooth_connection)
+    speak(R.string.speech_bluetooth_connection)
 
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
@@ -210,7 +215,7 @@ class ControlActivity extends Activity
     } else {
       if (!robot.isEmpty) {
         connectionStatus = "DISCONNECTED"
-        speak(R.string.utterance_bluetooth_lost)
+        speak(R.string.speech_bluetooth_lost)
       }
       robot = None
     }
@@ -287,7 +292,7 @@ class ControlActivity extends Activity
     }
     if (bumpDetected) {
       disableSensors
-      speak(R.string.utterance_bump_detected)
+      speak(R.string.speech_bump_detected)
       val intent = new Intent(this, classOf[BumpActivity])
       intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
       finish
@@ -304,9 +309,6 @@ class ControlActivity extends Activity
     } else {
       for (i <- 0 until 3) {
         val diff = Math.abs(baseline(i) - current(i))
-        if (diff > gyroscopeMax) {
-          gyroscopeMax = diff
-        }
         if (diff > threshold) {
           return true
         }
