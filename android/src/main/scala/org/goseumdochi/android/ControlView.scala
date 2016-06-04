@@ -64,12 +64,17 @@ class ControlView(
     try {
       if (context.isRobotConnected) {
         if (retinalInput.needsFrame) {
-          val size = camera.getParameters.getPreviewSize
-          val result = convertToFrame(data, size)
-          retinalInput.pushFrame(result)
+          val bitmap = convertToBitmap(data, camera)
+          val converter = new AndroidFrameConverter
+          val frame = converter.convert(bitmap)
+          retinalInput.pushFrame(frame)
         }
       } else {
-        postInvalidate
+        if (outputQueue.isEmpty) {
+          val bitmap = convertToBitmap(data, camera)
+          outputQueue.put(bitmap)
+          postInvalidate
+        }
       }
       camera.addCallbackBuffer(data)
     } catch {
@@ -78,17 +83,16 @@ class ControlView(
     }
   }
 
-  private def convertToFrame(data : Array[Byte], size : Camera#Size) =
+  private def convertToBitmap(data : Array[Byte], camera : Camera) =
   {
+    val size = camera.getParameters.getPreviewSize
     val out = new ByteArrayOutputStream
     val yuv = new YuvImage(
       data, ImageFormat.NV21, size.width, size.height, null)
     yuv.compressToJpeg(
       new android.graphics.Rect(0, 0, size.width, size.height), 50, out)
     val bytes = out.toByteArray
-    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
-    val converter = new AndroidFrameConverter
-    converter.convert(bitmap)
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
   }
 
   override protected def onDraw(canvas : Canvas)

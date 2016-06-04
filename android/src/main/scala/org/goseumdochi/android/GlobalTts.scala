@@ -16,22 +16,37 @@
 package org.goseumdochi.android
 
 import android.content._
-import android.os._
-import android.view._
+import android.speech.tts._
 
-class BumpActivity extends MainMenuActivityBase
+object GlobalTts
 {
-  override protected def onCreate(savedInstanceState : Bundle)
+  private var textToSpeech : Option[TextToSpeech] = None
+
+  def init(appContext : Context)
   {
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.bump)
+    var newTextToSpeech : TextToSpeech = null
+    newTextToSpeech = new TextToSpeech(
+      appContext, new TextToSpeech.OnInitListener {
+        override def onInit(status : Int)
+        {
+          if (status != TextToSpeech.ERROR) {
+            textToSpeech = Some(newTextToSpeech)
+          }
+        }
+      })
   }
 
-  def onOkClicked(v : View)
+  def shutdown()
   {
-    val intent = new Intent(this, classOf[SetupActivity])
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-    finish
-    startActivity(intent)
+    textToSpeech.foreach(t => {
+      t.stop
+      t.shutdown
+    })
+    textToSpeech = None
+  }
+
+  def speak(voiceMessage : String)
+  {
+    textToSpeech.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_ADD, null))
   }
 }

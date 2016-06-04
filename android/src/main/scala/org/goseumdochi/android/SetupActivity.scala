@@ -22,6 +22,9 @@ import android.view._
 
 class SetupActivity extends Activity with TypedFindView
 {
+  lazy val setupView = new SetupView(this)
+  lazy val preview = new CameraPreview(this, setupView)
+
   override protected def onCreate(savedInstanceState : Bundle)
   {
     requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -35,8 +38,6 @@ class SetupActivity extends Activity with TypedFindView
   private def startCamera()
   {
     setContentView(R.layout.setup)
-    val setupView = new SetupView(this)
-    val preview = new CameraPreview(this, setupView)
     val layout = findView(TR.setup_preview)
     layout.addView(preview)
     layout.addView(setupView)
@@ -44,6 +45,9 @@ class SetupActivity extends Activity with TypedFindView
 
   def onConnectClicked(v : View)
   {
-    startActivity(new Intent(this, classOf[ControlActivity]))
+    preview.closeCamera
+    val intent = new Intent(this, classOf[ControlActivity])
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    startActivity(intent)
   }
 }

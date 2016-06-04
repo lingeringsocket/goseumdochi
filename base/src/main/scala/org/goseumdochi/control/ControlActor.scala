@@ -29,7 +29,7 @@ object ControlActor
 {
   object ControlStatus extends Enumeration {
     type ControlStatus = Value
-    val INITIALIZING, LOCALIZING, ORIENTING, BEHAVING, PANIC = Value
+    val INITIALIZING, LOCALIZING, ORIENTING, ACTIVE, PANIC = Value
   }
   import ControlStatus._
 
@@ -48,8 +48,9 @@ object ControlActor
   // sent messages (to listeners)
   final case class StatusUpdateMsg(
     status : ControlStatus,
-    voiceMessage : String,
-    eventTime : TimePoint)
+    messageKey : String,
+    eventTime : TimePoint,
+    messageParams : Seq[Any] = Seq.empty)
       extends EventMsg
 
   // internal messages
@@ -90,8 +91,9 @@ object ControlActor
     eventTime : TimePoint)
       extends EventMsg
   final case class ObservationMsg(
-    voiceMessage : String,
-    eventTime : TimePoint)
+    messageKey : String,
+    eventTime : TimePoint,
+    messageParams : Seq[Any] = Seq.empty)
       extends EventMsg
 
   // pass-through messages (from vision to behavior)
@@ -132,7 +134,7 @@ object ControlActor
     controlActor ! Listen(listener)
   }
 
-  def voiceMessageFor(status : ControlStatus) = status.toString
+  def messageKeyFor(status : ControlStatus) = status.toString
 }
 
 class ControlActor(
@@ -229,8 +231,8 @@ class ControlActor(
   {
     log.info("NEW STATUS:  " + newStatus)
     status = newStatus
-    val voiceMessage = voiceMessageFor(status)
-    gossip(StatusUpdateMsg(status, voiceMessage, eventTime))
+    val messageKey = messageKeyFor(status)
+    gossip(StatusUpdateMsg(status, messageKey, eventTime))
   }
 
   private def receiveInput(eventMsg : EventMsg) = eventMsg match
@@ -247,7 +249,7 @@ class ControlActor(
       actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
       orientationActor ! PoisonPill.getInstance
       writeOrientation(settings, calibratedMsg)
-      updateStatus(BEHAVING, calibratedMsg.eventTime)
+      updateStatus(ACTIVE, calibratedMsg.eventTime)
       sendOutput(
         behaviorActor, CameraAcquiredMsg(bottomRight, calibratedMsg.eventTime))
     }
@@ -304,8 +306,10 @@ class ControlActor(
       visionActor ! VisionActor.ActivateAnalyzersMsg(
         analyzers, retinalTransform)
     }
-    case ObservationMsg(voiceMessage, eventTime) => {
-      gossip(StatusUpdateMsg(status, voiceMessage, eventTime))
+    case observation : ObservationMsg => {
+      gossip(StatusUpdateMsg(
+        status, observation.messageKey, observation.eventTime,
+        observation.messageParams))
     }
     case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
       if (localizing) {
@@ -318,7 +322,7 @@ class ControlActor(
           sendOutput(
             orientationActor, CameraAcquiredMsg(bottomRight, eventTime))
         } else {
-          updateStatus(BEHAVING, eventTime)
+          updateStatus(ACTIVE, eventTime)
           sendOutput(
             behaviorActor, CameraAcquiredMsg(bottomRight, eventTime))
         }

@@ -21,7 +21,6 @@ import android.graphics._
 import android.hardware._
 import android.os._
 import android.preference._
-import android.speech.tts._
 import android.view._
 
 import java.io._
@@ -38,11 +37,20 @@ import com.typesafe.config._
 import com.orbotix._
 import com.orbotix.common._
 
-class ControlActivity extends Activity
-    with RobotChangedStateListener with SensorEventListener with TypedFindView
+import collection._
+
+object ControlActivity
 {
   private final val INITIAL_STATUS = "CONNECTED"
 
+  private final val SPEECH_RESOURCE_PREFIX = "speech_"
+}
+
+import ControlActivity._
+
+class ControlActivity extends Activity
+    with RobotChangedStateListener with SensorEventListener with TypedFindView
+{
   private var robot : Option[ConvenienceRobot] = None
 
   private val outputQueue =
@@ -53,13 +61,13 @@ class ControlActivity extends Activity
   private lazy val controlView =
     new ControlView(this, retinalInput, outputQueue)
 
+  private lazy val preview = new CameraPreview(this, controlView)
+
   private lazy val theater = new AndroidTheater(controlView, outputQueue)
 
   private val actuator = new AndroidSpheroActuator(this)
 
   private var actorSystem : Option[ActorSystem] = None
-
-  private var textToSpeech : Option[TextToSpeech] = None
 
   private var controlStatus = INITIAL_STATUS
 
@@ -71,44 +79,40 @@ class ControlActivity extends Activity
 
   private var sensorMgr : Option[SensorManager] = None
 
-  private var accelerometer : Option[Sensor] = None
-
   private var gyroscope : Option[Sensor] = None
 
-  private var mAccel = 0.0f
-
-  private var mAccelCurrent = SensorManager.GRAVITY_EARTH
-
-  private var mAccelLast = SensorManager.GRAVITY_EARTH
+  private var gyroscopeBaseline = new mutable.ArrayBuffer[Float]
 
   private var detectBumps = false
+
+  private var expectDisconnect = false
 
   class ControlListener extends Actor
   {
     def receive =
     {
-      case ControlActor.StatusUpdateMsg(status, voiceMessage, _) => {
-        controlStatus = status.toString
-        var actualMessage = voiceMessage
-        val prefix = "INTRUDER"
-        if (voiceMessage.startsWith(prefix)) {
+      case msg : ControlActor.StatusUpdateMsg => {
+        controlStatus = msg.status.toString
+        var actualMessage = msg.messageKey
+        if (msg.messageKey == "INTRUDER") {
           val prefs = PreferenceManager.getDefaultSharedPreferences(
             ControlActivity.this)
-          // FIXME:  get this from XML
-          val defaultValue = "Intruder detected"
+          val defaultValue = getString(R.string.pref_default_intruder_alert)
           actualMessage = prefs.getString(
             SettingsActivity.KEY_PREF_INTRUDER_ALERT, defaultValue)
-          if (actualMessage == defaultValue) {
-            val suffix = voiceMessage.stripPrefix(prefix)
-            actualMessage = actualMessage + suffix
-          }
         } else {
-          val resourceName = "utterance_" + voiceMessage
+          val resourceName = SPEECH_RESOURCE_PREFIX + msg.messageKey
           val resourceId = getResources.getIdentifier(
-            resourceName, "id", getPackageName)
+            resourceName, "string", getPackageName)
           if (resourceId != 0) {
             actualMessage = getString(resourceId)
           }
+        }
+        if (!msg.messageParams.isEmpty) {
+          actualMessage =
+            SettingsActivity.applyFormat(
+              ControlActivity.this, actualMessage,
+              msg.messageParams)
         }
         speak(actualMessage)
       }
@@ -125,30 +129,14 @@ class ControlActivity extends Activity
       SettingsActivity.KEY_PREF_DETECT_BUMPS, true)
 
     if (detectBumps) {
-      val sm =
+      val sysSensorMgr =
         getSystemService(Context.SENSOR_SERVICE).asInstanceOf[SensorManager]
-      sensorMgr = Some(sm)
-      accelerometer = Some(sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER))
-      gyroscope = Some(sm.getDefaultSensor(Sensor.TYPE_GYROSCOPE))
+      sensorMgr = Some(sysSensorMgr)
+      gyroscope =
+        Option(sysSensorMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE))
     }
 
-    var newTextToSpeech : TextToSpeech = null
-    val enableVoice = prefs.getBoolean(
-      SettingsActivity.KEY_PREF_ENABLE_VOICE, true)
-    if (enableVoice) {
-      newTextToSpeech = new TextToSpeech(
-        getApplicationContext, new TextToSpeech.OnInitListener {
-          override def onInit(status : Int)
-          {
-            if (status != TextToSpeech.ERROR) {
-              textToSpeech = Some(newTextToSpeech)
-              speak(R.string.utterance_bluetooth_connection)
-            }
-          }
-        })
-    } else {
-      speak(R.string.utterance_bluetooth_connection)
-    }
+    speak(R.string.speech_bluetooth_connection)
 
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
@@ -159,7 +147,6 @@ class ControlActivity extends Activity
   private def startCamera()
   {
     setContentView(R.layout.control)
-    val preview = new CameraPreview(this, controlView)
     val layout = findView(TR.control_preview)
     layout.addView(preview)
     layout.addView(controlView)
@@ -169,6 +156,7 @@ class ControlActivity extends Activity
   override protected def onStart()
   {
     super.onStart
+    expectDisconnect = false
     startDiscovery
   }
 
@@ -183,6 +171,8 @@ class ControlActivity extends Activity
 
   override protected def onStop()
   {
+    expectDisconnect = true
+
     if (DualStackDiscoveryAgent.getInstance.isDiscovering) {
       DualStackDiscoveryAgent.getInstance.stopDiscovery
     }
@@ -230,7 +220,9 @@ class ControlActivity extends Activity
     } else {
       if (!robot.isEmpty) {
         connectionStatus = "DISCONNECTED"
-        speak(R.string.utterance_bluetooth_lost)
+        if (!expectDisconnect) {
+          speak(R.string.speech_bluetooth_lost)
+        }
       }
       robot = None
     }
@@ -239,7 +231,7 @@ class ControlActivity extends Activity
   private def speak(voiceMessage : String)
   {
     lastVoiceMessage = voiceMessage
-    textToSpeech.foreach(_.speak(voiceMessage, TextToSpeech.QUEUE_ADD, null))
+    GlobalTts.speak(voiceMessage)
   }
 
   private def speak(voiceMessageId : Int)
@@ -250,21 +242,26 @@ class ControlActivity extends Activity
   override protected def onResume()
   {
     super.onResume
-    sensorMgr.foreach(_.registerListener(
-      this, accelerometer.get, SensorManager.SENSOR_DELAY_UI))
-    sensorMgr.foreach(_.registerListener(
-      this, gyroscope.get, SensorManager.SENSOR_DELAY_UI))
+    sensorMgr.foreach(sm => {
+      gyroscope.foreach(sensor => {
+        sm.registerListener(
+          this, sensor, SensorManager.SENSOR_DELAY_UI)
+      })
+    })
   }
 
   override protected def onPause()
   {
     super.onPause
+    disableSensors
+    preview.closeCamera
+  }
+
+  private def disableSensors()
+  {
     sensorMgr.foreach(_.unregisterListener(this))
-    textToSpeech.foreach(t => {
-      t.stop
-      t.shutdown
-    })
-    textToSpeech = None
+    gyroscope = None
+    gyroscopeBaseline.clear
   }
 
   def isRobotConnected = !robot.isEmpty
@@ -285,37 +282,47 @@ class ControlActivity extends Activity
 
   override def onSensorChanged(event : SensorEvent)
   {
+    if (!isRobotConnected) {
+      return
+    }
+    if (gyroscope.isEmpty) {
+      return
+    }
     var bumpDetected = false
     event.sensor.getType match {
-      case Sensor.TYPE_ACCELEROMETER => {
-        val vAccel = event.values.clone
-        val x = vAccel(0).toDouble
-        val y = vAccel(1).toDouble
-        val z = vAccel(2).toDouble
-        mAccelLast = mAccelCurrent
-        mAccelCurrent = Math.sqrt(x*x + y*y + z*z).toFloat
-        val delta = mAccelCurrent - mAccelLast
-        mAccel = mAccel * 0.9f + delta
-        if (mAccel > 0.15) {
-          bumpDetected = true
-        }
-      }
       case Sensor.TYPE_GYROSCOPE => {
-        val vAccel = event.values.clone
-        for (i <- 0 until 3) {
-          val accel = vAccel(i).toDouble
-          if (Math.abs(accel) > 0.05) {
-            bumpDetected = true
-          }
+        if (checkSensor(gyroscopeBaseline, event.values, 0.07f)) {
+          bumpDetected = true
         }
       }
       case _ =>
     }
     if (bumpDetected) {
+      expectDisconnect = true
+      disableSensors
+      speak(R.string.speech_bump_detected)
       val intent = new Intent(this, classOf[BumpActivity])
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
       finish
       startActivity(intent)
     }
+  }
+
+  private def checkSensor(
+    baseline : mutable.ArrayBuffer[Float], current : Array[Float],
+    threshold : Float) : Boolean =
+  {
+    if (baseline.isEmpty) {
+      baseline ++= current
+    } else {
+      for (i <- 0 until 3) {
+        val diff = Math.abs(baseline(i) - current(i))
+        if (diff > threshold) {
+          return true
+        }
+      }
+    }
+    return false
   }
 
   override def onAccuracyChanged(sensor : Sensor, accuracy : Int)

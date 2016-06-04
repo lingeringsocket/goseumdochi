@@ -23,7 +23,10 @@ classpathTypes += "maven-plugin"
 
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
+resolvers += "bintray/meetup" at "http://dl.bintray.com/meetup/maven"
+
 libraryDependencies ++= Seq(
+  "com.meetup" %% "archery" % "0.4.0",
   "org.slf4j" % "slf4j-api" % "1.7.21",
   "org.bytedeco"                 % "javacpp"         % javacppVersion % "test",
   "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion)% "test" classifier "",

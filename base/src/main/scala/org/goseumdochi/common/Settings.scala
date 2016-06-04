@@ -101,6 +101,8 @@ class Settings(rootConf : Config)
   {
     val subConf = conf.getConfig("body-recognition")
     val className = subConf.getString("class-name")
+    val minRadius = subConf.getInt("min-radius")
+    val maxRadius = subConf.getInt("max-radius")
   }
 
   object MotionDetection
