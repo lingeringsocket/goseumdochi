@@ -41,9 +41,9 @@ class RoundBodyDetector(
 
   private val sensitivity = conf.getInt("sensitivity")
 
-  private var minRadius = conf.getInt("min-radius")
+  private var minRadius = settings.BodyRecognition.minRadius
 
-  private var maxRadius = conf.getInt("max-radius")
+  private var maxRadius = settings.BodyRecognition.maxRadius
 
   private val filteredCircles = new mutable.LinkedHashSet[RetinalCircle]
 

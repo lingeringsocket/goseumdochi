@@ -140,7 +140,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       pos.y must be closeTo(-539.0 +/- 0.1)
     }
 
-    "detect colorful magenta body" in
+    "detect magenta body" in
     {
       val img1 = cvLoadImage("data/magenta_off.jpg")
       val img2 = cvLoadImage("data/magenta_on.jpg")
@@ -180,8 +180,8 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       postVisualize(colorfulBodyDetector.getDebugImages)
 
-      pos.x must be closeTo(485.5 +/- 0.1)
-      pos.y must be closeTo(-501.0 +/- 0.1)
+      pos.x must be closeTo(486.0 +/- 0.1)
+      pos.y must be closeTo(-487.0 +/- 0.1)
 
       // now you see it, now you don't
       imageDeck.cycle(img1)
@@ -189,6 +189,37 @@ class BodyDetectorSpec extends VisualizableSpecification
       val msgs5 = colorfulBodyDetector.analyzeFrame(
         imageDeck, TimePoint.TEN, None)
       msgs5 must beEmpty
+    }
+
+    "ignore sparkles while detecting magenta body" in
+    {
+      val img1 = cvLoadImage("data/gnex_magenta_off.jpg")
+      val img2 = cvLoadImage("data/gnex_magenta_on.jpg")
+
+      val imageDeck = new ImageDeck
+
+      // baseline:  let there be light
+      imageDeck.cycle(img1)
+      imageDeck.cycle(img1)
+      val msgs1 = colorfulBodyDetector.analyzeFrame(
+        imageDeck, TimePoint.ZERO, None)
+      msgs1.size must be equalTo 1
+      msgs1.head must be equalTo VisionActor.RequireLightMsg(
+        NamedColor.MAGENTA, TimePoint.ZERO)
+
+      // should see the light now
+      imageDeck.cycle(img2)
+      val msgs2 = colorfulBodyDetector.analyzeFrame(
+        imageDeck, TimePoint.ONE, None)
+
+      msgs2.size must be equalTo 1
+      msgs2.head must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
+      val pos = msgs2.head.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
+
+      postVisualize(colorfulBodyDetector.getDebugImages)
+
+      pos.x must be closeTo(452.0 +/- 0.1)
+      pos.y must be closeTo(-465.0 +/- 0.1)
     }
   }
 }

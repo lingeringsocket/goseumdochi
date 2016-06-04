@@ -23,11 +23,12 @@ import org.bytedeco.javacpp.opencv_imgproc._
 
 import collection._
 
+import BlobAnalysis._
 import BodyDetector._
 
 class ColorfulBodyDetector(
   val settings : Settings, val xform : RetinalTransform)
-    extends BodyDetector
+    extends BodyDetector with BlobAnalyzer
 {
   private var channels : Array[IplImage] = Array.empty
 
@@ -92,32 +93,23 @@ class ColorfulBodyDetector(
   {
     newDebugger(totalDiffs)
 
-    val imgToFrame = OpenCvUtil.newConverter
-    val frameToMat = OpenCvUtil.newMatConverter
-    val frame = imgToFrame.convert(totalDiffs)
-    val mat = frameToMat.convert(frame)
-    val locs = new Mat
-    findNonZero(mat, locs)
+    val blobSorter = new BlobProximityMerger(5)
+    val rects = analyzeBlobs(
+      totalDiffs, KeepAll, blobSorter)
 
-    if (locs.empty) {
+    if (rects.isEmpty) {
       None
     } else {
-      // TODO:  use cvMoments instead
-      val channels = new MatVector(2)
-      split(locs, channels)
-      val xChannel = channels.get(0)
-      val yChannel = channels.get(1)
-
-      val minVal = new Array[Double](1)
-      val maxVal = new Array[Double](1)
-      minMaxLoc(xChannel, minVal, maxVal, null, null, null)
-      val xMin = minVal(0)
-      val xMax = maxVal(0)
-      minMaxLoc(yChannel, minVal, maxVal, null, null, null)
-      val yMin = minVal(0)
-      val yMax = maxVal(0)
-
-      val retinalPos = RetinalPos((xMax + xMin) / 2, (yMax + yMin) / 2)
+      newDebugger(totalDiffs) { overlay =>
+        rects.foreach(r => {
+          overlay.drawRectangle(
+            OpenCvUtil.pos(r.tl),
+            OpenCvUtil.pos(r.br),
+            NamedColor.WHITE, 2)
+        })
+      }
+      val biggest = rects.sortWith(blobSorter.compare(_, _) < 0).head
+      val retinalPos = blobSorter.getAnchor(biggest)
       val pos = xform.retinaToWorld(retinalPos)
       val msg = BodyDetectedMsg(pos, frameTime)
       Some(msg)

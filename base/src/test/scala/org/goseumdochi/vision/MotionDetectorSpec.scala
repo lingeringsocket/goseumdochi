@@ -72,8 +72,8 @@ class MotionDetectorSpec extends VisualizableSpecification
       val pos = detectMotion(
         coarseSizeDetector,
         "data/baseline1.jpg", "data/baseline1.jpg", "data/intruder.jpg")
-      pos.x must be closeTo(430.0 +/- 0.1)
-      pos.y must be closeTo(-144.0 +/- 0.1)
+      pos.x must be closeTo(429.0 +/- 0.1)
+      pos.y must be closeTo(-146.0 +/- 0.1)
     }
 
     "detect feet appearing" in
@@ -81,8 +81,8 @@ class MotionDetectorSpec extends VisualizableSpecification
       val pos = detectMotion(
         coarseGravityDetector,
         "data/walk1.jpg", "data/walk1.jpg", "data/walk2.jpg")
-      pos.x must be closeTo(96.0 +/- 0.1)
-      pos.y must be closeTo(-410.0 +/- 0.1)
+      pos.x must be closeTo(130.0 +/- 0.1)
+      pos.y must be closeTo(-394.0 +/- 0.1)
     }
 
     "detect feet walking" in
@@ -90,8 +90,8 @@ class MotionDetectorSpec extends VisualizableSpecification
       val pos = detectMotion(
         coarseGravityDetector,
         "data/walk1.jpg", "data/walk2.jpg", "data/walk3.jpg")
-      pos.x must be closeTo(552.0 +/- 0.1)
-      pos.y must be closeTo(-220.0 +/- 0.1)
+      pos.x must be closeTo(546.0 +/- 0.1)
+      pos.y must be closeTo(-211.0 +/- 0.1)
     }
 
     "detect feet turning" in
@@ -99,8 +99,8 @@ class MotionDetectorSpec extends VisualizableSpecification
       val pos = detectMotion(
         coarseGravityDetector,
         "data/walk2.jpg", "data/walk3.jpg", "data/walk4.jpg")
-      pos.x must be closeTo(668.0 +/- 0.1)
-      pos.y must be closeTo(-320.0 +/- 0.1)
+      pos.x must be closeTo(794.0 +/- 0.1)
+      pos.y must be closeTo(-286.0 +/- 0.1)
     }
 
     "detect fine motion" in

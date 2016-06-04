@@ -19,6 +19,7 @@ import org.goseumdochi.common._
 
 import collection._
 
+import BlobAnalysis._
 import BodyDetector._
 
 class FlashyBodyDetector(
@@ -28,8 +29,9 @@ class FlashyBodyDetector(
   private val random = scala.util.Random
 
   class BodyMotionDetector extends MotionDetector(
-    settings, xform, settings.MotionDetection.bodyThreshold,
-    MotionDetector.IGNORE_LARGE, MotionDetector.GravitySorter)
+    settings, xform,
+    new IgnoreLarge(settings.MotionDetection.bodyThreshold),
+    MotionDetector.GravitySorter)
 
   private[vision] val motionDetector = new BodyMotionDetector
 

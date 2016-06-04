@@ -18,7 +18,6 @@ package org.goseumdochi.vision
 import org.goseumdochi.common._
 import org.goseumdochi.common.MoreMath._
 
-import org.bytedeco.javacpp._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
@@ -26,6 +25,8 @@ import org.bytedeco.javacpp.opencv_imgproc._
 import scala.annotation._
 
 import collection._
+
+import BlobAnalysis._
 
 object MotionDetector
 {
@@ -41,38 +42,6 @@ object MotionDetector
         overlay.xform.worldToRetina(pos), 6, NamedColor.BLUE, 2)
       overlay.drawRectangle(topLeft, bottomRight, NamedColor.BLUE, 2)
     }
-  }
-
-  type BlobFilter = (Rect, Int) => Boolean
-
-  val IGNORE_SMALL : BlobFilter = {
-    case (rect, threshold) => {
-      (rect.size.width > threshold) && (rect.size.height > threshold)
-    }
-  }
-
-  val IGNORE_LARGE : BlobFilter = {
-    case (rect, threshold) => {
-      (rect.size.width < threshold) && (rect.size.height < threshold)
-    }
-  }
-
-  trait BlobSorter
-  {
-    def compare(rect1 : Rect, rect2 : Rect) : Int
-    def getAnchor(rect : Rect) : RetinalPos
-    def merge(rects : Seq[Rect]) : Seq[Rect]
-  }
-
-  object SizeSorter extends BlobSorter
-  {
-    override def compare(rect1 : Rect, rect2 : Rect) =
-      (rect2.area - rect1.area).toInt
-
-    override def getAnchor(rect : Rect) =
-      RetinalPos((rect.tl.x + rect.br.x) / 2, (rect.tl.y + rect.br.y) / 2)
-
-    override def merge(rects : Seq[Rect]) = rects
   }
 
   object GravitySorter extends BlobSorter
@@ -116,14 +85,12 @@ import MotionDetector._
 
 abstract class MotionDetector(
   val settings : Settings, val xform : RetinalTransform,
-  threshold : Int, blobFilter : BlobFilter, blobSorter : BlobSorter)
-    extends VisionAnalyzer
+  blobFilter : BlobFilter, blobSorter : BlobSorter)
+    extends BlobAnalyzer
 {
   private var lastRetinalPos : Option[RetinalPos] = None
 
   private var diffOpt : Option[IplImage] = None
-
-  private val storage = AbstractCvMemStorage.create
 
   override def analyzeFrame(
     imageDeck : ImageDeck, frameTime : TimePoint,
@@ -150,47 +117,14 @@ abstract class MotionDetector(
 
     val diff = diffOpt.get
 
-    cvClearMemStorage(storage)
     cvAbsDiff(afterImg, beforeImg, diff)
     cvThreshold(diff, diff, 32, 255, CV_THRESH_BINARY)
 
-    var contour = new CvSeq(null)
-    cvFindContours(diff, storage, contour, Loader.sizeof(classOf[CvContour]),
-      CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0))
-
-    val rawDebugger = newDebugger(diff)
-    val rects = new mutable.ArrayBuffer[Rect]
-    while (contour != null && !contour.isNull) {
-      if (contour.elem_size > 0) {
-        val box = cvMinAreaRect2(contour, storage)
-        if (box != null) {
-          val rect = box.asRotatedRect.boundingRect
-          if (blobFilter(rect, threshold)) {
-            rawDebugger { overlay =>
-              overlay.drawEllipse(
-                OpenCvUtil.pos(box.center),
-                box.size.width,
-                box.size.height,
-                box.angle,
-                NamedColor.WHITE, 2)
-            }
-            rawDebugger { overlay =>
-              overlay.drawRectangle(
-                OpenCvUtil.pos(rect.tl),
-                OpenCvUtil.pos(rect.br),
-                NamedColor.WHITE, 2)
-            }
-            rects += rect
-          }
-        }
-      }
-      contour = contour.h_next()
-    }
+    val rects = analyzeBlobs(diff, blobFilter, blobSorter)
     if (rects.isEmpty) {
       return None
     }
-    val merged = blobSorter.merge(rects)
-    val topTwo = merged.sortWith(blobSorter.compare(_, _) < 0).take(2)
+    val topTwo = rects.sortWith(blobSorter.compare(_, _) < 0).take(2)
     val farthest = lastRetinalPos match {
       case Some(lastAnchor) => {
         def anchorDistSqr(rect : Rect) = {
@@ -220,26 +154,29 @@ abstract class MotionDetector(
   {
     diffOpt.foreach(_.release)
     diffOpt = None
-    storage.release
   }
 }
 
 class CoarseGravityMotionDetector(settings : Settings, xform : RetinalTransform)
     extends MotionDetector(
-      settings, xform, settings.MotionDetection.coarseThreshold,
-      IGNORE_SMALL, GravitySorter)
+      settings, xform,
+      new IgnoreSmall(settings.MotionDetection.coarseThreshold),
+      GravitySorter)
 
 class CoarseSizeMotionDetector(settings : Settings, xform : RetinalTransform)
     extends MotionDetector(
-      settings, xform, settings.MotionDetection.coarseThreshold,
-      IGNORE_SMALL, SizeSorter)
+      settings, xform,
+      new IgnoreSmall(settings.MotionDetection.coarseThreshold),
+      BlobSizeSorter)
 
 class FineGravityMotionDetector(settings : Settings, xform : RetinalTransform)
     extends MotionDetector(
-      settings, xform, settings.MotionDetection.fineThreshold,
-      IGNORE_SMALL, GravitySorter)
+      settings, xform,
+      new IgnoreSmall(settings.MotionDetection.fineThreshold),
+      GravitySorter)
 
 class FineSizeMotionDetector(settings : Settings, xform : RetinalTransform)
     extends MotionDetector(
-      settings, xform, settings.MotionDetection.fineThreshold,
-      IGNORE_SMALL, SizeSorter)
+      settings, xform,
+      new IgnoreSmall(settings.MotionDetection.fineThreshold),
+      BlobSizeSorter)
