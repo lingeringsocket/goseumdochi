@@ -18,6 +18,7 @@ package org.goseumdochi.android
 import android.content._
 import android.graphics._
 import android.hardware._
+import android.preference._
 import android.view._
 
 import java.io._
@@ -80,6 +81,17 @@ class CameraPreview(
         sizes.filter(s => (s.width <= w) && (s.height <= h)).maxBy(_.height)
       parameters.setPreviewSize(optimalSize.width, optimalSize.height)
       parameters.setFocusMode("continuous-video")
+
+      val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+      try {
+        parameters.setWhiteBalance(
+          prefs.getString(SettingsActivity.KEY_PREF_WHITE_BALANCE,
+            context.getString(R.string.pref_default_white_balance)))
+      } catch {
+        // probably we should be checking the list of supported
+        // values instead
+        case _ : Exception =>
+      }
 
       c.setParameters(parameters)
       c.setPreviewCallbackWithBuffer(previewCallback)

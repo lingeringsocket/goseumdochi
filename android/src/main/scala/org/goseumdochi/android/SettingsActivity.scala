@@ -27,6 +27,7 @@ object SettingsActivity
   final val KEY_PREF_ENABLE_VOICE = "pref_key_enable_voice"
   final val KEY_PREF_INTRUDER_ALERT = "pref_key_intruder_alert"
   final val KEY_PREF_DETECT_BUMPS = "pref_key_detect_bumps"
+  final val KEY_PREF_WHITE_BALANCE = "pref_key_white_balance"
 
   def applyFormat(context : Activity, phrase : String, params : Seq[Any])
       : String =
