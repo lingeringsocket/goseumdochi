@@ -1,0 +1,176 @@
+// goseumdochi:  experiments with incarnation
+// Copyright 2016 John V. Sichi
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.goseumdochi.vision
+
+import org.goseumdochi.common._
+
+import org.bytedeco.javacpp.opencv_core._
+import org.bytedeco.javacpp.helper.opencv_core._
+import org.bytedeco.javacpp.opencv_imgproc._
+
+import collection._
+
+import BodyDetector._
+
+class ColorfulBodyDetector(
+  val settings : Settings, val xform : RetinalTransform)
+    extends BodyDetector
+{
+  private var channels : Array[IplImage] = Array.empty
+
+  private var totalDiffsOpt : Option[IplImage] = None
+
+  private var hueOpt : Option[CvScalar] = None
+
+  private var chosenColor : Option[LightColor] = None
+
+  private var baselineMin = 0
+
+  private var maxDiffCutoff = -1
+
+  private var waitUntil = TimePoint.ZERO
+
+  private def totalDiffs = totalDiffsOpt.get
+
+  override def analyzeFrame(
+    imageDeck : ImageDeck, frameTime : TimePoint,
+    hintBodyPos : Option[PlanarPos])
+      : Iterable[VisionActor.AnalyzerResponseMsg] =
+  {
+    val currentBgr = imageDeck.currentBgr
+    val currentHsv = imageDeck.currentHsv
+    chosenColor match {
+      case Some(color) => {
+        if (frameTime <= waitUntil) {
+          None
+        } else {
+          compareColors(currentHsv, color)
+          if (maxDiffCutoff < 0) {
+            val newMin = computeMinDiff
+            if (newMin + 3 > baselineMin) {
+              return None
+            }
+            maxDiffCutoff = (0.95*baselineMin + 0.05*newMin).toInt
+          }
+          cvThreshold(
+            totalDiffs, totalDiffs, maxDiffCutoff, 255,
+            CV_THRESH_BINARY_INV)
+          val msgOpt = locateBody(frameTime)
+          msgOpt.map { msg =>
+            newDebugger(currentBgr) { overlay =>
+              msg.renderOverlay(overlay)
+            }
+          }
+          msgOpt
+        }
+      }
+      case _ => {
+        val color = chooseColor(currentBgr)
+        chosenColor = Some(color)
+        waitUntil = frameTime + settings.Vision.sensorDelay
+        compareColors(currentHsv, color)
+        baselineMin = computeMinDiff
+        Some(VisionActor.RequireLightMsg(color, frameTime))
+      }
+    }
+  }
+
+  private def locateBody(frameTime : TimePoint) =
+  {
+    newDebugger(totalDiffs)
+
+    val imgToFrame = OpenCvUtil.newConverter
+    val frameToMat = OpenCvUtil.newMatConverter
+    val frame = imgToFrame.convert(totalDiffs)
+    val mat = frameToMat.convert(frame)
+    val locs = new Mat
+    findNonZero(mat, locs)
+
+    if (locs.empty) {
+      None
+    } else {
+      // TODO:  use cvMoments instead
+      val channels = new MatVector(2)
+      split(locs, channels)
+      val xChannel = channels.get(0)
+      val yChannel = channels.get(1)
+
+      val minVal = new Array[Double](1)
+      val maxVal = new Array[Double](1)
+      minMaxLoc(xChannel, minVal, maxVal, null, null, null)
+      val xMin = minVal(0)
+      val xMax = maxVal(0)
+      minMaxLoc(yChannel, minVal, maxVal, null, null, null)
+      val yMin = minVal(0)
+      val yMax = maxVal(0)
+
+      val retinalPos = RetinalPos((xMax + xMin) / 2, (yMax + yMin) / 2)
+      val pos = xform.retinaToWorld(retinalPos)
+      val msg = BodyDetectedMsg(pos, frameTime)
+      Some(msg)
+    }
+  }
+
+  override def close()
+  {
+    channels.foreach(_.release)
+    channels = Array.empty
+    totalDiffsOpt.foreach(_.release)
+    totalDiffsOpt = None
+  }
+
+  private def compareColors(hsv : IplImage, color : LightColor)
+  {
+    val imgSize = cvGetSize(hsv)
+    if (channels.isEmpty) {
+      channels = OpenCvUtil.BGR_CHANNELS.map(
+        c => AbstractIplImage.create(imgSize, 8, 1))
+    }
+    if (totalDiffsOpt.isEmpty) {
+      totalDiffsOpt = Some(AbstractIplImage.create(imgSize, 8, 1))
+    }
+
+    if (hueOpt.isEmpty) {
+      val onePixel = AbstractIplImage.create(1, 1, 8, 3)
+      cvSet2D(onePixel, 0, 0, color)
+      cvCvtColor(onePixel, onePixel, CV_BGR2HSV)
+      val hsvTarget = cvGet2D(onePixel, 0, 0)
+      onePixel.release
+      hueOpt = Some(cvScalar(hsvTarget.getVal(0)))
+    }
+    val hue = hueOpt.get
+
+    cvSplit(hsv, channels(0), channels(1), channels(2), null)
+    cvThreshold(channels(1), channels(1), 60, 1, THRESH_BINARY)
+    cvThreshold(channels(2), channels(2), 180, 1, THRESH_BINARY)
+    cvMul(channels(0), channels(1), channels(0))
+    cvMul(channels(0), channels(2), channels(0))
+    cvAbsDiffS(channels(0), totalDiffs, hue)
+  }
+
+  private def computeMinDiff() =
+  {
+    val minVal = new Array[Double](1)
+    cvMinMaxLoc(totalDiffs, minVal, null, null, null, null)
+    minVal(0).toInt
+  }
+
+  private def chooseColor(img : IplImage) : LightColor =
+  {
+    // TODO:  choose contrasting color
+    NamedColor.MAGENTA
+  }
+}
