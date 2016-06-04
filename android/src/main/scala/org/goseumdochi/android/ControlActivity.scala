@@ -85,6 +85,8 @@ class ControlActivity extends Activity
 
   private var detectBumps = false
 
+  private var expectDisconnect = false
+
   class ControlListener extends Actor
   {
     def receive =
@@ -154,6 +156,7 @@ class ControlActivity extends Activity
   override protected def onStart()
   {
     super.onStart
+    expectDisconnect = false
     startDiscovery
   }
 
@@ -168,6 +171,8 @@ class ControlActivity extends Activity
 
   override protected def onStop()
   {
+    expectDisconnect = true
+
     if (DualStackDiscoveryAgent.getInstance.isDiscovering) {
       DualStackDiscoveryAgent.getInstance.stopDiscovery
     }
@@ -215,7 +220,9 @@ class ControlActivity extends Activity
     } else {
       if (!robot.isEmpty) {
         connectionStatus = "DISCONNECTED"
-        speak(R.string.speech_bluetooth_lost)
+        if (!expectDisconnect) {
+          speak(R.string.speech_bluetooth_lost)
+        }
       }
       robot = None
     }
@@ -291,6 +298,7 @@ class ControlActivity extends Activity
       case _ =>
     }
     if (bumpDetected) {
+      expectDisconnect = true
       disableSensors
       speak(R.string.speech_bump_detected)
       val intent = new Intent(this, classOf[BumpActivity])
