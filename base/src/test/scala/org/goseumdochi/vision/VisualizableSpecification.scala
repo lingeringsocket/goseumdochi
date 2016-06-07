@@ -138,15 +138,15 @@ abstract class VisualizableSpecification(confFile : String = "test.conf")
     protected val settings = ActorSettings(system)
   }
 
-  private var postVisualizedImages : Iterable[IplImage] = None
+  private var postVisualizationAnalyzers : Iterable[VisionAnalyzer] = None
 
-  protected def postVisualize(images : Iterable[IplImage])
+  protected def postVisualize(analyzer : VisionAnalyzer*)
   {
-    postVisualizedImages = images
+    postVisualizationAnalyzers = analyzer.toIterable
   }
 
   def after = {
-    visualize(postVisualizedImages)
+    visualize(postVisualizationAnalyzers.flatMap(_.getDebugImages))
   }
 }
 

@@ -40,6 +40,8 @@ class MotionDetectorSpec extends VisualizableSpecification
     motionDetector : MotionDetector,
     filename0 : String, filename1 : String, filename2 : String) =
   {
+    postVisualize(motionDetector)
+
     val prevImg = loadImage(filename0)
     val beforeImg = loadImage(filename1)
     val afterImg = loadImage(filename2)
@@ -49,7 +51,6 @@ class MotionDetectorSpec extends VisualizableSpecification
     val coarseOpt = motionDetector.detectMotionMsg(
       beforeImg, afterImg, TimePoint.ZERO)
     val msg = coarseOpt.get
-    postVisualize(motionDetector.getDebugImages)
     msg.pos
   }
 
@@ -105,18 +106,18 @@ class MotionDetectorSpec extends VisualizableSpecification
 
     "detect fine motion" in
     {
+      postVisualize(coarseSizeDetector, fineDetector)
+
       val beforeImg = loadImage("data/room1.jpg")
       val afterImg = loadImage("data/room2.jpg")
 
       val coarseOpt = coarseSizeDetector.detectMotion(beforeImg, afterImg)
-      postVisualize(coarseSizeDetector.getDebugImages)
       coarseOpt must beEmpty
 
       val fineOpt = fineDetector.detectMotion(beforeImg, afterImg)
       fineOpt must not beEmpty
 
       val pos = fineOpt.get
-      postVisualize(fineDetector.getDebugImages)
 
       pos.x must be closeTo(394.0 +/- 0.1)
       pos.y must be closeTo(-433.0 +/- 0.1)

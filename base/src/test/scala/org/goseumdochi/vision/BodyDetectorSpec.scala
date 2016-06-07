@@ -44,13 +44,13 @@ class BodyDetectorSpec extends VisualizableSpecification
 
     "detect round body with useless hint" in
     {
+      postVisualize(roundBodyDetector)
+
       val hintPos = PlanarPos(0, 0)
       val img = cvLoadImage("data/table1.jpg")
       val gray = OpenCvUtil.grayscale(img)
       val posOpt = roundBodyDetector.detectBody(img, gray, hintPos)
       posOpt must not beEmpty
-
-      postVisualize(roundBodyDetector.getDebugImages)
 
       val pos = posOpt.get
       pos.x must be closeTo(563.0 +/- 0.1)
@@ -59,13 +59,13 @@ class BodyDetectorSpec extends VisualizableSpecification
 
     "detect round body with good hint" in
     {
+      postVisualize(roundBodyDetector)
+
       val img = cvLoadImage("data/baseline1.jpg")
       val gray = OpenCvUtil.grayscale(img)
       val hintPos = PlanarPos(500, -500)
       val posOpt = roundBodyDetector.detectBody(img, gray, hintPos)
       posOpt must not beEmpty
-
-      postVisualize(roundBodyDetector.getDebugImages)
 
       val pos = posOpt.get
       pos.x must be closeTo(567.0 +/- 0.1)
@@ -74,6 +74,8 @@ class BodyDetectorSpec extends VisualizableSpecification
 
     "detect flashy body" in
     {
+      postVisualize(flashyBodyDetector.motionDetector, flashyBodyDetector)
+
       val img1 = cvLoadImage("data/blinkoff.jpg")
       val img2 = cvLoadImage("data/blinkorange.jpg")
       val imageDeck = new ImageDeck
@@ -85,10 +87,6 @@ class BodyDetectorSpec extends VisualizableSpecification
       msgs.head must beAnInstanceOf[VisionActor.RequireLightMsg]
       msgs.last must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
 
-      postVisualize(
-        flashyBodyDetector.motionDetector.getDebugImages ++
-          flashyBodyDetector.getDebugImages)
-
       val pos = msgs.last.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
       pos.x must be closeTo(268.0 +/- 0.1)
       pos.y must be closeTo(-372.0 +/- 0.1)
@@ -96,18 +94,21 @@ class BodyDetectorSpec extends VisualizableSpecification
 
     "find circles for round body background elimination" in
     {
+      postVisualize(roundBodyDetector)
+
       val img1 = cvLoadImage("data/circles1.jpg")
       val gray1 = OpenCvUtil.grayscale(img1)
       val circles = roundBodyDetector.findCircles(gray1)
 
       roundBodyDetector.visualizeCircles(img1, circles)
-      postVisualize(roundBodyDetector.getDebugImages)
 
       circles.size must be equalTo 30
     }
 
     "detect round body after background elimination" in
     {
+      postVisualize(roundBodyDetector)
+
       val img1 = cvLoadImage("data/circles1.jpg")
       val gray1 = OpenCvUtil.grayscale(img1)
       val img2 = cvLoadImage("data/circles2.jpg")
@@ -134,14 +135,14 @@ class BodyDetectorSpec extends VisualizableSpecification
       // via hint position
       circles.size must be equalTo 6
 
-      postVisualize(roundBodyDetector.getDebugImages)
-
       pos.x must be closeTo(363.0 +/- 0.1)
       pos.y must be closeTo(-539.0 +/- 0.1)
     }
 
     "detect magenta body" in
     {
+      postVisualize(colorfulBodyDetector)
+
       val img1 = cvLoadImage("data/magenta_off.jpg")
       val img2 = cvLoadImage("data/magenta_on.jpg")
 
@@ -178,8 +179,6 @@ class BodyDetectorSpec extends VisualizableSpecification
       msgs4.head must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
       val pos = msgs4.head.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
 
-      postVisualize(colorfulBodyDetector.getDebugImages)
-
       pos.x must be closeTo(486.0 +/- 0.1)
       pos.y must be closeTo(-487.0 +/- 0.1)
 
@@ -188,11 +187,14 @@ class BodyDetectorSpec extends VisualizableSpecification
       imageDeck.cycle(img1)
       val msgs5 = colorfulBodyDetector.analyzeFrame(
         imageDeck, TimePoint.TEN, None)
+
       msgs5 must beEmpty
     }
 
     "ignore sparkles while detecting magenta body" in
     {
+      postVisualize(colorfulBodyDetector)
+
       val img1 = cvLoadImage("data/gnex_magenta_off.jpg")
       val img2 = cvLoadImage("data/gnex_magenta_on.jpg")
 
@@ -216,10 +218,8 @@ class BodyDetectorSpec extends VisualizableSpecification
       msgs2.head must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
       val pos = msgs2.head.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
 
-      postVisualize(colorfulBodyDetector.getDebugImages)
-
-      pos.x must be closeTo(452.0 +/- 0.1)
-      pos.y must be closeTo(-465.0 +/- 0.1)
+      pos.x must be closeTo(570.0 +/- 0.1)
+      pos.y must be closeTo(-525.0 +/- 0.1)
     }
   }
 }

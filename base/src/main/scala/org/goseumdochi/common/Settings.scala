@@ -46,6 +46,7 @@ class Settings(rootConf : Config)
     val remoteInputUrl = subConf.getString("remote-input-url")
     val throttlePeriod = getMillis(subConf, "throttle-period")
     val sensorDelay = getMillis(subConf, "sensor-delay")
+    val debugDir = subConf.getString("debug-dir")
   }
 
   object Control
