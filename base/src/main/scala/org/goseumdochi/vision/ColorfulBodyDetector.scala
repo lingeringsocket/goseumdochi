@@ -33,7 +33,7 @@ class ColorfulBodyDetector(
   val settings : Settings, val xform : RetinalTransform)
     extends BodyDetector with BlobAnalyzer
 {
-  private val minRadius = settings.BodyRecognition.minRadius
+  private val minDiameter = settings.BodyRecognition.minRadius*2
 
   private val debugDir = settings.Vision.debugDir
 
@@ -76,7 +76,7 @@ class ColorfulBodyDetector(
                 new File(debugDir, "color_after.jpg").getAbsolutePath
               cvSaveImage(outFileName, currentBgr)
             }
-            cvSmooth(totalDiffs, totalDiffs, CV_MEDIAN, 5, 5, 0, 0)
+            removeNoise
             val newMin = computeMinDiff
             if (newMin + 3 > baselineMin) {
               return None
@@ -114,18 +114,24 @@ class ColorfulBodyDetector(
         chosenColor = Some(color)
         waitUntil = frameTime + settings.Vision.sensorDelay
         compareColors(currentHsv, color)
-        cvSmooth(totalDiffs, totalDiffs, CV_MEDIAN, 5, 5, 0, 0)
+        removeNoise
         baselineMin = computeMinDiff
         Some(VisionActor.RequireLightMsg(color, frameTime))
       }
     }
   }
 
+  private def removeNoise()
+  {
+    cvSmooth(totalDiffs, totalDiffs, CV_MEDIAN, 5, 5, 0, 0)
+    cvDilate(totalDiffs, totalDiffs, null, 3)
+  }
+
   private def locateBody(frameTime : TimePoint) =
   {
     newDebugger(totalDiffs)
 
-    val blobFilter = new IgnoreSmall(minRadius)
+    val blobFilter = new IgnoreSmall(minDiameter)
     val blobSorter = new BlobProximityMerger(5)
     val rects = analyzeBlobs(
       totalDiffs, blobFilter, blobSorter)

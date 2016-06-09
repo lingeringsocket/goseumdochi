@@ -19,6 +19,8 @@ import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_imgcodecs._
 
+import org.specs2.specification.core._
+
 class BodyDetectorSpec extends VisualizableSpecification
 {
   // body detectors are mutable, so we need isolation
@@ -68,7 +70,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       posOpt must not beEmpty
 
       val pos = posOpt.get
-      pos.x must be closeTo(567.0 +/- 0.1)
+      pos.x must be closeTo(573.0 +/- 0.1)
       pos.y must be closeTo(-471.0 +/- 0.1)
     }
 
@@ -102,7 +104,7 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       roundBodyDetector.visualizeCircles(img1, circles)
 
-      circles.size must be equalTo 30
+      circles.size must be equalTo 28
     }
 
     "detect round body after background elimination" in
@@ -191,35 +193,43 @@ class BodyDetectorSpec extends VisualizableSpecification
       msgs5 must beEmpty
     }
 
-    "ignore sparkles while detecting magenta body" in
-    {
-      postVisualize(colorfulBodyDetector)
+    "ignore sparkles while detecting magenta body" >> {
+      Fragment.foreach(
+        Seq(
+          ("gnex1", PlanarPos(574.0, -524.0)),
+          ("gnex2", PlanarPos(144.0, -663.0))))
+      { case (prefix, expectedPos) =>
 
-      val img1 = cvLoadImage("data/gnex_magenta_off.jpg")
-      val img2 = cvLoadImage("data/gnex_magenta_on.jpg")
+        "using file prefix " + prefix ! {
+          postVisualize(colorfulBodyDetector)
 
-      val imageDeck = new ImageDeck
+          val img1 = cvLoadImage("data/" + prefix + "_magenta_off.jpg")
+          val img2 = cvLoadImage("data/" + prefix + "_magenta_on.jpg")
 
-      // baseline:  let there be light
-      imageDeck.cycle(img1)
-      imageDeck.cycle(img1)
-      val msgs1 = colorfulBodyDetector.analyzeFrame(
-        imageDeck, TimePoint.ZERO, None)
-      msgs1.size must be equalTo 1
-      msgs1.head must be equalTo VisionActor.RequireLightMsg(
-        NamedColor.MAGENTA, TimePoint.ZERO)
+          val imageDeck = new ImageDeck
 
-      // should see the light now
-      imageDeck.cycle(img2)
-      val msgs2 = colorfulBodyDetector.analyzeFrame(
-        imageDeck, TimePoint.ONE, None)
+          // baseline:  let there be light
+          imageDeck.cycle(img1)
+          imageDeck.cycle(img1)
+          val msgs1 = colorfulBodyDetector.analyzeFrame(
+            imageDeck, TimePoint.ZERO, None)
+          msgs1.size must be equalTo 1
+          msgs1.head must be equalTo VisionActor.RequireLightMsg(
+            NamedColor.MAGENTA, TimePoint.ZERO)
 
-      msgs2.size must be equalTo 1
-      msgs2.head must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
-      val pos = msgs2.head.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
+          // should see the light now
+          imageDeck.cycle(img2)
+          val msgs2 = colorfulBodyDetector.analyzeFrame(
+            imageDeck, TimePoint.ONE, None)
 
-      pos.x must be closeTo(570.0 +/- 0.1)
-      pos.y must be closeTo(-525.0 +/- 0.1)
+          msgs2.size must be equalTo 1
+          msgs2.head must beAnInstanceOf[BodyDetector.BodyDetectedMsg]
+          val pos = msgs2.head.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
+
+          pos.x must be closeTo(expectedPos.x +/- 0.1)
+          pos.y must be closeTo(expectedPos.y +/- 0.1)
+        }
+      }
     }
   }
 }
