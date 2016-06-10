@@ -197,7 +197,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       Fragment.foreach(
         Seq(
           ("gnex1", PlanarPos(574.0, -524.0)),
-          ("gnex2", PlanarPos(144.0, -663.0))))
+          ("gnex2", PlanarPos(133.0, -654.0))))
       { case (prefix, expectedPos) =>
 
         "using file prefix " + prefix ! {

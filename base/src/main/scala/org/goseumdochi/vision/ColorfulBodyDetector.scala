@@ -37,6 +37,10 @@ class ColorfulBodyDetector(
 
   private val debugDir = settings.Vision.debugDir
 
+  // really just a hack for my old Galaxy Nexus, whose camera
+  // sometimes creates a flickering ribbon of noise on one edge
+  private val borderWidth = conf.getInt("border-width")
+
   private var debugging = !debugDir.isEmpty
 
   private var channels : Array[IplImage] = Array.empty
@@ -190,6 +194,15 @@ class ColorfulBodyDetector(
     cvMul(channels(0), channels(1), channels(0))
     cvMul(channels(0), channels(2), channels(0))
     cvAbsDiffS(channels(0), totalDiffs, hue)
+    if (borderWidth > 0) {
+      val halfWidth = borderWidth / 2
+      val topLeft = cvPoint(halfWidth, halfWidth)
+      val bottomRight = cvPoint(
+        totalDiffs.width - halfWidth, totalDiffs.height - halfWidth)
+      cvRectangle(
+        totalDiffs, topLeft, bottomRight, NamedColor.WHITE,
+        borderWidth + 2, 4, 0)
+    }
   }
 
   private def computeMinDiff() =
