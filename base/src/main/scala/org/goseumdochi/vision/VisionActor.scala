@@ -49,7 +49,13 @@ object VisionActor
   // received messages
   final case class ActivateAnalyzersMsg(
     analyzerClassNames : Seq[String],
-    xform : RetinalTransform)
+    xform : RetinalTransform,
+    eventTime : TimePoint)
+      extends EventMsg
+  final case class ActivateAugmentersMsg(
+    augmenterClassNames : Seq[String],
+    eventTime : TimePoint)
+      extends EventMsg
   final case class HintBodyLocationMsg(pos : PlanarPos, eventTime : TimePoint)
       extends EventMsg
 
@@ -69,6 +75,8 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
   private val throttlePeriod = settings.Vision.throttlePeriod
 
   private var analyzers : Seq[VisionAnalyzer] = Seq.empty
+
+  private var augmenters : Seq[VisionAugmenter] = Seq.empty
 
   private val imageDeck = new ImageDeck
 
@@ -93,12 +101,18 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
         }
       }
     }
-    case ActivateAnalyzersMsg(analyzerClassNames, xform) => {
+    case ActivateAnalyzersMsg(analyzerClassNames, xform, eventTime) => {
       closeAnalyzers
       retinalTransform = xform
       analyzers = analyzerClassNames.map(
         settings.instantiateObject(_, xform).
           asInstanceOf[VisionAnalyzer])
+    }
+    case ActivateAugmentersMsg(augmenterClassNames, eventTime) => {
+      closeAugmenters
+      augmenters = augmenterClassNames.map(
+        settings.instantiateObject(_).
+          asInstanceOf[VisionAugmenter])
     }
     case HintBodyLocationMsg(pos, eventTime) => {
       hintBodyPos = Some(pos)
@@ -161,6 +175,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
           case _ => {}
         }
       }
+      augmenters.foreach(_.augmentFrame(overlay, frameTime, hintBodyPos))
       val result = theater.imageToFrame(img)
       theater.display(result)
       img.release
@@ -185,12 +200,19 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       theater.quit
     }
     closeAnalyzers
+    closeAugmenters
   }
 
   private def closeAnalyzers()
   {
     analyzers.foreach(_.close)
     analyzers = Seq.empty
+  }
+
+  private def closeAugmenters()
+  {
+    augmenters.foreach(_.close)
+    augmenters = Seq.empty
   }
 
   def onTheaterClick(retinalPos : RetinalPos)

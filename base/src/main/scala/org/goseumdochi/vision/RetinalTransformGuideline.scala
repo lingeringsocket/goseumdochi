@@ -17,21 +17,34 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
-class CrosshairsGuideline(val settings : Settings)
+class RetinalTransformGuideline(val settings : Settings)
     extends VisionAugmenter
 {
+  val expiration = settings.Vision.transformGuidelineExpiration
+
+  var endTimeOpt : Option[TimePoint] = None
+
   override def augmentFrame(
     overlay : RetinalOverlay, frameTime : TimePoint,
     hintBodyPos : Option[PlanarPos])
   {
-    val xCenter = overlay.corner.x / 2
-    val yCenter = overlay.corner.y / 2
-    val top = RetinalPos(xCenter, 0)
-    val bottom = RetinalPos(xCenter, overlay.corner.y)
-    val left = RetinalPos(0, yCenter)
-    val right = RetinalPos(overlay.corner.x, yCenter)
-    overlay.drawLineSegment(top, bottom, NamedColor.YELLOW, 1)
-    overlay.drawLineSegment(left, right, NamedColor.YELLOW, 1)
+    endTimeOpt match {
+      case Some(endTime) => {
+        if (frameTime > endTime) {
+          return
+        }
+      }
+      case _ => {
+        if (expiration.length > 0) {
+          endTimeOpt = Some(frameTime + expiration)
+        }
+      }
+    }
+    overlay.xform match {
+      case rpt : RestrictedPerspectiveTransform => {
+        rpt.visualize(overlay)
+      }
+      case _ =>
+    }
   }
 }
-

@@ -17,21 +17,11 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
-class CrosshairsGuideline(val settings : Settings)
-    extends VisionAugmenter
+trait VisionAugmenter extends AutoCloseable
 {
-  override def augmentFrame(
+  def augmentFrame(
     overlay : RetinalOverlay, frameTime : TimePoint,
     hintBodyPos : Option[PlanarPos])
-  {
-    val xCenter = overlay.corner.x / 2
-    val yCenter = overlay.corner.y / 2
-    val top = RetinalPos(xCenter, 0)
-    val bottom = RetinalPos(xCenter, overlay.corner.y)
-    val left = RetinalPos(0, yCenter)
-    val right = RetinalPos(overlay.corner.x, yCenter)
-    overlay.drawLineSegment(top, bottom, NamedColor.YELLOW, 1)
-    overlay.drawLineSegment(left, right, NamedColor.YELLOW, 1)
-  }
-}
 
+  override def close() {}
+}

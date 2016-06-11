@@ -47,6 +47,8 @@ class Settings(rootConf : Config)
     val throttlePeriod = getMillis(subConf, "throttle-period")
     val sensorDelay = getMillis(subConf, "sensor-delay")
     val debugDir = subConf.getString("debug-dir")
+    val transformGuidelineExpiration =
+      getMillis(subConf, "transform-guideline-expiration")
   }
 
   object Control
