@@ -278,7 +278,7 @@ class ControlActivity extends Activity
 
   def getVoiceMessage = lastVoiceMessage
 
-  def getVisionActor = theater.getVisionActor
+  def getTheaterListener = theater.getListener
 
   override def onSensorChanged(event : SensorEvent)
   {

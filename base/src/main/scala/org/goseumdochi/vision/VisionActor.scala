@@ -68,7 +68,7 @@ object VisionActor
 import VisionActor._
 
 class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
-    extends Actor with Listeners
+    extends Actor with Listeners with RetinalTheaterListener
 {
   private val settings = ActorSettings(context)
 
@@ -177,7 +177,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       }
       augmenters.foreach(_.augmentFrame(overlay, frameTime, hintBodyPos))
       val result = theater.imageToFrame(img)
-      theater.display(result)
+      theater.display(result, frameTime)
       img.release
       converted.release
     } catch {
@@ -189,7 +189,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
 
   override def preStart()
   {
-    theater.setActor(this)
+    theater.setListener(this)
   }
 
   override def postStop()
@@ -215,7 +215,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     augmenters = Seq.empty
   }
 
-  def onTheaterClick(retinalPos : RetinalPos)
+  override def onTheaterClick(retinalPos : RetinalPos)
   {
     gossip(
       MotionDetector.MotionDetectedMsg(
@@ -225,7 +225,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
         TimePoint.now))
   }
 
-  def onTheaterClose()
+  override def onTheaterClose()
   {
     if (!shutDown) {
       shutDown = true

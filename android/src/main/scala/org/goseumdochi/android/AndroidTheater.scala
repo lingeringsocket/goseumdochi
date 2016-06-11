@@ -24,6 +24,7 @@ import org.bytedeco.javacv._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
 
+import org.goseumdochi.common._
 import org.goseumdochi.vision._
 
 class AndroidTheater(
@@ -36,7 +37,7 @@ class AndroidTheater(
     super.imageToFrame(img)
   }
 
-  override def display(frame : Frame)
+  override def display(frame : Frame, frameTime : TimePoint)
   {
     val converter = new AndroidFrameConverter
     val bitmap = converter.convert(frame)
@@ -44,5 +45,5 @@ class AndroidTheater(
     view.postInvalidate
   }
 
-  def getVisionActor = visionActor
+  def getListener = listener
 }
