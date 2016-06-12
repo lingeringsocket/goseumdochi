@@ -45,14 +45,14 @@ class CanvasTheater extends RetinalTheater
     cf.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
     cf.getCanvas.addMouseListener(new MouseAdapter {
       override def mouseClicked(e : MouseEvent) {
-        listener.foreach(_.onTheaterClick(RetinalPos(e.getX, e.getY)))
+        getListener.foreach(_.onTheaterClick(RetinalPos(e.getX, e.getY)))
       }
     })
     cf.addWindowListener(new WindowAdapter {
       override def windowClosing(e : WindowEvent)
       {
         super.windowClosing(e)
-        listener.foreach(_.onTheaterClose)
+        getListener.foreach(_.onTheaterClose)
       }
 
       override def windowClosed(e : WindowEvent)

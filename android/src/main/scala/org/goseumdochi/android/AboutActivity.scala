@@ -15,14 +15,13 @@
 
 package org.goseumdochi.android
 
-import android.app._
 import android.content._
 import android.net._
 import android.os._
 import android.view._
 
-class AboutActivity extends Activity
-    with View.OnClickListener with TypedFindView
+class AboutActivity extends ActivityBase
+    with View.OnClickListener
 {
   override protected def onCreate(savedInstanceState : Bundle)
   {

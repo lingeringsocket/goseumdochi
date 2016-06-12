@@ -33,12 +33,22 @@ class VideoFileTheater(file : File) extends RetinalTheater
 
   private var skipped = 0
 
+  private var stopped = false
+
   private def initRecorder(firstFrame : Frame) =
   {
     val r = new FFmpegFrameRecorder(
       file, firstFrame.imageWidth, firstFrame.imageHeight)
     val skipTime = firstFrameTime - firstSkipTime
-    val frameRate = (1000.0 * SKIP_START) / skipTime.toMillis.toDouble
+    val estimatedFrameRate =
+      ((1000.0 * SKIP_START) / skipTime.toMillis.toDouble)
+    val frameRate = {
+      if (estimatedFrameRate < 2.0) {
+        2
+      } else {
+        estimatedFrameRate.toInt
+      }
+    }
     r.setFormat(file.getName.split("\\.").last)
     r.setFrameRate(frameRate)
     r.start
@@ -47,31 +57,41 @@ class VideoFileTheater(file : File) extends RetinalTheater
 
   override def display(frame : Frame, frameTime : TimePoint)
   {
-    if (skipped == 0) {
-      firstSkipTime = frameTime
+    this.synchronized {
+      if (stopped) {
+        return
+      }
+      if (skipped == 0) {
+        firstSkipTime = frameTime
+      }
+      if (skipped < SKIP_START) {
+        skipped += 1
+        return
+      }
+      if (recorder.isEmpty) {
+        firstFrameTime = frameTime
+        recorder = Some(initRecorder(frame))
+      }
+      val ts = (frameTime - firstFrameTime).toMillis
+      recorder.foreach(r => {
+        // we don't bother with r.setTimestamp because last time I checked,
+        // the implementation is bogus
+        r.record(frame)
+      })
     }
-    if (skipped < SKIP_START) {
-      skipped += 1
-      return
-    }
-    if (recorder.isEmpty) {
-      firstFrameTime = frameTime
-      recorder = Some(initRecorder(frame))
-    }
-    val ts = (frameTime - firstFrameTime).toMillis
-    recorder.foreach(r => {
-      // we don't bother with r.setTimestamp because last time I checked,
-      // the implementation is bogus
-      r.record(frame)
-    })
   }
 
   override def quit()
   {
-    recorder.foreach(r => {
-      r.stop
-      r.release
-    })
+    this.synchronized {
+      stopped = true
+      recorder.foreach(r => {
+        r.stop
+        r.release
+      })
+      recorder = None
+    }
   }
 
+  def getFile = file
 }

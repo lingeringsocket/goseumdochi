@@ -36,6 +36,8 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="pref_title_intruder_alert">Intruder Alert Message</string>
   <string name="pref_summary_intruder_alert">The phrase to speak when an intruder is detected</string>
   <string name="pref_default_intruder_alert">Intruder detected at %1$d o\'clock!</string>
+  <string name="pref_title_record_video">Video Recording</string>
+  <string name="pref_summary_record_video">Store each surveillance session as a video file</string>
   <string name="pref_title_detect_bumps">Stop On Camera Motion</string>
   <string name="pref_summary_detect_bumps">Automatically stop surveillance when camera motion is detected</string>
   <string name="pref_title_white_balance">Camera White Balance</string>
@@ -54,6 +56,12 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="speech_CENTERING">Centering.</string>
   <string name="speech_MEASURING">Measuring perspective transformation.</string>
 
+  <string name="toast_bluetooth_required">Watchdog cannot run without Bluetooth enabled.</string>
+  <string name="toast_permissions_required">Watchdog cannot run until all requested permissions have been granted.</string>
+  <string name="toast_saving_video">Saving video file...please wait for completion notice</string>
+  <string name="toast_video_saved">Video file saved successfully</string>
+  <string name="toast_video_save_failed">Failed to save video file</string>
+  
   <string-array name="white_balance_options">
     <item>Auto</item>
     <item>Incandescent</item>

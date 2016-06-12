@@ -15,7 +15,7 @@
 
 package org.goseumdochi.android
 
-import android.app._
+import android._
 import android.content._
 import android.graphics._
 import android.hardware._
@@ -48,8 +48,8 @@ object ControlActivity
 
 import ControlActivity._
 
-class ControlActivity extends Activity
-    with RobotChangedStateListener with SensorEventListener with TypedFindView
+class ControlActivity extends ActivityBase
+    with RobotChangedStateListener with SensorEventListener
 {
   private var robot : Option[ConvenienceRobot] = None
 
@@ -63,7 +63,7 @@ class ControlActivity extends Activity
 
   private lazy val preview = new CameraPreview(this, controlView)
 
-  private lazy val theater = new AndroidTheater(controlView, outputQueue)
+  private lazy val theater = createTheater
 
   private val actuator = new AndroidSpheroActuator(this)
 
@@ -87,6 +87,8 @@ class ControlActivity extends Activity
 
   private var expectDisconnect = false
 
+  private var videoFileTheater : Option[VideoFileTheater] = None
+
   class ControlListener extends Actor
   {
     def receive =
@@ -99,7 +101,7 @@ class ControlActivity extends Activity
             ControlActivity.this)
           val defaultValue = getString(R.string.pref_default_intruder_alert)
           actualMessage = prefs.getString(
-            SettingsActivity.KEY_PREF_INTRUDER_ALERT, defaultValue)
+            SettingsActivity.PREF_INTRUDER_ALERT, defaultValue)
         } else {
           val resourceName = SPEECH_RESOURCE_PREFIX + msg.messageKey
           val resourceId = getResources.getIdentifier(
@@ -126,7 +128,7 @@ class ControlActivity extends Activity
 
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     detectBumps = prefs.getBoolean(
-      SettingsActivity.KEY_PREF_DETECT_BUMPS, true)
+      SettingsActivity.PREF_DETECT_BUMPS, true)
 
     if (detectBumps) {
       val sysSensorMgr =
@@ -148,6 +150,7 @@ class ControlActivity extends Activity
   {
     setContentView(R.layout.control)
     val layout = findView(TR.control_preview)
+    // this will cause instantiation of (lazy) preview and controlView
     layout.addView(preview)
     layout.addView(controlView)
     controlView.setOnTouchListener(controlView)
@@ -185,8 +188,9 @@ class ControlActivity extends Activity
 
   override protected def onDestroy()
   {
-    super.onDestroy
+    pencilsDown
     DualStackDiscoveryAgent.getInstance.addRobotStateListener(null)
+    super.onDestroy
   }
 
   override def handleRobotChangedState(
@@ -253,15 +257,19 @@ class ControlActivity extends Activity
   override protected def onPause()
   {
     super.onPause
-    disableSensors
+    pencilsDown
     preview.closeCamera
   }
 
-  private def disableSensors()
+  private def pencilsDown()
   {
     sensorMgr.foreach(_.unregisterListener(this))
     gyroscope = None
     gyroscopeBaseline.clear
+    videoFileTheater.foreach(GlobalVideo.closeTheater(_))
+    videoFileTheater = None
+    actorSystem.foreach(_.shutdown)
+    actorSystem = None
   }
 
   def isRobotConnected = !robot.isEmpty
@@ -299,7 +307,7 @@ class ControlActivity extends Activity
     }
     if (bumpDetected) {
       expectDisconnect = true
-      disableSensors
+      pencilsDown
       speak(R.string.speech_bump_detected)
       val intent = new Intent(this, classOf[BumpActivity])
       intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -327,5 +335,22 @@ class ControlActivity extends Activity
 
   override def onAccuracyChanged(sensor : Sensor, accuracy : Int)
   {
+  }
+
+  private def createTheater() : RetinalTheater =
+  {
+    val androidTheater = new AndroidTheater(controlView, outputQueue)
+    val prefs = PreferenceManager.getDefaultSharedPreferences(
+      ControlActivity.this)
+    val recordVideo = prefs.getBoolean(
+      SettingsActivity.PREF_RECORD_VIDEO, false)
+    if (recordVideo) {
+      if (hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        val fileTheater = GlobalVideo.createVideoFileTheater
+        videoFileTheater = Some(fileTheater)
+        return new TeeTheater(Seq(androidTheater, fileTheater))
+      }
+    }
+    androidTheater
   }
 }

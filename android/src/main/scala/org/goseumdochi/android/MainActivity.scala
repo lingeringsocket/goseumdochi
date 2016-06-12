@@ -24,14 +24,11 @@ import android.os._
 import android.preference._
 import android.text.method._
 import android.view._
-import android.widget._
 
 import java.util._
 
 class MainActivity extends MainMenuActivityBase
 {
-  private final val PERMISSION_REQUEST = 42
-
   private final val ENABLE_BT_REQUEST = 43
 
   private var bluetoothEnabled = false
@@ -49,10 +46,11 @@ class MainActivity extends MainMenuActivityBase
     setContentView(R.layout.main)
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     val enableVoice = prefs.getBoolean(
-      SettingsActivity.KEY_PREF_ENABLE_VOICE, true)
+      SettingsActivity.PREF_ENABLE_VOICE, true)
     if (enableVoice) {
       GlobalTts.init(getApplicationContext)
     }
+    GlobalVideo.init(getApplicationContext, this)
     findView(TR.cctv_text).setMovementMethod(LinkMovementMethod.getInstance)
     requestPrerequisites
   }
@@ -60,6 +58,8 @@ class MainActivity extends MainMenuActivityBase
   override protected def onDestroy()
   {
     GlobalTts.shutdown
+    GlobalVideo.shutdown
+    super.onDestroy
   }
 
   private def requestPrerequisites()
@@ -102,7 +102,7 @@ class MainActivity extends MainMenuActivityBase
         bluetoothEnabled = true
         tryStartControl
       } else {
-        toastLong("Watchdog cannot run without Bluetooth enabled. ")
+        toastLong(R.string.toast_bluetooth_required)
       }
     }
   }
@@ -136,21 +136,13 @@ class MainActivity extends MainMenuActivityBase
   private def hasLocationPermission =
     hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
 
-  private def hasPermission(permission : String) =
-  {
-    (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) ||
-      (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
-  }
-
   override def onRequestPermissionsResult(
     requestCode : Int, permissions : Array[String], grantResults : Array[Int])
   {
     if (requestCode == PERMISSION_REQUEST) {
       for (i <- 0 until permissions.length) {
         if (grantResults(i) != PackageManager.PERMISSION_GRANTED) {
-          toastLong(
-            "Watchdog cannot run until all requested permissions " +
-              "have been granted.")
+          toastLong(R.string.toast_permissions_required)
           return
         }
         permissions(i) match {
@@ -166,10 +158,5 @@ class MainActivity extends MainMenuActivityBase
     } else {
       super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
-  }
-
-  private def toastLong(msg : String)
-  {
-    Toast.makeText(getApplicationContext, msg, Toast.LENGTH_LONG).show
   }
 }

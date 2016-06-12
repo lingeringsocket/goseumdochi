@@ -85,7 +85,7 @@ class CameraPreview(
       val prefs = PreferenceManager.getDefaultSharedPreferences(context)
       try {
         parameters.setWhiteBalance(
-          prefs.getString(SettingsActivity.KEY_PREF_WHITE_BALANCE,
+          prefs.getString(SettingsActivity.PREF_WHITE_BALANCE,
             context.getString(R.string.pref_default_white_balance)))
       } catch {
         // probably we should be checking the list of supported

@@ -31,12 +31,14 @@ trait RetinalTheaterListener
 
 trait RetinalTheater
 {
-  protected var listener : Option[RetinalTheaterListener] = None
+  private var listener : Option[RetinalTheaterListener] = None
 
   def setListener(newListener : RetinalTheaterListener)
   {
     listener = Some(newListener)
   }
+
+  def getListener = listener
 
   def imageToFrame(img : IplImage) = OpenCvUtil.convert(img)
 

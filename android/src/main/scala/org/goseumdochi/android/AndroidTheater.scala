@@ -44,6 +44,4 @@ class AndroidTheater(
     outputQueue.put(bitmap)
     view.postInvalidate
   }
-
-  def getListener = listener
 }

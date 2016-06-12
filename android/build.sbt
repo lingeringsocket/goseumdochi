@@ -38,6 +38,8 @@ libraryDependencies ++= Seq(
   "org.bytedeco"                 % "javacpp"          % "1.1",
   "org.bytedeco.javacpp-presets" % "opencv" % "3.0.0-1.1" classifier "",
   "org.bytedeco.javacpp-presets" % "opencv" % "3.0.0-1.1" classifier "android-arm",
+  "org.bytedeco.javacpp-presets" % "ffmpeg" % ("2.8.1-1.1") classifier "",
+  "org.bytedeco.javacpp-presets" % "ffmpeg" % ("2.8.1-1.1") classifier "android-arm",
   "org.slf4j" % "slf4j-android" % "1.7.21"
 )
 
