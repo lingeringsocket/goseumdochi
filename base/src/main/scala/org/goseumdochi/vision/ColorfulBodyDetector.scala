@@ -20,6 +20,9 @@ import org.goseumdochi.common._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
+import org.bytedeco.javacpp.opencv_imgcodecs._
+
+import java.io._
 
 import collection._
 
@@ -30,6 +33,16 @@ class ColorfulBodyDetector(
   val settings : Settings, val xform : RetinalTransform)
     extends BodyDetector with BlobAnalyzer
 {
+  private val minDiameter = settings.BodyRecognition.minRadius*2
+
+  private val debugDir = settings.Vision.debugDir
+
+  // really just a hack for my old Galaxy Nexus, whose camera
+  // sometimes creates a flickering ribbon of noise on one edge
+  private val borderWidth = conf.getInt("border-width")
+
+  private var debugging = !debugDir.isEmpty
+
   private var channels : Array[IplImage] = Array.empty
 
   private var totalDiffsOpt : Option[IplImage] = None
@@ -59,17 +72,32 @@ class ColorfulBodyDetector(
           None
         } else {
           compareColors(currentHsv, color)
+          var setDiffCutoff = false
           if (maxDiffCutoff < 0) {
+            if (debugging) {
+              debugging = false
+              val outFileName =
+                new File(debugDir, "color_after.jpg").getAbsolutePath
+              cvSaveImage(outFileName, currentBgr)
+            }
+            removeNoise
             val newMin = computeMinDiff
             if (newMin + 3 > baselineMin) {
               return None
             }
+            setDiffCutoff = true
             maxDiffCutoff = (0.95*baselineMin + 0.05*newMin).toInt
+            compareColors(currentHsv, color)
           }
           cvThreshold(
             totalDiffs, totalDiffs, maxDiffCutoff, 255,
             CV_THRESH_BINARY_INV)
           val msgOpt = locateBody(frameTime)
+          if (setDiffCutoff && msgOpt.isEmpty) {
+            // we got confused by the pretty lights...rollback and
+            // try again next frame
+            maxDiffCutoff = -1
+          }
           msgOpt.map { msg =>
             newDebugger(currentBgr) { overlay =>
               msg.renderOverlay(overlay)
@@ -79,23 +107,38 @@ class ColorfulBodyDetector(
         }
       }
       case _ => {
+        if (debugging) {
+          val dir = new File(debugDir)
+          dir.mkdirs
+          val outFileName =
+            new File(dir, "color_before.jpg").getAbsolutePath
+          cvSaveImage(outFileName, currentBgr)
+        }
         val color = chooseColor(currentBgr)
         chosenColor = Some(color)
         waitUntil = frameTime + settings.Vision.sensorDelay
         compareColors(currentHsv, color)
+        removeNoise
         baselineMin = computeMinDiff
         Some(VisionActor.RequireLightMsg(color, frameTime))
       }
     }
   }
 
+  private def removeNoise()
+  {
+    cvSmooth(totalDiffs, totalDiffs, CV_MEDIAN, 5, 5, 0, 0)
+    cvDilate(totalDiffs, totalDiffs, null, 3)
+  }
+
   private def locateBody(frameTime : TimePoint) =
   {
     newDebugger(totalDiffs)
 
+    val blobFilter = new IgnoreSmall(minDiameter)
     val blobSorter = new BlobProximityMerger(5)
     val rects = analyzeBlobs(
-      totalDiffs, KeepAll, blobSorter)
+      totalDiffs, blobFilter, blobSorter)
 
     if (rects.isEmpty) {
       None
@@ -151,6 +194,15 @@ class ColorfulBodyDetector(
     cvMul(channels(0), channels(1), channels(0))
     cvMul(channels(0), channels(2), channels(0))
     cvAbsDiffS(channels(0), totalDiffs, hue)
+    if (borderWidth > 0) {
+      val halfWidth = borderWidth / 2
+      val topLeft = cvPoint(halfWidth, halfWidth)
+      val bottomRight = cvPoint(
+        totalDiffs.width - halfWidth, totalDiffs.height - halfWidth)
+      cvRectangle(
+        totalDiffs, topLeft, bottomRight, NamedColor.WHITE,
+        borderWidth + 2, 4, 0)
+    }
   }
 
   private def computeMinDiff() =

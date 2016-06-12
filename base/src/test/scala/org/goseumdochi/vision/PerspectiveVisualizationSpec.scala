@@ -42,7 +42,9 @@ class PerspectiveVisualizationSpec extends VisualizableSpecification
 
       if (shouldVisualize) {
         val img = cvLoadImage("data/wallmount.jpg")
-        xform.visualize(img)
+        val corner = RetinalPos(img.width, img.height)
+        val overlay = new OpenCvRetinalOverlay(img, xform, corner)
+        xform.visualize(overlay)
         visualize(img)
       }
 

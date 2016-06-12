@@ -15,21 +15,56 @@
 
 package org.goseumdochi.vision
 
+import org.goseumdochi.common._
+
 import org.bytedeco.javacv._
 import org.bytedeco.javacpp.opencv_core._
 
+trait RetinalTheaterListener
+{
+  def onTheaterClick(retinalPos : RetinalPos)
+  {}
+
+  def onTheaterClose()
+  {}
+}
+
 trait RetinalTheater
 {
-  protected var visionActor : Option[VisionActor] = None
+  private var listener : Option[RetinalTheaterListener] = None
 
-  protected[vision] def setActor(actor : VisionActor)
+  def setListener(newListener : RetinalTheaterListener)
   {
-    visionActor = Some(actor)
+    listener = Some(newListener)
   }
+
+  def getListener = listener
 
   def imageToFrame(img : IplImage) = OpenCvUtil.convert(img)
 
-  def display(frame : Frame)
+  def display(frame : Frame, frameTime : TimePoint)
 
   def quit() {}
+}
+
+class TeeTheater(theaters : Iterable[RetinalTheater]) extends RetinalTheater
+{
+  override def setListener(listener : RetinalTheaterListener)
+  {
+    super.setListener(listener)
+    theaters.foreach(_.setListener(listener))
+  }
+
+  override def imageToFrame(img : IplImage) =
+    theaters.head.imageToFrame(img)
+
+  override def display(frame : Frame, frameTime : TimePoint)
+  {
+    theaters.foreach(_.display(frame, frameTime))
+  }
+
+  override def quit()
+  {
+    theaters.foreach(_.quit)
+  }
 }

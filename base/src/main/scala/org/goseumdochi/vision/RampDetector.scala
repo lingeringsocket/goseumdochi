@@ -177,7 +177,7 @@ class RampDetector(val settings : Settings, val xform : RetinalTransform)
 
     for (i <- 0 until rects.total by 4) {
       val rect = new CvPoint(4)
-      val count = new IntPointer(1).put(4)
+      val count = new IntPointer(1L).put(4)
       cvCvtSeqToArray(rects, rect, slice.start_index(i).end_index(i + 4))
 
       cvPolyLine(

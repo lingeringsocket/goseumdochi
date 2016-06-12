@@ -26,34 +26,33 @@ import org.bytedeco.javacv.{Frame => CvFrame}
 
 class CanvasTheater extends RetinalTheater
 {
-  private val canvas = initCanvas()
+  private val canvasFrame = initCanvasFrame()
 
-  override def display(frame : CvFrame)
+  override def display(frame : CvFrame, frameTime : TimePoint)
   {
-    canvas.showImage(frame)
+    canvasFrame.showImage(frame)
   }
 
   override def quit()
   {
     Toolkit.getDefaultToolkit.getSystemEventQueue.postEvent(
-      new WindowEvent(canvas, WindowEvent.WINDOW_CLOSING))
+      new WindowEvent(canvasFrame, WindowEvent.WINDOW_CLOSING))
   }
 
-  private def initCanvas() =
+  private def initCanvasFrame() =
   {
     val cf = new CanvasFrame("Retina")
-    cf.setDefaultCloseOperation(
-      WindowConstants.DISPOSE_ON_CLOSE)
+    cf.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
     cf.getCanvas.addMouseListener(new MouseAdapter {
       override def mouseClicked(e : MouseEvent) {
-        visionActor.foreach(_.onTheaterClick(RetinalPos(e.getX, e.getY)))
+        getListener.foreach(_.onTheaterClick(RetinalPos(e.getX, e.getY)))
       }
     })
     cf.addWindowListener(new WindowAdapter {
       override def windowClosing(e : WindowEvent)
       {
         super.windowClosing(e)
-        visionActor.foreach(_.onTheaterClose)
+        getListener.foreach(_.onTheaterClose)
       }
 
       override def windowClosed(e : WindowEvent)

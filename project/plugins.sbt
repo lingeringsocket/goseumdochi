@@ -3,8 +3,8 @@ classpathTypes += "maven-plugin"
 
 // javacpp `Loader` is used to determine `platform` classifier in the project`s `build.sbt`
 // We define dependency here (in folder `project`) since it is used by the build itself.
-libraryDependencies += "org.bytedeco" % "javacpp" % "0.11"
+libraryDependencies += "org.bytedeco" % "javacpp" % "1.2"
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
 
-addSbtPlugin("org.scala-android" % "sbt-android" % "1.6.3")
+addSbtPlugin("org.scala-android" % "sbt-android" % "1.6.4")

@@ -78,7 +78,6 @@ class LocalizationFsm()
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(_, eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
-        settings.BodyRecognition.className,
         classOf[FineSizeMotionDetector].getName),
         eventTime)
       goto(WaitingForQuiet) using WithControl(
@@ -109,9 +108,6 @@ class LocalizationFsm()
       } else {
         stay
       }
-    }
-    case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
-      goto(Done)
     }
     case Event(StateTimeout, WithControl(controlActor, eventTime, forward)) => {
       // we should probably try increasing the motion duration

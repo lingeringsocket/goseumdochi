@@ -49,7 +49,13 @@ object VisionActor
   // received messages
   final case class ActivateAnalyzersMsg(
     analyzerClassNames : Seq[String],
-    xform : RetinalTransform)
+    xform : RetinalTransform,
+    eventTime : TimePoint)
+      extends EventMsg
+  final case class ActivateAugmentersMsg(
+    augmenterClassNames : Seq[String],
+    eventTime : TimePoint)
+      extends EventMsg
   final case class HintBodyLocationMsg(pos : PlanarPos, eventTime : TimePoint)
       extends EventMsg
 
@@ -62,13 +68,15 @@ object VisionActor
 import VisionActor._
 
 class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
-    extends Actor with Listeners
+    extends Actor with Listeners with RetinalTheaterListener
 {
   private val settings = ActorSettings(context)
 
   private val throttlePeriod = settings.Vision.throttlePeriod
 
   private var analyzers : Seq[VisionAnalyzer] = Seq.empty
+
+  private var augmenters : Seq[VisionAugmenter] = Seq.empty
 
   private val imageDeck = new ImageDeck
 
@@ -93,12 +101,18 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
         }
       }
     }
-    case ActivateAnalyzersMsg(analyzerClassNames, xform) => {
+    case ActivateAnalyzersMsg(analyzerClassNames, xform, eventTime) => {
       closeAnalyzers
       retinalTransform = xform
       analyzers = analyzerClassNames.map(
         settings.instantiateObject(_, xform).
           asInstanceOf[VisionAnalyzer])
+    }
+    case ActivateAugmentersMsg(augmenterClassNames, eventTime) => {
+      closeAugmenters
+      augmenters = augmenterClassNames.map(
+        settings.instantiateObject(_).
+          asInstanceOf[VisionAugmenter])
     }
     case HintBodyLocationMsg(pos, eventTime) => {
       hintBodyPos = Some(pos)
@@ -161,8 +175,9 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
           case _ => {}
         }
       }
+      augmenters.foreach(_.augmentFrame(overlay, frameTime, hintBodyPos))
       val result = theater.imageToFrame(img)
-      theater.display(result)
+      theater.display(result, frameTime)
       img.release
       converted.release
     } catch {
@@ -174,7 +189,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
 
   override def preStart()
   {
-    theater.setActor(this)
+    theater.setListener(this)
   }
 
   override def postStop()
@@ -185,6 +200,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       theater.quit
     }
     closeAnalyzers
+    closeAugmenters
   }
 
   private def closeAnalyzers()
@@ -193,7 +209,13 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     analyzers = Seq.empty
   }
 
-  def onTheaterClick(retinalPos : RetinalPos)
+  private def closeAugmenters()
+  {
+    augmenters.foreach(_.close)
+    augmenters = Seq.empty
+  }
+
+  override def onTheaterClick(retinalPos : RetinalPos)
   {
     gossip(
       MotionDetector.MotionDetectedMsg(
@@ -203,7 +225,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
         TimePoint.now))
   }
 
-  def onTheaterClose()
+  override def onTheaterClose()
   {
     if (!shutDown) {
       shutDown = true

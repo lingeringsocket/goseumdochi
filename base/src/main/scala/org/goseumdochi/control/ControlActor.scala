@@ -35,6 +35,7 @@ object ControlActor
 
   // sent messages (to behavior)
   // VisionActor.ActivateAnalyzersMsg
+  // VisionActor.ActivateAugmentersMsg
   final case class CameraAcquiredMsg(
     bottomRight : RetinalPos, eventTime : TimePoint)
       extends EventMsg
@@ -88,6 +89,10 @@ object ControlActor
       extends EventMsg
   final case class UseVisionAnalyzersMsg(
     analyzerClassNames : Seq[String],
+    eventTime : TimePoint)
+      extends EventMsg
+  final case class UseVisionAugmentersMsg(
+    augmenterClassNames : Seq[String],
     eventTime : TimePoint)
       extends EventMsg
   final case class ObservationMsg(
@@ -249,9 +254,7 @@ class ControlActor(
       actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
       orientationActor ! PoisonPill.getInstance
       writeOrientation(settings, calibratedMsg)
-      updateStatus(ACTIVE, calibratedMsg.eventTime)
-      sendOutput(
-        behaviorActor, CameraAcquiredMsg(bottomRight, calibratedMsg.eventTime))
+      activateBehavior(calibratedMsg.eventTime)
     }
     case ActuateLightMsg(color : LightColor, eventTime) => {
       actuator.actuateLight(color)
@@ -303,8 +306,15 @@ class ControlActor(
       }
     }
     case UseVisionAnalyzersMsg(analyzers, eventTime) => {
-      visionActor ! VisionActor.ActivateAnalyzersMsg(
-        analyzers, retinalTransform)
+      sendOutput(
+        visionActor,
+        VisionActor.ActivateAnalyzersMsg(
+          analyzers, retinalTransform, eventTime))
+    }
+    case UseVisionAugmentersMsg(augmenters, eventTime) => {
+      sendOutput(
+        visionActor,
+        VisionActor.ActivateAugmentersMsg(augmenters, eventTime))
     }
     case observation : ObservationMsg => {
       gossip(StatusUpdateMsg(
@@ -322,9 +332,7 @@ class ControlActor(
           sendOutput(
             orientationActor, CameraAcquiredMsg(bottomRight, eventTime))
         } else {
-          updateStatus(ACTIVE, eventTime)
-          sendOutput(
-            behaviorActor, CameraAcquiredMsg(bottomRight, eventTime))
+          activateBehavior(eventTime)
         }
         localizationActor ! PoisonPill.getInstance
       }
@@ -357,6 +365,17 @@ class ControlActor(
       }
     }
     case _ =>
+  }
+
+  private def activateBehavior(eventTime : TimePoint)
+  {
+    updateStatus(ACTIVE, eventTime)
+    sendOutput(
+      visionActor,
+      VisionActor.ActivateAugmentersMsg(
+        Seq(classOf[RetinalTransformGuideline].getName), eventTime))
+    sendOutput(
+      behaviorActor, CameraAcquiredMsg(bottomRight, eventTime))
   }
 
   private def bodyMapping = bodyMappingOpt.get

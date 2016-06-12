@@ -11,6 +11,11 @@
       android:key="pref_key_intruder_alert"
       android:summary="@string/pref_summary_intruder_alert" />
   <CheckBoxPreference
+      android:title="@string/pref_title_record_video"
+      android:defaultValue="false"
+      android:summary="@string/pref_summary_record_video"
+      android:key="pref_key_record_video" />
+  <CheckBoxPreference
       android:title="@string/pref_title_detect_bumps"
       android:defaultValue="true"
       android:summary="@string/pref_summary_detect_bumps"

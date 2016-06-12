@@ -23,47 +23,39 @@ import org.bytedeco.javacv._
 
 import com.typesafe.config._
 
+import java.io._
 import java.awt.event._
 
-object CaptureMain extends App
+object CaptureMain extends App with RetinalTheaterListener
 {
   private val config = ConfigFactory.load()
+
   private val settings = Settings(config)
+
+  private var capture = false
+
+  private var running = true
 
   captureFrameOnClick()
 
-  def captureOneFrame(outFileName : String)
-  {
-    val retinalInput =
-      settings.instantiateObject(settings.Vision.inputClass).
-        asInstanceOf[RetinalInput]
-    val img = retinalInput.frameToImage(grabOneFrame(retinalInput))
-    cvSaveImage(outFileName, img)
-  }
-
   def captureFrameOnClick()
   {
-    val canvas = new CanvasFrame("Webcam")
-    canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE)
+    val videoFileName = "video.mp4"
+    val canvasTheater = new CanvasTheater
+    val fileTheater = new VideoFileTheater(new File(videoFileName))
+    val theater = new TeeTheater(Seq(canvasTheater, fileTheater))
+    theater.setListener(this)
     val retinalInput =
       settings.instantiateObject(settings.Vision.inputClass).
         asInstanceOf[RetinalInput]
-    val running = true
-    var capture = false
     var nextSuffix = 1
 
-    canvas.getCanvas.addMouseListener(new MouseAdapter {
-      override def mouseClicked(e : MouseEvent)
-      {
-        capture = true
-      }
-    })
-
-    println("Click mouse inside webcam window to capture; " +
+    println("Capturing video to " + videoFileName)
+    println("Click mouse inside webcam window to capture still image; " +
       "close webcam window to quit")
     while (running) {
-      val frame = grabOneFrame(retinalInput)
-      canvas.showImage(frame)
+      val (frame, frameTime) = retinalInput.nextFrame
+      theater.display(frame, frameTime)
       if (capture) {
         val img = retinalInput.frameToImage(frame)
         val outFileName = "frame" + nextSuffix + ".jpg"
@@ -74,8 +66,18 @@ object CaptureMain extends App
         img.release
       }
     }
+    println("Flushing video to storage")
+    fileTheater.quit
+    println("Video saved successfully")
   }
 
-  private def grabOneFrame(retinalInput : RetinalInput) =
-    retinalInput.nextFrame._1
+  override def onTheaterClick(retinalPos : RetinalPos)
+  {
+    capture = true
+  }
+
+  override def onTheaterClose()
+  {
+    running = false
+  }
 }

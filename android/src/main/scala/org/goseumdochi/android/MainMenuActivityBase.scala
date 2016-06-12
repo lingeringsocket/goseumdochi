@@ -15,12 +15,11 @@
 
 package org.goseumdochi.android
 
-import android.app._
 import android.content._
 import android.net._
 import android.view._
 
-class MainMenuActivityBase extends Activity with TypedFindView
+trait MainMenuActivityBase extends ActivityBase
 {
   override def onCreateOptionsMenu(menu : Menu) =
   {

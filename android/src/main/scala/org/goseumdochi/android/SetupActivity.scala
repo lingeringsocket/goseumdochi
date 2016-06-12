@@ -15,12 +15,11 @@
 
 package org.goseumdochi.android
 
-import android.app._
 import android.content._
 import android.os._
 import android.view._
 
-class SetupActivity extends Activity with TypedFindView
+class SetupActivity extends ActivityBase
 {
   lazy val setupView = new SetupView(this)
   lazy val preview = new CameraPreview(this, setupView)
