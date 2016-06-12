@@ -12,11 +12,19 @@ version := "0.1"
 
 scalaVersion := "2.11.7"
 
+val javacppVersion = "1.2"
+
+val opencvVersion = "3.1.0"
+
+val ffmpegVersion = "3.0.2"
+
 // FIXME:  add back in "-deprecation", "-Xfatal-warnings"
 scalacOptions ++= Seq("-unchecked", "-feature", "-Xlint",
   "-Ywarn-unused-import")
 
 autoCompilerPlugins := true
+
+classpathTypes += "maven-plugin"
 
 resolvers ++= Seq(Resolver.mavenLocal,
   DefaultMavenRepository,
@@ -28,18 +36,16 @@ resolvers ++= Seq(Resolver.mavenLocal,
   Resolver.defaultLocal,
   bintray.Opts.resolver.jcenter)
 
-classpathTypes += "maven-plugin"
-
 libraryDependencies ++= Seq(
   aar("com.google.android" % "multidex" % "0.1"),
   aar("com.google.android.gms" % "play-services" % "4.0.30"),
   aar("com.android.support" % "support-v4" % "20.0.0"),
-  "org.bytedeco"                 % "javacv"          % "1.1",
-  "org.bytedeco"                 % "javacpp"          % "1.1",
-  "org.bytedeco.javacpp-presets" % "opencv" % "3.0.0-1.1" classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % "3.0.0-1.1" classifier "android-arm",
-  "org.bytedeco.javacpp-presets" % "ffmpeg" % ("2.8.1-1.1") classifier "",
-  "org.bytedeco.javacpp-presets" % "ffmpeg" % ("2.8.1-1.1") classifier "android-arm",
+  "org.bytedeco"                 % "javacv"          % javacppVersion,
+  "org.bytedeco"                 % "javacpp"          % "1.2.1",
+  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "",
+  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "android-arm",
+  "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier "",
+  "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier "android-arm",
   "org.slf4j" % "slf4j-android" % "1.7.21"
 )
 

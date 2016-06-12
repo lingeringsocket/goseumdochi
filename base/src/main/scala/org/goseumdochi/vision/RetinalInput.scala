@@ -70,7 +70,9 @@ class HttpRetinalInput(settings : Settings) extends RetinalInput
     if (url.isEmpty) {
       Settings.complainMissing("goseumdochi.vision.remote-input-url")
     }
-    val grabber = new IPCameraFrameGrabber(url)
+    // see https://github.com/bytedeco/javacv/issues/411
+    val grabber = new IPCameraFrameGrabber(
+      url, -1, -1, java.util.concurrent.TimeUnit.SECONDS)
     grabber.setBitsPerPixel(CV_8U)
     grabber.setImageMode(FrameGrabber.ImageMode.COLOR)
     grabber.start

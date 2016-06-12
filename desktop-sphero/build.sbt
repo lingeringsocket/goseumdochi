@@ -8,7 +8,9 @@ isSnapshot := true
 
 scalaVersion := "2.11.7"
 
-val javacppVersion = "1.1"
+val javacppVersion = "1.2"
+
+val opencvVersion = "3.1.0"
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint",
   "-Xfatal-warnings", "-Ywarn-unused-import")
@@ -19,15 +21,23 @@ lazy val platform = org.bytedeco.javacpp.Loader.getPlatform
 
 classpathTypes += "maven-plugin"
 
-resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
+resolvers ++= Seq(Resolver.mavenLocal,
+  DefaultMavenRepository,
+  Resolver.typesafeRepo("releases"),
+  Resolver.typesafeRepo("snapshots"),
+  Resolver.typesafeIvyRepo("snapshots"),
+  Resolver.sonatypeRepo("releases"),
+  Resolver.sonatypeRepo("snapshots"),
+  Resolver.defaultLocal,
+  bintray.Opts.resolver.jcenter)
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka"      %% "akka-actor"     % "2.3.15",
   "com.typesafe.akka"      %% "akka-testkit"     % "2.3.15" % "test",
-  "org.bytedeco"                 % "javacpp"         % javacppVersion,
+  "org.bytedeco"                 % "javacpp"         % "1.2.1",
   "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % ("3.0.0-" + javacppVersion) classifier platform,
+  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "",
+  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier platform,
   "org.specs2"        %% "specs2-core"             % "3.7.2"           % "test"
 )
 
