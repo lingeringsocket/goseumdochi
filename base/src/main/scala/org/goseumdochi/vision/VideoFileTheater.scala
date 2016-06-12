@@ -21,11 +21,14 @@ import org.bytedeco.javacv._
 
 import java.io._
 
-class VideoFileTheater(file : File) extends RetinalTheater
+class VideoFileTheater(file : File, filterString : String = "")
+    extends RetinalTheater
 {
   private val SKIP_START = 5
 
   private var recorder : Option[FrameRecorder] = None
+
+  private var filter : Option[FrameFilter] = None
 
   private var firstSkipTime = TimePoint.ZERO
 
@@ -37,8 +40,14 @@ class VideoFileTheater(file : File) extends RetinalTheater
 
   private def initRecorder(firstFrame : Frame) =
   {
-    val r = new FFmpegFrameRecorder(
-      file, firstFrame.imageWidth, firstFrame.imageHeight)
+    val width = firstFrame.imageWidth
+    val height = firstFrame.imageHeight
+    if (!filterString.isEmpty) {
+      val f = new FFmpegFrameFilter("showinfo=n", width, height)
+      f.start
+      filter = Some(f)
+    }
+    val r = new FFmpegFrameRecorder(file, width, height)
     val skipTime = firstFrameTime - firstSkipTime
     val estimatedFrameRate =
       ((1000.0 * SKIP_START) / skipTime.toMillis.toDouble)
@@ -76,7 +85,19 @@ class VideoFileTheater(file : File) extends RetinalTheater
       recorder.foreach(r => {
         // we don't bother with r.setTimestamp because last time I checked,
         // the implementation is bogus
-        r.record(frame)
+        filter match {
+          case Some(f) => {
+            f.push(frame)
+            var filteredFrame : Option[Frame] = None
+            do {
+              filteredFrame = Option(f.pull)
+              filteredFrame.foreach(r.record(_))
+            } while (!filteredFrame.isEmpty)
+          }
+          case _ => {
+            r.record(frame)
+          }
+        }
       })
     }
   }
@@ -88,6 +109,10 @@ class VideoFileTheater(file : File) extends RetinalTheater
       recorder.foreach(r => {
         r.stop
         r.release
+      })
+      filter.foreach(f => {
+        f.stop
+        f.release
       })
       recorder = None
     }
