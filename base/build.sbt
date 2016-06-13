@@ -1,23 +1,24 @@
 name := "goseumdochi-base"
 
-organization := "org.goseumdochi"
+organization := Common.organization
 
-version := "0.1"
+version := Common.version
 
 isSnapshot := true
 
 exportJars := true
 
-scalaVersion := "2.11.7"
+scalaVersion := Common.scalaVersion
 
-val javacppVersion = "1.2"
+val javacppVersion = Common.javacppVersion
 
-val opencvVersion = "3.1.0"
+val javacppPointVersion = Common.javacppPointVersion
 
-val ffmpegVersion = "3.0.2"
+val opencvVersion = Common.opencvVersion
 
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint",
-  "-Xfatal-warnings", "-Ywarn-unused-import")
+val ffmpegVersion = Common.ffmpegVersion
+
+scalacOptions ++= Common.scalacOptions
 
 scalacOptions in Test ++= Seq("-Yrangepos")
 
@@ -29,31 +30,24 @@ resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
 resolvers += "bintray/meetup" at "http://dl.bintray.com/meetup/maven"
 
-resolvers ++= Seq(Resolver.mavenLocal,
-  DefaultMavenRepository,
-  Resolver.typesafeRepo("releases"),
-  Resolver.typesafeRepo("snapshots"),
-  Resolver.typesafeIvyRepo("snapshots"),
-  Resolver.sonatypeRepo("releases"),
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.defaultLocal,
-  bintray.Opts.resolver.jcenter)
+resolvers ++= Common.resolvers
 
 libraryDependencies ++= Seq(
   "com.meetup" %% "archery" % "0.4.0",
   "org.slf4j" % "slf4j-api" % "1.7.21",
-  "org.bytedeco"                 % "javacpp"         % "1.2.1" % "test",
   "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) % "test" classifier "",
   "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) % "test" classifier platform,
   "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) % "test" classifier "",
   "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) % "test" classifier platform,
-  "org.bytedeco"                 % "javacv"          % javacppVersion,
   "com.owlike" %% "genson-scala" % "1.4",
-  "com.typesafe.akka"      %% "akka-actor"     % "2.3.15",
-  "com.typesafe.akka"      %% "akka-testkit"     % "2.3.15" % "test",
-  "com.jsuereth" %% "scala-arm" % "1.4",
-  "org.specs2"        %% "specs2-core"             % "3.7.2"           % "test"
+  "com.jsuereth" %% "scala-arm" % "1.4"
 )
+
+libraryDependencies ++= Common.javacvDeps
+
+libraryDependencies ++= Common.specs2Deps
+
+libraryDependencies ++= Common.akkaDeps
 
 autoCompilerPlugins := true
 

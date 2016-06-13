@@ -4,50 +4,43 @@ android.Plugin.androidBuild
 
 platformTarget in Android := "android-23"
 
-// Application Name
 name := """goseumdochi-android"""
 
-// Application Version
-version := "0.1"
+organization := Common.organization
 
-scalaVersion := "2.11.7"
+version := Common.version
 
-val javacppVersion = "1.2"
+scalaVersion := Common.scalaVersion
 
-val opencvVersion = "3.1.0"
+val javacppVersion = Common.javacppVersion
 
-val ffmpegVersion = "3.0.2"
+val javacppPointVersion = Common.javacppPointVersion
+
+val opencvVersion = Common.opencvVersion
+
+val ffmpegVersion = Common.ffmpegVersion
 
 // FIXME:  add back in "-deprecation", "-Xfatal-warnings"
-scalacOptions ++= Seq("-unchecked", "-feature", "-Xlint",
-  "-Ywarn-unused-import")
+scalacOptions ++= Common.scalacOptionsAllowWarnings
 
 autoCompilerPlugins := true
 
 classpathTypes += "maven-plugin"
 
-resolvers ++= Seq(Resolver.mavenLocal,
-  DefaultMavenRepository,
-  Resolver.typesafeRepo("releases"),
-  Resolver.typesafeRepo("snapshots"),
-  Resolver.typesafeIvyRepo("snapshots"),
-  Resolver.sonatypeRepo("releases"),
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.defaultLocal,
-  bintray.Opts.resolver.jcenter)
+resolvers ++= Common.resolvers
 
 libraryDependencies ++= Seq(
   aar("com.google.android" % "multidex" % "0.1"),
   aar("com.google.android.gms" % "play-services" % "4.0.30"),
   aar("com.android.support" % "support-v4" % "20.0.0"),
-  "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "org.bytedeco"                 % "javacpp"          % "1.2.1",
   "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "",
   "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "android-arm",
   "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier "",
   "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier "android-arm",
   "org.slf4j" % "slf4j-android" % "1.7.21"
 )
+
+libraryDependencies ++= Common.javacvDeps
 
 // Override the run task with the android:run
 run <<= run in Android

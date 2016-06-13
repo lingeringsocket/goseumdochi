@@ -20,7 +20,6 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-import scala.concurrent._
 import scala.concurrent.duration._
 
 import com.typesafe.config._
