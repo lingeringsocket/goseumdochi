@@ -16,6 +16,7 @@ before_install:
 
 install:
   - sudo apt-get install -qq libopencv-dev libstdc++6
+  - wget -O android/libs/RobotLibrary.jar https://github.com/orbotix/Sphero-Android-SDK/raw/master/library/RobotLibrary.jar
 
-script: sbt ++$TRAVIS_SCALA_VERSION test scalastyle test:scalastyle \
+script: sbt ++$TRAVIS_SCALA_VERSION clean test android/clean android/compile scalastyle test:scalastyle \
     android/scalastyle
