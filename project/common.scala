@@ -34,6 +34,8 @@ object Common {
     Resolver.defaultLocal,
     bintray.Opts.resolver.jcenter)
 
+  def javaOptions = "-Xmx1G"
+
   def opencvVersion = "3.1.0"
 
   def javacppVersion = "1.2"
@@ -41,6 +43,8 @@ object Common {
   def javacppPointVersion = "1.2.1"
 
   def ffmpegVersion = "3.0.2"
+
+  lazy val defaultPlatform = org.bytedeco.javacpp.Loader.getPlatform
 
   def scalacOptionsAllowWarnings = Seq(
     "-unchecked", "-feature", "-Xlint", "-Ywarn-unused-import")
@@ -58,4 +62,24 @@ object Common {
   def javacvDeps = Seq(
     "org.bytedeco" % "javacv" % javacppVersion,
     "org.bytedeco" % "javacpp" % javacppPointVersion)
+
+  def javacvPlatformDeps(
+    scope : String = "compile", platform : String = defaultPlatform) =
+    Seq(
+      "org.bytedeco.javacpp-presets" % "opencv" %
+        (opencvVersion + "-" + javacppVersion) % scope classifier "",
+      "org.bytedeco.javacpp-presets" % "opencv" %
+        (opencvVersion + "-" + javacppVersion) % scope classifier platform)
+
+  def ffmpegPlatformDeps(
+    scope : String = "compile", platform : String = defaultPlatform) =
+    Seq(
+      "org.bytedeco.javacpp-presets" % "ffmpeg" %
+        (ffmpegVersion + "-" + javacppVersion) % scope classifier "",
+      "org.bytedeco.javacpp-presets" % "ffmpeg" %
+        (ffmpegVersion + "-" + javacppVersion) % scope classifier platform)
+
+  def maxErrors = 99
+
+  def traceLevel = 10
 }

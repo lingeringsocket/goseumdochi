@@ -12,14 +12,6 @@ version := Common.version
 
 scalaVersion := Common.scalaVersion
 
-val javacppVersion = Common.javacppVersion
-
-val javacppPointVersion = Common.javacppPointVersion
-
-val opencvVersion = Common.opencvVersion
-
-val ffmpegVersion = Common.ffmpegVersion
-
 // FIXME:  add back in "-deprecation", "-Xfatal-warnings"
 scalacOptions ++= Common.scalacOptionsAllowWarnings
 
@@ -33,14 +25,14 @@ libraryDependencies ++= Seq(
   aar("com.google.android" % "multidex" % "0.1"),
   aar("com.google.android.gms" % "play-services" % "4.0.30"),
   aar("com.android.support" % "support-v4" % "20.0.0"),
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "android-arm",
-  "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier "android-arm",
   "org.slf4j" % "slf4j-android" % "1.7.21"
 )
 
 libraryDependencies ++= Common.javacvDeps
+
+libraryDependencies ++= Common.javacvPlatformDeps("compile", "android-arm")
+
+libraryDependencies ++= Common.ffmpegPlatformDeps("compile", "android-arm")
 
 // Override the run task with the android:run
 run <<= run in Android
@@ -114,3 +106,7 @@ proguardOptions in Android ++= Seq(
 packagingOptions in Android := PackagingOptions(merges=Seq("reference.conf"), excludes=Seq("META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.properties","META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.xml","META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.properties","META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.xml", "META-INF/MANIFEST.MF", "META-INF/LICENSE.txt", "META-INF/LICENSE", "META-INF/NOTICE.txt", "META-INF/NOTICE"))
 
 javacOptions ++= Seq("-target", "1.7", "-source", "1.7")
+
+maxErrors := Common.maxErrors
+
+traceLevel := Common.traceLevel

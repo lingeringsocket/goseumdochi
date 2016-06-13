@@ -8,28 +8,17 @@ isSnapshot := true
 
 scalaVersion := Common.scalaVersion
 
-val javacppVersion = Common.javacppVersion
-
-val javacppPointVersion = Common.javacppPointVersion
-
-val opencvVersion = Common.opencvVersion
-
 scalacOptions ++= Common.scalacOptions
 
 scalacOptions in Test ++= Seq("-Yrangepos")
-
-lazy val platform = org.bytedeco.javacpp.Loader.getPlatform
 
 classpathTypes += "maven-plugin"
 
 resolvers ++= Common.resolvers
 
-libraryDependencies ++= Seq(
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier platform
-)
-
 libraryDependencies ++= Common.javacvDeps
+
+libraryDependencies ++= Common.javacvPlatformDeps("runtime")
 
 libraryDependencies ++= Common.specs2Deps
 
@@ -41,11 +30,11 @@ parallelExecution in Test := false
 
 fork := true
 
-javaOptions += "-Xmx1G"
+javaOptions += Common.javaOptions
 
-maxErrors := 99
+maxErrors := Common.maxErrors
 
-traceLevel := 10
+traceLevel := Common.traceLevel
 
 scalastyleFailOnError := true
 
