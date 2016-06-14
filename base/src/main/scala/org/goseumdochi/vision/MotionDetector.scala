@@ -20,7 +20,7 @@ import org.goseumdochi.common.MoreMath._
 
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
-import org.bytedeco.javacpp.opencv_imgproc._
+import org.bytedeco.javacpp.opencv_video._
 
 import scala.annotation._
 
@@ -92,33 +92,33 @@ abstract class MotionDetector(
 
   private var diffOpt : Option[IplImage] = None
 
+  private val bgSubtractor = createBackgroundSubtractorMOG2(50, 130, false)
+
   override def analyzeFrame(
     imageDeck : ImageDeck, frameTime : TimePoint,
     hintBodyPos : Option[PlanarPos])
       : Iterable[MotionDetectedMsg] =
   {
-    detectMotionMsg(imageDeck.previousGray, imageDeck.currentGray, frameTime)
+    detectMotion(imageDeck.currentGray, frameTime)
   }
 
-  private[vision] def detectMotion(beforeImg : IplImage, afterImg : IplImage)
-      : Option[PlanarPos] =
-  {
-    detectMotionMsg(beforeImg, afterImg, TimePoint.ZERO).map(_.pos)
-  }
-
-  private[vision] def detectMotionMsg(
-    beforeImg : IplImage, afterImg : IplImage, frameTime : TimePoint)
+  private[vision] def detectMotion(
+    img : IplImage, frameTime : TimePoint)
       : Option[MotionDetectedMsg] =
   {
-    if (diffOpt.isEmpty) {
+    var first = diffOpt.isEmpty
+    if (first) {
       diffOpt = Some(AbstractIplImage.create(
-        beforeImg.width, beforeImg.height, IPL_DEPTH_8U, 1))
+        img.width, img.height, IPL_DEPTH_8U, 1))
     }
 
     val diff = diffOpt.get
 
-    cvAbsDiff(afterImg, beforeImg, diff)
-    cvThreshold(diff, diff, 32, 255, CV_THRESH_BINARY)
+    cvZero(diff)
+    bgSubtractor.apply(new Mat(img), new Mat(diff), -1)
+    if (first) {
+      return None
+    }
 
     val rects = analyzeBlobs(diff, blobFilter, blobSorter)
     if (rects.isEmpty) {
@@ -144,7 +144,7 @@ abstract class MotionDetector(
       OpenCvUtil.pos(farthest.tl),
       OpenCvUtil.pos(farthest.br),
       frameTime)
-    newDebugger(afterImg) { overlay =>
+    newDebugger(img) { overlay =>
       msg.renderOverlay(overlay)
     }
     Some(msg)
@@ -160,7 +160,9 @@ abstract class MotionDetector(
 class CoarseGravityMotionDetector(settings : Settings, xform : RetinalTransform)
     extends MotionDetector(
       settings, xform,
-      new IgnoreSmall(settings.MotionDetection.coarseThreshold),
+      new IgnoreMedium(
+        settings.MotionDetection.coarseThreshold,
+        settings.MotionDetection.fineThreshold),
       GravitySorter)
 
 class CoarseSizeMotionDetector(settings : Settings, xform : RetinalTransform)

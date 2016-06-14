@@ -201,6 +201,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     }
     closeAnalyzers
     closeAugmenters
+    imageDeck.clear
   }
 
   private def closeAnalyzers()
