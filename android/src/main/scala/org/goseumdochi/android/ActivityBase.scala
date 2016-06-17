@@ -21,6 +21,8 @@ import android.content.pm._
 import android.os._
 import android.widget._
 
+import android.support.v7.app._
+
 trait ContextBase
 {
   def getApplicationContext() : Context
@@ -36,7 +38,7 @@ trait ContextBase
   }
 }
 
-trait ActivityBase extends Activity with TypedFindView with ContextBase
+trait ActivityBaseNoCompat extends Activity with TypedFindView with ContextBase
 {
   protected final val PERMISSION_REQUEST = 42
 
@@ -46,3 +48,8 @@ trait ActivityBase extends Activity with TypedFindView with ContextBase
     (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED)
   }
 }
+
+trait ActivityBase extends AppCompatActivity with ActivityBaseNoCompat
+{
+}
+

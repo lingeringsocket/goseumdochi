@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.goseumdochi.android"
-    android:versionCode="6"
-    android:versionName="0.6" >
+    android:versionCode="7"
+    android:versionName="0.7" >
     <uses-sdk android:minSdkVersion="11" android:targetSdkVersion="23"/>
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -14,10 +14,11 @@
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <application
         android:label="@string/app_name"
+        android:name=".MultidexApplication"
         android:theme="@style/GoseumdochiTheme"
         android:icon="@drawable/icon">
       <activity
-          android:name="MainActivity"
+          android:name=".MainActivity"
           android:label="@string/app_name"
           android:screenOrientation="portrait">
         <intent-filter>
@@ -26,27 +27,29 @@
         </intent-filter>
       </activity>
       <activity
-          android:name="ControlActivity"
+          android:name=".ControlActivity"
           android:label="@string/app_name"
+          android:theme="@style/GoseumdochiThemeNoTitleBar"
           android:screenOrientation="landscape">
       </activity>
       <activity
-          android:name="AboutActivity"
+          android:name=".AboutActivity"
           android:label="@string/about_title"
           android:screenOrientation="portrait">
       </activity>
       <activity
-          android:name="SettingsActivity"
+          android:name=".SettingsActivity"
           android:label="@string/prefs_title"
           android:screenOrientation="portrait">
       </activity>
       <activity
-          android:name="SetupActivity"
+          android:name=".SetupActivity"
           android:label="@string/setup_title"
+          android:theme="@style/GoseumdochiThemeNoTitleBar"
           android:screenOrientation="landscape">
       </activity>
       <activity
-          android:name="BumpActivity"
+          android:name=".BumpActivity"
           android:label="@string/bump_title"
           android:screenOrientation="landscape">
       </activity>

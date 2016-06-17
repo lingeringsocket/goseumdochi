@@ -18,15 +18,15 @@ package org.goseumdochi.android
 import android.content._
 import android.os._
 import android.view._
+import android.support.v4.view._
 
-class SetupActivity extends ActivityBase
+class SetupActivity extends ActivityBaseNoCompat
 {
   lazy val setupView = new SetupView(this)
   lazy val preview = new CameraPreview(this, setupView)
 
   override protected def onCreate(savedInstanceState : Bundle)
   {
-    requestWindowFeature(Window.FEATURE_NO_TITLE)
     super.onCreate(savedInstanceState)
 
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
@@ -40,6 +40,8 @@ class SetupActivity extends ActivityBase
     val layout = findView(TR.setup_preview)
     layout.addView(preview)
     layout.addView(setupView)
+    findView(TR.setup_instructions).bringToFront
+    findView(TR.button_start).bringToFront
   }
 
   def onConnectClicked(v : View)

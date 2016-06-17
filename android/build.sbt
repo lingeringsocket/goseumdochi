@@ -4,6 +4,8 @@ android.Plugin.androidBuild
 
 platformTarget in Android := "android-23"
 
+targetSdkVersion in Android := "23"
+
 name := """goseumdochi-android"""
 
 organization := Common.organization
@@ -24,7 +26,8 @@ resolvers ++= Common.resolvers
 libraryDependencies ++= Seq(
   aar("com.google.android" % "multidex" % "0.1"),
   aar("com.google.android.gms" % "play-services" % "4.0.30"),
-  aar("com.android.support" % "support-v4" % "20.0.0"),
+  aar("com.android.support" % "support-v4" % "22.1.0"),
+  aar("com.android.support" % "appcompat-v7" % "22.1.0"),
   "org.slf4j" % "slf4j-android" % "1.7.21"
 )
 
@@ -37,21 +40,20 @@ libraryDependencies ++= Common.ffmpegPlatformDeps("compile", "android-arm")
 // Override the run task with the android:run
 run <<= run in Android
 
-// Activate proguard for Scala
-proguardScala in Android := true
-
-// Activate proguard for Android
 useProguard in Android := true
 
 useProguardInDebug in Android := true
+
+proguardScala in Android := true
 
 dexMulti in Android := true
 
 dexMinimizeMain in Android := true
 
+dexMaxProcessCount := 1
+
 dexMainClasses in Android := Seq(
   "org/goseumdochi/android/MultidexApplication.class",
-  "java/rmi/Remote.class",
   "android/support/multidex/BuildConfig.class",
   "android/support/multidex/MultiDex$V14.class",
   "android/support/multidex/MultiDex$V19.class",

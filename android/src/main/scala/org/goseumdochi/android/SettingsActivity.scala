@@ -47,7 +47,7 @@ object SettingsActivity
 import SettingsActivity._
 
 class SettingsActivity
-    extends PreferenceActivity with ActivityBase
+    extends PreferenceActivity with ActivityBaseNoCompat
     with SharedPreferences.OnSharedPreferenceChangeListener
 {
   override def onCreate(savedInstanceState : Bundle)
@@ -74,6 +74,10 @@ class SettingsActivity
     prefs : SharedPreferences, key : String)
   {
     key match {
+      case PREF_ENABLE_VOICE => {
+        val enable = prefs.getBoolean(key, true)
+        GlobalTts.reinit(enable)
+      }
       case PREF_INTRUDER_ALERT => {
         val phrase = prefs.getString(key, "")
         if (!phrase.isEmpty) {
