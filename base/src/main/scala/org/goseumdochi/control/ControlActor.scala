@@ -170,6 +170,8 @@ class ControlActor(
     Props(Class.forName(settings.Behavior.className)),
     BEHAVIOR_ACTOR_NAME)
 
+  private var modeActor = localizationActor
+
   private var doOrientation = settings.Control.orient
 
   private var localizing = true
@@ -179,6 +181,8 @@ class ControlActor(
   private var movingUntil = TimePoint.ZERO
 
   private var bodyMappingOpt : Option[BodyMapping] = None
+
+  private var lastImpulse : Option[PolarImpulse] = None
 
   private var retinalTransform : RetinalTransform = {
     if (doOrientation) {
@@ -285,25 +289,13 @@ class ControlActor(
     case BodyDetector.BodyDetectedMsg(pos, eventTime) => {
       if (eventTime > movingUntil) {
         val moveMsg = BodyMovedMsg(pos, eventTime)
-        if (localizing) {
-          sendOutput(localizationActor, moveMsg)
-        } else if (orienting) {
-          sendOutput(orientationActor, moveMsg)
-        } else {
-          sendOutput(behaviorActor, moveMsg)
-        }
+        sendOutput(modeActor, moveMsg)
       }
       lastSeenPos = pos
       lastSeenTime = eventTime
     }
     case objectDetected : VisionActor.ObjDetectedMsg => {
-      if (localizing) {
-        sendOutput(localizationActor, objectDetected)
-      } else if (orienting) {
-        sendOutput(orientationActor, objectDetected)
-      } else if (objectDetected.eventTime > movingUntil) {
-        sendOutput(behaviorActor, objectDetected)
-      }
+      sendOutput(modeActor, objectDetected)
     }
     case UseVisionAnalyzersMsg(analyzers, eventTime) => {
       sendOutput(
@@ -328,6 +320,7 @@ class ControlActor(
         }
         localizing = false
         if (orienting) {
+          modeActor = orientationActor
           updateStatus(ORIENTING, eventTime)
           sendOutput(
             orientationActor, CameraAcquiredMsg(bottomRight, eventTime))
@@ -369,6 +362,7 @@ class ControlActor(
 
   private def activateBehavior(eventTime : TimePoint)
   {
+    modeActor = behaviorActor
     updateStatus(ACTIVE, eventTime)
     sendOutput(
       visionActor,
@@ -382,6 +376,7 @@ class ControlActor(
 
   private def actuateImpulse(impulse : PolarImpulse, eventTime : TimePoint)
   {
+    lastImpulse = Some(impulse)
     movingUntil = eventTime + impulse.duration + sensorDelay
     actuator.actuateMotion(impulse)
   }
