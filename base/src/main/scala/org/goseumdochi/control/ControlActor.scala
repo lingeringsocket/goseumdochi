@@ -19,6 +19,8 @@ import org.goseumdochi.common._
 import org.goseumdochi.vision._
 import org.goseumdochi.perception._
 
+import MoreMath._
+
 import akka.actor._
 import akka.event._
 import akka.routing._
@@ -344,7 +346,11 @@ class ControlActor(
             } else {
               updateStatus(PANIC, checkTime)
               sendOutput(behaviorActor, PanicAttackMsg(checkTime))
-              moveToCenter(lastSeenPos, checkTime)
+              lastImpulse.foreach(forwardImpulse => {
+                val reverseImpulse = forwardImpulse.copy(
+                  theta = normalizeRadians(forwardImpulse.theta + PI))
+                sendOutput(self, ActuateImpulseMsg(reverseImpulse, checkTime))
+              })
             }
           } else {
             // all is well
@@ -379,16 +385,6 @@ class ControlActor(
     lastImpulse = Some(impulse)
     movingUntil = eventTime + impulse.duration + sensorDelay
     actuator.actuateMotion(impulse)
-  }
-
-  private def moveToCenter(pos : PlanarPos, eventTime : TimePoint)
-  {
-    val from = pos
-    val to = retinalTransform.retinaToWorld(
-      RetinalPos(bottomRight.x / 2.0, bottomRight.y / 2.0))
-    val impulse = bodyMapping.computeImpulse(
-      from, to, settings.Motor.defaultSpeed, 0.milliseconds)
-    sendOutput(self, ActuateImpulseMsg(impulse, eventTime))
   }
 
   override def preStart()
