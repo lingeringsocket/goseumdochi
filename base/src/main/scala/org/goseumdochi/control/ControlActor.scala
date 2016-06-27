@@ -16,7 +16,6 @@
 package org.goseumdochi.control
 
 import org.goseumdochi.common._
-import org.goseumdochi.common.MoreMath._
 import org.goseumdochi.vision._
 import org.goseumdochi.perception._
 
@@ -44,6 +43,7 @@ object ControlActor
     pos : PlanarPos, eventTime : TimePoint)
       extends EventMsg
   final case class PanicAttackMsg(
+    lastImpulse : Option[PolarImpulse],
     eventTime : TimePoint)
       extends EventMsg
 
@@ -101,6 +101,9 @@ object ControlActor
     eventTime : TimePoint,
     messageParams : Seq[Any] = Seq.empty)
       extends EventMsg
+  final case class PanicEndMsg(
+    eventTime : TimePoint)
+      extends EventMsg
 
   // pass-through messages (from vision to behavior)
   // any kind of VisionActor.ObjDetectedMsg
@@ -114,6 +117,8 @@ object ControlActor
   final val ORIENTATION_ACTOR_NAME = "orientationActor"
 
   final val BEHAVIOR_ACTOR_NAME = "behaviorActor"
+
+  final val PANIC_ACTOR_NAME = "panicActor"
 
   def readOrientation(settings : Settings) : (RetinalTransform, BodyMapping) =
   {
@@ -170,6 +175,9 @@ class ControlActor(
   private val behaviorActor = context.actorOf(
     Props(Class.forName(settings.Behavior.className)),
     BEHAVIOR_ACTOR_NAME)
+  private val panicActor = context.actorOf(
+    Props(Class.forName(settings.Control.panicClassName)),
+    PANIC_ACTOR_NAME)
 
   private var modeActor = localizationActor
 
@@ -239,10 +247,6 @@ class ControlActor(
 
   private def updateStatus(newStatus : ControlStatus, eventTime : TimePoint)
   {
-    log.info("NEW STATUS:  " + newStatus)
-    status = newStatus
-    val messageKey = messageKeyFor(status)
-    gossip(StatusUpdateMsg(status, messageKey, eventTime))
   }
 
   private def receiveInput(eventMsg : EventMsg) = eventMsg match
@@ -259,7 +263,7 @@ class ControlActor(
       actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
       orientationActor ! PoisonPill.getInstance
       writeOrientation(settings, calibratedMsg)
-      activateBehavior(calibratedMsg.eventTime)
+      startActiveBehavior(calibratedMsg.eventTime)
     }
     case ActuateLightMsg(color : LightColor, eventTime) => {
       actuator.actuateLight(color)
@@ -278,7 +282,7 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       bottomRight = pos
-      updateStatus(LOCALIZING, eventTime)
+      enterMode(LOCALIZING, eventTime)
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
     case VisionActor.RequireLightMsg(color, eventTime) => {
@@ -321,16 +325,18 @@ class ControlActor(
         }
         localizing = false
         if (orienting) {
-          modeActor = orientationActor
-          updateStatus(ORIENTING, eventTime)
+          enterMode(ORIENTING, eventTime)
           sendOutput(
             orientationActor, CameraAcquiredMsg(bottomRight, eventTime))
         } else {
-          activateBehavior(eventTime)
+          startActiveBehavior(eventTime)
         }
         localizationActor ! PoisonPill.getInstance
       }
       sendOutput(visionActor, VisionActor.HintBodyLocationMsg(pos, eventTime))
+    }
+    case PanicEndMsg(eventTime) => {
+      enterMode(ACTIVE, eventTime)
     }
     case CheckVisibilityMsg(checkTime) => {
       if (checkTime < movingUntil) {
@@ -343,13 +349,9 @@ class ControlActor(
             if (orienting) {
               // not much we can do yet
             } else {
-              updateStatus(PANIC, checkTime)
-              sendOutput(behaviorActor, PanicAttackMsg(checkTime))
-              lastImpulse.foreach(forwardImpulse => {
-                val reverseImpulse = forwardImpulse.copy(
-                  theta = normalizeRadians(forwardImpulse.theta + PI))
-                sendOutput(self, ActuateImpulseMsg(reverseImpulse, checkTime))
-              })
+              enterMode(PANIC, checkTime)
+              sendOutput(behaviorActor, PanicAttackMsg(lastImpulse, checkTime))
+              sendOutput(panicActor, PanicAttackMsg(lastImpulse, checkTime))
             }
           } else {
             // all is well
@@ -365,16 +367,29 @@ class ControlActor(
     case _ =>
   }
 
-  private def activateBehavior(eventTime : TimePoint)
+  private def startActiveBehavior(eventTime : TimePoint)
   {
-    modeActor = behaviorActor
-    updateStatus(ACTIVE, eventTime)
+    enterMode(ACTIVE, eventTime)
     sendOutput(
       visionActor,
       VisionActor.ActivateAugmentersMsg(
         Seq(classOf[RetinalTransformGuideline].getName), eventTime))
     sendOutput(
       behaviorActor, CameraAcquiredMsg(bottomRight, eventTime))
+  }
+
+  private def enterMode(newStatus : ControlStatus, eventTime : TimePoint)
+  {
+    modeActor = newStatus match {
+      case ORIENTING => orientationActor
+      case ACTIVE => behaviorActor
+      case PANIC => panicActor
+      case _ => localizationActor
+    }
+    log.info("NEW STATUS:  " + newStatus)
+    status = newStatus
+    val messageKey = messageKeyFor(status)
+    gossip(StatusUpdateMsg(status, messageKey, eventTime))
   }
 
   private def bodyMapping = bodyMappingOpt.get

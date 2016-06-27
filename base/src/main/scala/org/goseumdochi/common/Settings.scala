@@ -58,6 +58,7 @@ class Settings(rootConf : Config)
     val panicDelay = getMillis(subConf, "panic-delay")
     val monitorVisibility = subConf.getBoolean("monitor-visibility")
     val visibilityCheckFreq = getMillis(subConf, "visibility-check-freq")
+    val panicClassName = subConf.getString("panic-class-name")
   }
 
   object Behavior
