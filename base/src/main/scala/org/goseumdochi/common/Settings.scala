@@ -59,6 +59,7 @@ class Settings(rootConf : Config)
     val monitorVisibility = subConf.getBoolean("monitor-visibility")
     val visibilityCheckFreq = getMillis(subConf, "visibility-check-freq")
     val panicClassName = subConf.getString("panic-class-name")
+    val maxRollDuration = getMillis(subConf, "max-roll-duration")
   }
 
   object Behavior

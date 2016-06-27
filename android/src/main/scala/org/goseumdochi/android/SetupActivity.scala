@@ -18,7 +18,6 @@ package org.goseumdochi.android
 import android.content._
 import android.os._
 import android.view._
-import android.support.v4.view._
 
 class SetupActivity extends ActivityBaseNoCompat
 {

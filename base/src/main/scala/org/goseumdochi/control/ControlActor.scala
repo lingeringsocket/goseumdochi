@@ -29,7 +29,7 @@ object ControlActor
 {
   object ControlStatus extends Enumeration {
     type ControlStatus = Value
-    val INITIALIZING, LOCALIZING, ORIENTING, ACTIVE, PANIC = Value
+    val LOCALIZING, ORIENTING, ACTIVE, PANIC, RECOVERED = Value
   }
   import ControlStatus._
 
@@ -215,11 +215,13 @@ class ControlActor(
 
   private val sensorDelay = settings.Vision.sensorDelay
 
+  private val maxRollDuration = settings.Control.maxRollDuration
+
   private val perception = new PlanarPerception(settings)
 
   private var lightRequired = false
 
-  private var status = INITIALIZING
+  private var status = LOCALIZING
 
   private def getActorString(ref : ActorRef) = ref.path.name
 
@@ -243,10 +245,6 @@ class ControlActor(
       PerceptualEvent(
         "", getActorString(self), getActorString(receiver), msg))
     receiver ! msg
-  }
-
-  private def updateStatus(newStatus : ControlStatus, eventTime : TimePoint)
-  {
   }
 
   private def receiveInput(eventMsg : EventMsg) = eventMsg match
@@ -387,8 +385,14 @@ class ControlActor(
       case _ => localizationActor
     }
     log.info("NEW STATUS:  " + newStatus)
+    val messageKey = {
+      if ((status == PANIC) && (newStatus == ACTIVE)) {
+        messageKeyFor(RECOVERED)
+      } else {
+        messageKeyFor(newStatus)
+      }
+    }
     status = newStatus
-    val messageKey = messageKeyFor(status)
     gossip(StatusUpdateMsg(status, messageKey, eventTime))
   }
 
@@ -396,9 +400,16 @@ class ControlActor(
 
   private def actuateImpulse(impulse : PolarImpulse, eventTime : TimePoint)
   {
-    lastImpulse = Some(impulse)
-    movingUntil = eventTime + impulse.duration + sensorDelay
-    actuator.actuateMotion(impulse)
+    val cappedImpulse = {
+      if (impulse.duration > maxRollDuration) {
+        PolarImpulse(impulse.speed, maxRollDuration, impulse.theta)
+      } else {
+        impulse
+      }
+    }
+    lastImpulse = Some(cappedImpulse)
+    movingUntil = eventTime + cappedImpulse.duration + sensorDelay
+    actuator.actuateMotion(cappedImpulse)
   }
 
   override def preStart()

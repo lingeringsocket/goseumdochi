@@ -22,7 +22,6 @@ import android.hardware._
 import android.os._
 import android.preference._
 import android.view._
-import android.support.v4.view._
 
 import java.io._
 
