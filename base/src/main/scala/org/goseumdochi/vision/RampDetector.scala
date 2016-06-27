@@ -16,13 +16,12 @@
 package org.goseumdochi.vision
 
 import org.goseumdochi.common._
+import org.goseumdochi.common.MoreMath._
 
 import org.bytedeco.javacpp._
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
-
-import org.goseumdochi.common.MoreMath._
 
 case class OrientedRamp(
   center : PlanarPos,

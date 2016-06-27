@@ -16,10 +16,9 @@
 package org.goseumdochi.control
 
 import org.goseumdochi.common._
+import org.goseumdochi.common.MoreMath._
 import org.goseumdochi.vision._
 import org.goseumdochi.perception._
-
-import MoreMath._
 
 import akka.actor._
 import akka.event._
