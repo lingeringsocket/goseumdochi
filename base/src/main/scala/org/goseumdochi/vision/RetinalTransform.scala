@@ -21,6 +21,7 @@ trait RetinalTransform
 {
   def retinaToWorld(pos : RetinalPos) : PlanarPos
   def worldToRetina(pos : PlanarPos) : RetinalPos
+  def isValid(pos : RetinalPos) : Boolean = true
 }
 
 // assume your basic parallel projection, but make the retinal y axis point

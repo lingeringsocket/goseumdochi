@@ -181,11 +181,7 @@ class ControlActor(
 
   private var modeActor = localizationActor
 
-  private var doOrientation = settings.Control.orient
-
-  private var localizing = true
-
-  private var orienting = doOrientation
+  private val doOrientation = settings.Control.orient
 
   private var movingUntil = TimePoint.ZERO
 
@@ -253,7 +249,6 @@ class ControlActor(
       val bodyMapping = calibratedMsg.bodyMapping
       retinalTransform = calibratedMsg.xform
       bodyMappingOpt = Some(BodyMapping(bodyMapping.scale, 0.0))
-      orienting = false
       if (lightRequired) {
         actuator.actuateLight(NamedColor.BLACK)
       }
@@ -317,12 +312,11 @@ class ControlActor(
         observation.messageParams))
     }
     case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
-      if (localizing) {
+      if (status == LOCALIZING) {
         if (lightRequired) {
           actuator.actuateLight(NamedColor.BLACK)
         }
-        localizing = false
-        if (orienting) {
+        if (doOrientation) {
           enterMode(ORIENTING, eventTime)
           sendOutput(
             orientationActor, CameraAcquiredMsg(bottomRight, eventTime))
@@ -344,9 +338,7 @@ class ControlActor(
           // never seen
         } else {
           if ((checkTime - lastSeenTime) > panicDelay) {
-            if (orienting) {
-              // not much we can do yet
-            } else {
+            if (status == ACTIVE) {
               enterMode(PANIC, checkTime)
               sendOutput(behaviorActor, PanicAttackMsg(lastImpulse, checkTime))
               sendOutput(panicActor, PanicAttackMsg(lastImpulse, checkTime))

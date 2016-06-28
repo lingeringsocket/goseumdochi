@@ -41,7 +41,8 @@ class AboutFacePanicFsm()
     case Event(ControlActor.PanicAttackMsg(lastImpulse, eventTime), _) => {
       lastImpulse.foreach(forwardImpulse => {
         val reverseImpulse = forwardImpulse.copy(
-          theta = normalizeRadians(forwardImpulse.theta + PI))
+          theta = normalizeRadians(forwardImpulse.theta + PI),
+          duration = forwardImpulse.duration / 2)
         sender ! ControlActor.ActuateImpulseMsg(reverseImpulse, eventTime)
       })
       goto(Panic)

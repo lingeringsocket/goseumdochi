@@ -90,6 +90,12 @@ case class RestrictedPerspectiveTransform(
     intersection((vanishingPoint, xProj),(yCenter, yRight))
   }
 
+  override def isValid(p : RetinalPos) =
+  {
+    // anything above the vanishing point is in the sky, not on the ground
+    p.y > vanishingPoint.y
+  }
+
   def visualize(overlay : RetinalOverlay)
   {
     for (x <- -10 to 10) {

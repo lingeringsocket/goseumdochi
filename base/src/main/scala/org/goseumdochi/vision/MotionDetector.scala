@@ -139,15 +139,19 @@ abstract class MotionDetector(
     }
     val retinalPos = blobSorter.getAnchor(farthest)
     lastRetinalPos = Some(retinalPos)
-    val msg = MotionDetectedMsg(
-      xform.retinaToWorld(retinalPos),
-      OpenCvUtil.pos(farthest.tl),
-      OpenCvUtil.pos(farthest.br),
-      frameTime)
-    newDebugger(img) { overlay =>
-      msg.renderOverlay(overlay)
+    if (xform.isValid(retinalPos)) {
+      val msg = MotionDetectedMsg(
+        xform.retinaToWorld(retinalPos),
+        OpenCvUtil.pos(farthest.tl),
+        OpenCvUtil.pos(farthest.br),
+        frameTime)
+      newDebugger(img) { overlay =>
+        msg.renderOverlay(overlay)
+      }
+      Some(msg)
+    } else {
+      None
     }
-    Some(msg)
   }
 
   override def close()

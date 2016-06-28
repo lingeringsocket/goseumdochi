@@ -18,7 +18,8 @@ With Watchdog for Sphero, you can position your Android device for surveillance 
   <string name="about_project_url">https://goseumdochi.org</string>
   <string name="help_url">https://goseumdochi.org/watchdog-help#tips</string>
   <string name="ok">OK</string>
-  <string name="setup_instructions_text">Position camera so that crosshairs are centered on area to be monitored, wake up your paired Sphero and place it in the center, then press Connect</string>
+  <string name="setup_instructions_orientation">Position your Android device on its side in a stable location, in landscape orientation.</string>
+  <string name="setup_instructions_camera">Position camera so that crosshairs are centered on area to be monitored, wake up your paired Sphero and place it in the center, then press Connect</string>
   <string name="bump_text">
 Camera motion was detected, causing surveillance to end.  Each time your Android device moves, the new camera position must be recalibrated.  If you think this is being triggered in error, disable motion detection from the preferences menu.
   </string>
