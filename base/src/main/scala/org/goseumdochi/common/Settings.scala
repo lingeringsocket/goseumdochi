@@ -66,8 +66,6 @@ class Settings(rootConf : Config)
   {
     val subConf = conf.getConfig("behavior")
     val className = subConf.getString("class-name")
-    val intrusionDetectorClassName =
-      subConf.getString("intrusion-detector-class-name")
   }
 
   object Perception
@@ -100,6 +98,7 @@ class Settings(rootConf : Config)
     val persistenceFile = subConf.getString("persistence-file")
     val centeringUndershootFactor = subConf.getDouble(
       "centering-undershoot-factor")
+    val alignmentSmallAngle = subConf.getDouble("alignment-small-angle")
   }
 
   object BodyRecognition
@@ -116,6 +115,13 @@ class Settings(rootConf : Config)
     val bodyThreshold = subConf.getInt("body-threshold")
     val fineThreshold = subConf.getInt("fine-threshold")
     val coarseThreshold = subConf.getInt("coarse-threshold")
+  }
+
+  object IntrusionDetection
+  {
+    val subConf = conf.getConfig("intrusion-detection")
+    val motionClassName = subConf.getString("motion-class-name")
+    val pausePeriod = getMillis(subConf, "pause-period")
   }
 
   object Test

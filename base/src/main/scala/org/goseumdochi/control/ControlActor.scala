@@ -293,7 +293,9 @@ class ControlActor(
       lastSeenTime = eventTime
     }
     case objectDetected : VisionActor.ObjDetectedMsg => {
-      sendOutput(modeActor, objectDetected)
+      if ((objectDetected.eventTime > movingUntil) && (status != PANIC)) {
+        sendOutput(modeActor, objectDetected)
+      }
     }
     case UseVisionAnalyzersMsg(analyzers, eventTime) => {
       sendOutput(

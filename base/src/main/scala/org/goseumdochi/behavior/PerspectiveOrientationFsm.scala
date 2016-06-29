@@ -66,6 +66,8 @@ class PerspectiveOrientationFsm()
 {
   val centeringUndershootFactor = settings.Orientation.centeringUndershootFactor
 
+  val alignmentSmallAngle = settings.Orientation.alignmentSmallAngle
+
   private var retinalTransform = FlipRetinalTransform
 
   private val forwardImpulse =
@@ -102,10 +104,9 @@ class PerspectiveOrientationFsm()
   when(Aligning) {
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), a : Alignment) => {
       val motion = polarMotion(a.lastPos, pos)
-      val SMALL_ANGLE = 0.1
       if (motion.distance < 10.0) {
         stay
-      } else if (abs(motion.theta) < SMALL_ANGLE) {
+      } else if (abs(motion.theta) < alignmentSmallAngle) {
         val correction = a.lastTheta - motion.theta
         val predictedMotion = predictMotion(forwardImpulse)
         val scale = motion.distance / predictedMotion.distance
@@ -131,13 +132,12 @@ class PerspectiveOrientationFsm()
   when(Centering) {
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), a : Alignment) => {
       val motion = polarMotion(a.lastPos, pos)
-      val SMALL_ANGLE = 0.2
       if (motion.distance < 3.0) {
         stay
       } else {
         val delta = (a.bottomRight.x / 2.0) - pos.x
         val dist = abs(delta)
-        if (dist < 20.0) {
+        if (dist < 30.0) {
           applyImpulse(measurementImpulses.head, a.lastTheta, eventTime)
           recordObservation("MEASURING", eventTime)
           goto(Measuring) using a.copy(

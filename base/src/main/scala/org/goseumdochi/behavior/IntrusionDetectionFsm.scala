@@ -41,12 +41,14 @@ object IntrusionDetectionFsm
   // states
   case object Blind extends State
   case object WaitingForIntruder extends State
-  case object ManeuveringToIntruder extends State
 
   // data
   case object Empty extends Data
-  final case class IntruderAt(
+  final case class BodyAt(
     pos : PlanarPos
+  ) extends Data
+  final case class Paused(
+    expiration : TimePoint
   ) extends Data
 }
 import IntrusionDetectionFsm._
@@ -55,47 +57,49 @@ import MotionDetector._
 class IntrusionDetectionFsm()
     extends BehaviorFsm[State, Data]
 {
+  private val pausePeriod = settings.IntrusionDetection.pausePeriod
+
   startWith(Blind, Empty)
 
   when(Blind) {
     case Event(ControlActor.CameraAcquiredMsg(_, eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className,
-        settings.Behavior.intrusionDetectorClassName),
+        settings.IntrusionDetection.motionClassName),
         eventTime)
       goto(WaitingForIntruder)
     }
   }
 
   when(WaitingForIntruder) {
-    case Event(msg : MotionDetectedMsg, _) => {
-      goto(ManeuveringToIntruder) using IntruderAt(msg.pos)
-    }
-    case Event(msg : ControlActor.BodyMovedMsg, _) => {
-      stay
-    }
-  }
-
-  when(ManeuveringToIntruder) {
-    case Event(
-      ControlActor.BodyMovedMsg(pos, eventTime),
-      IntruderAt(intruderPos)) =>
-    {
+    case Event(msg : MotionDetectedMsg, BodyAt(bodyPos)) => {
+      val eventTime = msg.eventTime
+      val intruderPos = msg.pos
       // HALF_PI adjusts for screen orientation
       val theta = normalizeRadiansPositive(
-        polarMotion(pos, intruderPos).theta + HALF_PI)
+        polarMotion(bodyPos, intruderPos).theta + HALF_PI)
       var heading = ((theta * 12) / TWO_PI).toInt
       if (heading == 0) {
         heading = 12
       }
       recordObservation("INTRUDER", eventTime, Seq(heading))
       sender ! ControlActor.ActuateMoveMsg(
-        pos, intruderPos, settings.Motor.defaultSpeed,
+        bodyPos, intruderPos, settings.Motor.defaultSpeed,
         0.seconds, eventTime)
-      goto(WaitingForIntruder) using Empty
+      goto(WaitingForIntruder) using Paused(eventTime + pausePeriod)
     }
     case Event(msg : MotionDetectedMsg, _) => {
       stay
+    }
+    case Event(msg : ControlActor.BodyMovedMsg, Paused(expiration)) => {
+      if (msg.eventTime > expiration) {
+        stay using BodyAt(msg.pos)
+      } else {
+        stay
+      }
+    }
+    case Event(msg : ControlActor.BodyMovedMsg, _) => {
+      stay using BodyAt(msg.pos)
     }
   }
 
