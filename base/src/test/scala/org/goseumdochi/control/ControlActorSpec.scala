@@ -16,12 +16,11 @@
 package org.goseumdochi.control
 
 import org.goseumdochi.common._
+import org.goseumdochi.common.MoreMath._
 import org.goseumdochi.vision._
 
 import akka.actor._
 import akka.testkit._
-
-import MoreMath._
 
 import scala.concurrent.duration._
 
@@ -107,8 +106,8 @@ class ControlActorSpec extends AkkaSpecification(
 
       val panicImpulse = actuator.expectImpulse
       panicImpulse.speed must be closeTo(0.5 +/- 0.01)
-      panicImpulse.duration.toMillis must be equalTo 1299
-      panicImpulse.theta must be closeTo(-1.57 +/- 0.01)
+      panicImpulse.duration.toMillis must be equalTo 250
+      panicImpulse.theta must be closeTo(3.14 +/- 0.01)
 
       expectQuiescence
     }

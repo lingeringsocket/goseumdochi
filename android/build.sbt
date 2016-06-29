@@ -4,69 +4,56 @@ android.Plugin.androidBuild
 
 platformTarget in Android := "android-23"
 
-// Application Name
+targetSdkVersion in Android := "23"
+
 name := """goseumdochi-android"""
 
-// Application Version
-version := "0.1"
+organization := Common.organization
 
-scalaVersion := "2.11.7"
+version := Common.version
 
-val javacppVersion = "1.2"
-
-val opencvVersion = "3.1.0"
-
-val ffmpegVersion = "3.0.2"
+scalaVersion := Common.scalaVersion
 
 // FIXME:  add back in "-deprecation", "-Xfatal-warnings"
-scalacOptions ++= Seq("-unchecked", "-feature", "-Xlint",
-  "-Ywarn-unused-import")
+scalacOptions ++= Common.scalacOptionsAllowWarnings
 
 autoCompilerPlugins := true
 
 classpathTypes += "maven-plugin"
 
-resolvers ++= Seq(Resolver.mavenLocal,
-  DefaultMavenRepository,
-  Resolver.typesafeRepo("releases"),
-  Resolver.typesafeRepo("snapshots"),
-  Resolver.typesafeIvyRepo("snapshots"),
-  Resolver.sonatypeRepo("releases"),
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.defaultLocal,
-  bintray.Opts.resolver.jcenter)
+resolvers ++= Common.resolvers
 
 libraryDependencies ++= Seq(
   aar("com.google.android" % "multidex" % "0.1"),
   aar("com.google.android.gms" % "play-services" % "4.0.30"),
-  aar("com.android.support" % "support-v4" % "20.0.0"),
-  "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "org.bytedeco"                 % "javacpp"          % "1.2.1",
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "android-arm",
-  "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier "android-arm",
+  aar("com.android.support" % "support-v4" % "22.1.0"),
+  aar("com.android.support" % "appcompat-v7" % "22.1.0"),
   "org.slf4j" % "slf4j-android" % "1.7.21"
 )
+
+libraryDependencies ++= Common.javacvDeps
+
+libraryDependencies ++= Common.javacvPlatformDeps("compile", "android-arm")
+
+libraryDependencies ++= Common.ffmpegPlatformDeps("compile", "android-arm")
 
 // Override the run task with the android:run
 run <<= run in Android
 
-// Activate proguard for Scala
-proguardScala in Android := true
-
-// Activate proguard for Android
 useProguard in Android := true
 
 useProguardInDebug in Android := true
+
+proguardScala in Android := true
 
 dexMulti in Android := true
 
 dexMinimizeMain in Android := true
 
+dexMaxProcessCount := 1
+
 dexMainClasses in Android := Seq(
   "org/goseumdochi/android/MultidexApplication.class",
-  "java/rmi/Remote.class",
   "android/support/multidex/BuildConfig.class",
   "android/support/multidex/MultiDex$V14.class",
   "android/support/multidex/MultiDex$V19.class",
@@ -121,3 +108,7 @@ proguardOptions in Android ++= Seq(
 packagingOptions in Android := PackagingOptions(merges=Seq("reference.conf"), excludes=Seq("META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.properties","META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.xml","META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.properties","META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.xml", "META-INF/MANIFEST.MF", "META-INF/LICENSE.txt", "META-INF/LICENSE", "META-INF/NOTICE.txt", "META-INF/NOTICE"))
 
 javacOptions ++= Seq("-target", "1.7", "-source", "1.7")
+
+maxErrors := Common.maxErrors
+
+traceLevel := Common.traceLevel

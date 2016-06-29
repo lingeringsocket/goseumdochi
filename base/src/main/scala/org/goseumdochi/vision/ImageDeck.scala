@@ -72,4 +72,10 @@ class ImageDeck
     newMap.put(NO_CONVERSION, newBgr)
     buf += newMap
   }
+
+  def clear()
+  {
+    buf.foreach(_.values.foreach(_.release))
+    buf.clear
+  }
 }

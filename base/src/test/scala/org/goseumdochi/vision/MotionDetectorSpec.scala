@@ -36,7 +36,7 @@ class MotionDetectorSpec extends VisualizableSpecification
   private def loadImage(filename : String) =
     OpenCvUtil.grayscale(cvLoadImage(filename))
 
-  private def detectMotion(
+  private def detectMotionOpt(
     motionDetector : MotionDetector,
     filename0 : String, filename1 : String, filename2 : String) =
   {
@@ -46,25 +46,33 @@ class MotionDetectorSpec extends VisualizableSpecification
     val beforeImg = loadImage(filename1)
     val afterImg = loadImage(filename2)
 
-    motionDetector.detectMotion(prevImg, beforeImg)
+    motionDetector.detectMotion(prevImg, TimePoint.ZERO)
+    motionDetector.detectMotion(beforeImg, TimePoint.ZERO)
+    val msgOpt = motionDetector.detectMotion(
+      afterImg, TimePoint.ZERO)
+    msgOpt.map(_.pos)
+  }
 
-    val coarseOpt = motionDetector.detectMotionMsg(
-      beforeImg, afterImg, TimePoint.ZERO)
-    val msg = coarseOpt.get
-    msg.pos
+  private def detectMotion(
+    motionDetector : MotionDetector,
+    filename0 : String, filename1 : String, filename2 : String) =
+  {
+    detectMotionOpt(motionDetector, filename0, filename1, filename2).get
   }
 
   "MotionDetector" should
   {
     "detect nothing" in
     {
-      val beforeImg = loadImage("data/baseline1.jpg")
-      val afterImg = loadImage("data/baseline1.jpg")
+      val beforeImg = "data/baseline1.jpg"
+      val afterImg = "data/baseline1.jpg"
 
-      val coarseOpt = coarseSizeDetector.detectMotion(beforeImg, afterImg)
+      val coarseOpt = detectMotionOpt(
+        coarseSizeDetector, beforeImg, beforeImg, afterImg)
       coarseOpt must beEmpty
 
-      val fineOpt = fineDetector.detectMotion(beforeImg, afterImg)
+      val fineOpt = detectMotionOpt(
+        fineDetector, beforeImg, beforeImg, afterImg)
       fineOpt must beEmpty
     }
 
@@ -73,8 +81,8 @@ class MotionDetectorSpec extends VisualizableSpecification
       val pos = detectMotion(
         coarseSizeDetector,
         "data/baseline1.jpg", "data/baseline1.jpg", "data/intruder.jpg")
-      pos.x must be closeTo(429.0 +/- 0.1)
-      pos.y must be closeTo(-146.0 +/- 0.1)
+      pos.x must be closeTo(509.0 +/- 0.1)
+      pos.y must be closeTo(-113.0 +/- 0.1)
     }
 
     "detect feet appearing" in
@@ -82,8 +90,8 @@ class MotionDetectorSpec extends VisualizableSpecification
       val pos = detectMotion(
         coarseGravityDetector,
         "data/walk1.jpg", "data/walk1.jpg", "data/walk2.jpg")
-      pos.x must be closeTo(130.0 +/- 0.1)
-      pos.y must be closeTo(-394.0 +/- 0.1)
+      pos.x must be closeTo(131.0 +/- 0.1)
+      pos.y must be closeTo(-395.0 +/- 0.1)
     }
 
     "detect feet walking" in
@@ -91,8 +99,8 @@ class MotionDetectorSpec extends VisualizableSpecification
       val pos = detectMotion(
         coarseGravityDetector,
         "data/walk1.jpg", "data/walk2.jpg", "data/walk3.jpg")
-      pos.x must be closeTo(546.0 +/- 0.1)
-      pos.y must be closeTo(-211.0 +/- 0.1)
+      pos.x must be closeTo(551.0 +/- 0.1)
+      pos.y must be closeTo(-207.0 +/- 0.1)
     }
 
     "detect feet turning" in
@@ -101,20 +109,22 @@ class MotionDetectorSpec extends VisualizableSpecification
         coarseGravityDetector,
         "data/walk2.jpg", "data/walk3.jpg", "data/walk4.jpg")
       pos.x must be closeTo(794.0 +/- 0.1)
-      pos.y must be closeTo(-286.0 +/- 0.1)
+      pos.y must be closeTo(-287.0 +/- 0.1)
     }
 
     "detect fine motion" in
     {
       postVisualize(coarseSizeDetector, fineDetector)
 
-      val beforeImg = loadImage("data/room1.jpg")
-      val afterImg = loadImage("data/room2.jpg")
+      val beforeImg = "data/room1.jpg"
+      val afterImg = "data/room2.jpg"
 
-      val coarseOpt = coarseSizeDetector.detectMotion(beforeImg, afterImg)
+      val coarseOpt = detectMotionOpt(
+        coarseSizeDetector, beforeImg, beforeImg, afterImg)
       coarseOpt must beEmpty
 
-      val fineOpt = fineDetector.detectMotion(beforeImg, afterImg)
+      val fineOpt = detectMotionOpt(
+        fineDetector, beforeImg, beforeImg, afterImg)
       fineOpt must not beEmpty
 
       val pos = fineOpt.get

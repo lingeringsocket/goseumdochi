@@ -50,9 +50,9 @@ class FlashyBodyDetector(
     val light = Iterable(VisionActor.RequireLightMsg(randomColor, frameTime))
     val motion =
       motionDetector.detectMotion(
-        imageDeck.previousGray, imageDeck.currentGray).map(
-        pos => {
-          val msg = BodyDetectedMsg(pos, frameTime)
+        imageDeck.currentGray, frameTime).map(
+        motionMsg => {
+          val msg = BodyDetectedMsg(motionMsg.pos, frameTime)
           newDebugger(imageDeck.currentBgr) { overlay =>
             msg.renderOverlay(overlay)
           }

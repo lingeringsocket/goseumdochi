@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
   <style name="GoseumdochiTheme"
-         parent="@android:style/Theme.Holo.Light">
+         parent="Theme.AppCompat.Light">
+  </style>
+  <style name="GoseumdochiThemeNoTitleBar"
+         parent="GoseumdochiTheme">
+    <item name="android:windowNoTitle">true</item>
+    <item name="android:windowFullscreen">true</item>
   </style>
 </resources>

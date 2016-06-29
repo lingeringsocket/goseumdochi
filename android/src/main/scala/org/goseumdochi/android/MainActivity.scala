@@ -47,9 +47,7 @@ class MainActivity extends MainMenuActivityBase
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     val enableVoice = prefs.getBoolean(
       SettingsActivity.PREF_ENABLE_VOICE, true)
-    if (enableVoice) {
-      GlobalTts.init(getApplicationContext)
-    }
+    GlobalTts.init(getApplicationContext, enableVoice)
     GlobalVideo.init(getApplicationContext, this)
     findView(TR.cctv_text).setMovementMethod(LinkMovementMethod.getInstance)
     requestPrerequisites

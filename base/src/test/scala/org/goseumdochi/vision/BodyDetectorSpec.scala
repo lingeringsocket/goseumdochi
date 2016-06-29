@@ -82,6 +82,8 @@ class BodyDetectorSpec extends VisualizableSpecification
       val img2 = cvLoadImage("data/blinkorange.jpg")
       val imageDeck = new ImageDeck
       imageDeck.cycle(img1)
+      flashyBodyDetector.analyzeFrame(
+        imageDeck, TimePoint.ZERO, None)
       imageDeck.cycle(img2)
       val msgs = flashyBodyDetector.analyzeFrame(
         imageDeck, TimePoint.ZERO, None)
@@ -196,8 +198,8 @@ class BodyDetectorSpec extends VisualizableSpecification
     "ignore sparkles while detecting magenta body" >> {
       Fragment.foreach(
         Seq(
-          ("gnex1", PlanarPos(574.0, -524.0)),
-          ("gnex2", PlanarPos(133.0, -654.0))))
+          ("gnex1", PlanarPos(575.0, -521.0)),
+          ("gnex2", PlanarPos(141.0, -652.0))))
       { case (prefix, expectedPos) =>
 
         "using file prefix " + prefix ! {

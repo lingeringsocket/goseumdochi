@@ -16,7 +16,6 @@
 package org.goseumdochi.control
 
 import org.goseumdochi.common._
-
 import org.goseumdochi.common.MoreMath._
 
 import scala.concurrent.duration._

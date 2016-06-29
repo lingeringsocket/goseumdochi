@@ -16,7 +16,7 @@
 package org.goseumdochi.sphero
 
 import org.goseumdochi.common._
-import MoreMath._
+import org.goseumdochi.common.MoreMath._
 
 import scala.collection.mutable._
 

@@ -16,13 +16,13 @@
 package org.goseumdochi.behavior
 
 import org.goseumdochi.common._
+import org.goseumdochi.common.MoreMath._
 import org.goseumdochi.control._
 import org.goseumdochi.vision._
 
 import akka.actor._
 
 import scala.concurrent.duration._
-import org.goseumdochi.common.MoreMath._
 
 object RampJumperFsm
 {

@@ -16,12 +16,11 @@
 package org.goseumdochi.vision
 
 import org.goseumdochi.common._
+import org.goseumdochi.common.MoreMath._
 
 import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
-
-import MoreMath._
 
 import collection._
 import util._
@@ -107,14 +106,19 @@ class RoundBodyDetector(
           minRadius = 1
         }
         maxRadius = c.radius + 8
-        val msg =
-          BodyDetectedMsg(
-            xform.retinaToWorld(RetinalPos(c.centerX, c.centerY)),
-            frameTime)
-        newDebugger(img) { overlay =>
-          msg.renderOverlay(overlay)
+        val retinalPos = RetinalPos(c.centerX, c.centerY)
+        if (xform.isValid(retinalPos)) {
+          val msg =
+            BodyDetectedMsg(
+              xform.retinaToWorld(retinalPos),
+              frameTime)
+          newDebugger(img) { overlay =>
+            msg.renderOverlay(overlay)
+          }
+          Some(msg)
+        } else {
+          None
         }
-        Some(msg)
       }
       case _ => {
         None

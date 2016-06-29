@@ -29,7 +29,7 @@ object ControlActor
 {
   object ControlStatus extends Enumeration {
     type ControlStatus = Value
-    val INITIALIZING, LOCALIZING, ORIENTING, ACTIVE, PANIC = Value
+    val LOCALIZING, ORIENTING, ACTIVE, PANIC, RECOVERED = Value
   }
   import ControlStatus._
 
@@ -43,6 +43,7 @@ object ControlActor
     pos : PlanarPos, eventTime : TimePoint)
       extends EventMsg
   final case class PanicAttackMsg(
+    lastImpulse : Option[PolarImpulse],
     eventTime : TimePoint)
       extends EventMsg
 
@@ -100,6 +101,9 @@ object ControlActor
     eventTime : TimePoint,
     messageParams : Seq[Any] = Seq.empty)
       extends EventMsg
+  final case class PanicEndMsg(
+    eventTime : TimePoint)
+      extends EventMsg
 
   // pass-through messages (from vision to behavior)
   // any kind of VisionActor.ObjDetectedMsg
@@ -113,6 +117,8 @@ object ControlActor
   final val ORIENTATION_ACTOR_NAME = "orientationActor"
 
   final val BEHAVIOR_ACTOR_NAME = "behaviorActor"
+
+  final val PANIC_ACTOR_NAME = "panicActor"
 
   def readOrientation(settings : Settings) : (RetinalTransform, BodyMapping) =
   {
@@ -169,16 +175,19 @@ class ControlActor(
   private val behaviorActor = context.actorOf(
     Props(Class.forName(settings.Behavior.className)),
     BEHAVIOR_ACTOR_NAME)
+  private val panicActor = context.actorOf(
+    Props(Class.forName(settings.Control.panicClassName)),
+    PANIC_ACTOR_NAME)
 
-  private var doOrientation = settings.Control.orient
+  private var modeActor = localizationActor
 
-  private var localizing = true
-
-  private var orienting = doOrientation
+  private val doOrientation = settings.Control.orient
 
   private var movingUntil = TimePoint.ZERO
 
   private var bodyMappingOpt : Option[BodyMapping] = None
+
+  private var lastImpulse : Option[PolarImpulse] = None
 
   private var retinalTransform : RetinalTransform = {
     if (doOrientation) {
@@ -202,11 +211,13 @@ class ControlActor(
 
   private val sensorDelay = settings.Vision.sensorDelay
 
+  private val maxRollDuration = settings.Control.maxRollDuration
+
   private val perception = new PlanarPerception(settings)
 
   private var lightRequired = false
 
-  private var status = INITIALIZING
+  private var status = LOCALIZING
 
   private def getActorString(ref : ActorRef) = ref.path.name
 
@@ -232,21 +243,12 @@ class ControlActor(
     receiver ! msg
   }
 
-  private def updateStatus(newStatus : ControlStatus, eventTime : TimePoint)
-  {
-    log.info("NEW STATUS:  " + newStatus)
-    status = newStatus
-    val messageKey = messageKeyFor(status)
-    gossip(StatusUpdateMsg(status, messageKey, eventTime))
-  }
-
   private def receiveInput(eventMsg : EventMsg) = eventMsg match
   {
     case calibratedMsg : CalibratedMsg => {
       val bodyMapping = calibratedMsg.bodyMapping
       retinalTransform = calibratedMsg.xform
       bodyMappingOpt = Some(BodyMapping(bodyMapping.scale, 0.0))
-      orienting = false
       if (lightRequired) {
         actuator.actuateLight(NamedColor.BLACK)
       }
@@ -254,7 +256,7 @@ class ControlActor(
       actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
       orientationActor ! PoisonPill.getInstance
       writeOrientation(settings, calibratedMsg)
-      activateBehavior(calibratedMsg.eventTime)
+      startActiveBehavior(calibratedMsg.eventTime)
     }
     case ActuateLightMsg(color : LightColor, eventTime) => {
       actuator.actuateLight(color)
@@ -273,7 +275,7 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       bottomRight = pos
-      updateStatus(LOCALIZING, eventTime)
+      enterMode(LOCALIZING, eventTime)
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
     case VisionActor.RequireLightMsg(color, eventTime) => {
@@ -285,24 +287,14 @@ class ControlActor(
     case BodyDetector.BodyDetectedMsg(pos, eventTime) => {
       if (eventTime > movingUntil) {
         val moveMsg = BodyMovedMsg(pos, eventTime)
-        if (localizing) {
-          sendOutput(localizationActor, moveMsg)
-        } else if (orienting) {
-          sendOutput(orientationActor, moveMsg)
-        } else {
-          sendOutput(behaviorActor, moveMsg)
-        }
+        sendOutput(modeActor, moveMsg)
       }
       lastSeenPos = pos
       lastSeenTime = eventTime
     }
     case objectDetected : VisionActor.ObjDetectedMsg => {
-      if (localizing) {
-        sendOutput(localizationActor, objectDetected)
-      } else if (orienting) {
-        sendOutput(orientationActor, objectDetected)
-      } else if (objectDetected.eventTime > movingUntil) {
-        sendOutput(behaviorActor, objectDetected)
+      if ((objectDetected.eventTime > movingUntil) && (status != PANIC)) {
+        sendOutput(modeActor, objectDetected)
       }
     }
     case UseVisionAnalyzersMsg(analyzers, eventTime) => {
@@ -322,21 +314,23 @@ class ControlActor(
         observation.messageParams))
     }
     case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
-      if (localizing) {
+      if (status == LOCALIZING) {
         if (lightRequired) {
           actuator.actuateLight(NamedColor.BLACK)
         }
-        localizing = false
-        if (orienting) {
-          updateStatus(ORIENTING, eventTime)
+        if (doOrientation) {
+          enterMode(ORIENTING, eventTime)
           sendOutput(
             orientationActor, CameraAcquiredMsg(bottomRight, eventTime))
         } else {
-          activateBehavior(eventTime)
+          startActiveBehavior(eventTime)
         }
         localizationActor ! PoisonPill.getInstance
       }
       sendOutput(visionActor, VisionActor.HintBodyLocationMsg(pos, eventTime))
+    }
+    case PanicEndMsg(eventTime) => {
+      enterMode(ACTIVE, eventTime)
     }
     case CheckVisibilityMsg(checkTime) => {
       if (checkTime < movingUntil) {
@@ -346,12 +340,10 @@ class ControlActor(
           // never seen
         } else {
           if ((checkTime - lastSeenTime) > panicDelay) {
-            if (orienting) {
-              // not much we can do yet
-            } else {
-              updateStatus(PANIC, checkTime)
-              sendOutput(behaviorActor, PanicAttackMsg(checkTime))
-              moveToCenter(lastSeenPos, checkTime)
+            if (status == ACTIVE) {
+              enterMode(PANIC, checkTime)
+              sendOutput(behaviorActor, PanicAttackMsg(lastImpulse, checkTime))
+              sendOutput(panicActor, PanicAttackMsg(lastImpulse, checkTime))
             }
           } else {
             // all is well
@@ -367,9 +359,9 @@ class ControlActor(
     case _ =>
   }
 
-  private def activateBehavior(eventTime : TimePoint)
+  private def startActiveBehavior(eventTime : TimePoint)
   {
-    updateStatus(ACTIVE, eventTime)
+    enterMode(ACTIVE, eventTime)
     sendOutput(
       visionActor,
       VisionActor.ActivateAugmentersMsg(
@@ -378,22 +370,40 @@ class ControlActor(
       behaviorActor, CameraAcquiredMsg(bottomRight, eventTime))
   }
 
+  private def enterMode(newStatus : ControlStatus, eventTime : TimePoint)
+  {
+    modeActor = newStatus match {
+      case ORIENTING => orientationActor
+      case ACTIVE => behaviorActor
+      case PANIC => panicActor
+      case _ => localizationActor
+    }
+    log.info("NEW STATUS:  " + newStatus)
+    val messageKey = {
+      if ((status == PANIC) && (newStatus == ACTIVE)) {
+        messageKeyFor(RECOVERED)
+      } else {
+        messageKeyFor(newStatus)
+      }
+    }
+    status = newStatus
+    gossip(StatusUpdateMsg(status, messageKey, eventTime))
+  }
+
   private def bodyMapping = bodyMappingOpt.get
 
   private def actuateImpulse(impulse : PolarImpulse, eventTime : TimePoint)
   {
-    movingUntil = eventTime + impulse.duration + sensorDelay
-    actuator.actuateMotion(impulse)
-  }
-
-  private def moveToCenter(pos : PlanarPos, eventTime : TimePoint)
-  {
-    val from = pos
-    val to = retinalTransform.retinaToWorld(
-      RetinalPos(bottomRight.x / 2.0, bottomRight.y / 2.0))
-    val impulse = bodyMapping.computeImpulse(
-      from, to, settings.Motor.defaultSpeed, 0.milliseconds)
-    sendOutput(self, ActuateImpulseMsg(impulse, eventTime))
+    val cappedImpulse = {
+      if (impulse.duration > maxRollDuration) {
+        PolarImpulse(impulse.speed, maxRollDuration, impulse.theta)
+      } else {
+        impulse
+      }
+    }
+    lastImpulse = Some(cappedImpulse)
+    movingUntil = eventTime + cappedImpulse.duration + sensorDelay
+    actuator.actuateMotion(cappedImpulse)
   }
 
   override def preStart()

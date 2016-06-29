@@ -86,7 +86,7 @@ class ColorfulBodyDetector(
               return None
             }
             setDiffCutoff = true
-            maxDiffCutoff = (0.95*baselineMin + 0.05*newMin).toInt
+            maxDiffCutoff = (0.8*baselineMin + 0.2*newMin).toInt
             compareColors(currentHsv, color)
           }
           cvThreshold(
@@ -153,9 +153,13 @@ class ColorfulBodyDetector(
       }
       val biggest = rects.sortWith(blobSorter.compare(_, _) < 0).head
       val retinalPos = blobSorter.getAnchor(biggest)
-      val pos = xform.retinaToWorld(retinalPos)
-      val msg = BodyDetectedMsg(pos, frameTime)
-      Some(msg)
+      if (xform.isValid(retinalPos)) {
+        val pos = xform.retinaToWorld(retinalPos)
+        val msg = BodyDetectedMsg(pos, frameTime)
+        Some(msg)
+      } else {
+        None
+      }
     }
   }
 

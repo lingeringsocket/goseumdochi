@@ -20,9 +20,19 @@ import android.speech.tts._
 
 object GlobalTts
 {
+  private var appContextOpt : Option[Context] = None
+
   private var textToSpeech : Option[TextToSpeech] = None
 
-  def init(appContext : Context)
+  def init(appContext : Context, enable : Boolean)
+  {
+    appContextOpt = Some(appContext)
+    if (enable) {
+      start(appContext)
+    }
+  }
+
+  private def start(appContext : Context)
   {
     var newTextToSpeech : TextToSpeech = null
     newTextToSpeech = new TextToSpeech(
@@ -43,6 +53,16 @@ object GlobalTts
       t.shutdown
     })
     textToSpeech = None
+    appContextOpt = None
+  }
+
+  def reinit(enable : Boolean)
+  {
+    if (enable) {
+      start(appContextOpt.get)
+    } else {
+      shutdown
+    }
   }
 
   def speak(voiceMessage : String)

@@ -44,9 +44,9 @@ class IntrusionDetectionFsmSpec extends AkkaSpecification
       val intruderPos = PlanarPos(100, 100)
       val retinalPos = RetinalPos(0, 0)
 
+      fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
       fsm ! MotionDetectedMsg(
         intruderPos, retinalPos, retinalPos, TimePoint.ZERO)
-      fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
 
       val move1 = expectMsgClass(classOf[ControlActor.ActuateMoveMsg])
       move1.from must be equalTo(initialPos)
@@ -54,8 +54,24 @@ class IntrusionDetectionFsmSpec extends AkkaSpecification
       move1.speed must be equalTo(0.5)
       move1.extraTime must be equalTo 0.seconds
 
+      val intruderPos2 = PlanarPos(200, 200)
       val intermediatePos = PlanarPos(50.0, 50.0)
-      fsm ! ControlActor.BodyMovedMsg(intermediatePos, TimePoint.ZERO)
+      fsm ! ControlActor.BodyMovedMsg(intermediatePos, TimePoint.ONE)
+      fsm ! MotionDetectedMsg(
+        intruderPos2, retinalPos, retinalPos, TimePoint.ONE)
+
+      // pause period
+      expectQuiescence
+
+      fsm ! ControlActor.BodyMovedMsg(intermediatePos, TimePoint.TEN)
+      fsm ! MotionDetectedMsg(
+        intruderPos2, retinalPos, retinalPos, TimePoint.TEN)
+
+      val move2 = expectMsgClass(classOf[ControlActor.ActuateMoveMsg])
+      move2.from must be equalTo(intermediatePos)
+      move2.to must be equalTo(intruderPos2)
+      move2.speed must be equalTo(0.5)
+      move2.extraTime must be equalTo 0.seconds
 
       expectQuiescence
     }

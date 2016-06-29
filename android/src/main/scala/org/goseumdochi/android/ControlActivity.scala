@@ -48,7 +48,7 @@ object ControlActivity
 
 import ControlActivity._
 
-class ControlActivity extends ActivityBase
+class ControlActivity extends ActivityBaseNoCompat
     with RobotChangedStateListener with SensorEventListener
 {
   private var robot : Option[ConvenienceRobot] = None
@@ -123,7 +123,6 @@ class ControlActivity extends ActivityBase
 
   override protected def onCreate(savedInstanceState : Bundle)
   {
-    requestWindowFeature(Window.FEATURE_NO_TITLE)
     super.onCreate(savedInstanceState)
 
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -154,6 +153,7 @@ class ControlActivity extends ActivityBase
     layout.addView(preview)
     layout.addView(controlView)
     controlView.setOnTouchListener(controlView)
+    findView(TR.control_linear_layout).bringToFront
   }
 
   override protected def onStart()

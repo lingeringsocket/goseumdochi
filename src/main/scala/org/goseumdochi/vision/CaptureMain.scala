@@ -18,13 +18,10 @@ package org.goseumdochi.vision
 import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_imgcodecs._
-import org.bytedeco.javacpp.opencv_highgui._
-import org.bytedeco.javacv._
 
 import com.typesafe.config._
 
 import java.io._
-import java.awt.event._
 
 object CaptureMain extends App with RetinalTheaterListener
 {

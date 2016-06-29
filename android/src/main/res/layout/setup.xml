@@ -11,20 +11,19 @@
       android:layout_weight="1">
     <TextView
         android:id="@+id/setup_instructions"
-        android:elevation="1dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/setup_instructions_text"
+        android:text="@string/setup_instructions_orientation"
         android:textSize="20dip"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:textColor="@color/blue"/>
+        android:textColor="@color/red"
+        android:background="#60FFFFFF" />
     <Button
-        android:id="@+id/button_start"
-        android:elevation="1dp"
+        android:id="@+id/button_connect"
         android:text="@string/connect_label"
         android:layout_alignParentRight="true"
         android:layout_marginTop="10dp"

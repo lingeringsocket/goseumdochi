@@ -16,22 +16,46 @@
 package org.goseumdochi.android
 
 import android.content._
+import android.hardware._
 import android.os._
 import android.view._
 
-class SetupActivity extends ActivityBase
+class SetupActivity extends ActivityBaseNoCompat
 {
-  lazy val setupView = new SetupView(this)
-  lazy val preview = new CameraPreview(this, setupView)
+  private var orientation = 0
+
+  private lazy val setupView = new SetupView(this)
+
+  private lazy val preview = new CameraPreview(this, setupView)
+
+  private lazy val orientationListener = new OrientationEventListener(
+    this, SensorManager.SENSOR_DELAY_NORMAL)
+  {
+    override def onOrientationChanged(newOrientation : Int)
+    {
+      orientation = newOrientation
+    }
+  }
 
   override protected def onCreate(savedInstanceState : Bundle)
   {
-    requestWindowFeature(Window.FEATURE_NO_TITLE)
     super.onCreate(savedInstanceState)
+
+    if (orientationListener.canDetectOrientation) {
+      orientationListener.enable
+    } else {
+      orientationListener.disable
+    }
 
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
     getWindow.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     startCamera
+  }
+
+  override protected def onDestroy
+  {
+    orientationListener.disable
+    super.onDestroy
   }
 
   private def startCamera()
@@ -40,6 +64,8 @@ class SetupActivity extends ActivityBase
     val layout = findView(TR.setup_preview)
     layout.addView(preview)
     layout.addView(setupView)
+    getInstructions.bringToFront
+    getConnectButton.bringToFront
   }
 
   def onConnectClicked(v : View)
@@ -49,4 +75,12 @@ class SetupActivity extends ActivityBase
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     startActivity(intent)
   }
+
+  def canDetectOrientation = orientationListener.canDetectOrientation
+
+  def getOrientation = orientation
+
+  def getInstructions = findView(TR.setup_instructions)
+
+  def getConnectButton = findView(TR.button_connect)
 }

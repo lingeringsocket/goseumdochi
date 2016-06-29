@@ -15,19 +15,21 @@
 
 package org.goseumdochi.android
 
-import android.content._
+import org.goseumdochi.common.MoreMath._
+
 import android.graphics._
 import android.hardware._
 import android.view._
 
 import android.hardware.Camera
 
-class SetupView(context : Context)
+class SetupView(context : SetupActivity)
     extends View(context) with Camera.PreviewCallback
 {
   override def onPreviewFrame(data : Array[Byte], camera : Camera)
   {
     try {
+      postInvalidate
       camera.addCallbackBuffer(data)
     } catch {
       // need to swallow these to prevent spurious crashes
@@ -42,8 +44,11 @@ class SetupView(context : Context)
 
     val red = new Paint
     red.setColor(Color.RED)
-    val height = 50
-    red.setTextSize(height)
+    red.setStrokeWidth(5)
+
+    val blue = new Paint
+    blue.setColor(Color.BLUE)
+    blue.setStrokeWidth(3)
 
     val left = 0f
     val right = canvas.getWidth
@@ -52,7 +57,29 @@ class SetupView(context : Context)
     val centerX = (left + right) / 2
     val centerY = (top + bottom) / 2
 
+    val orientation = context.getOrientation
+    val theta = (TWO_PI * orientation) / 360.0
+    val radius = 100f
+
     canvas.drawLine(left, centerY, right, centerY, yellow)
     canvas.drawLine(centerX, top, centerX, bottom, yellow)
+
+    var stringRes = R.string.setup_instructions_camera
+    if (context.canDetectOrientation) {
+      val arrowX = centerX + radius*Math.cos(theta).toFloat
+      val arrowY = centerY + radius*Math.sin(theta).toFloat
+      val goalY = centerY - radius
+      canvas.drawLine(centerX, centerY, arrowX, arrowY, red)
+      canvas.drawLine(centerX, centerY, centerX, goalY, blue)
+      val button = context.getConnectButton
+      if (Math.abs(orientation - 270) > 5) {
+        stringRes = R.string.setup_instructions_orientation
+        button.setVisibility(View.GONE)
+      } else {
+        button.setVisibility(View.VISIBLE)
+      }
+    }
+
+    context.getInstructions.setText(context.getString(stringRes))
   }
 }

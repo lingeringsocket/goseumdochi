@@ -1,45 +1,28 @@
 name := "goseumdochi-desktop-sphero"
 
-organization := "org.goseumdochi"
+organization := Common.organization
 
-version := "0.1"
+version := Common.version
 
 isSnapshot := true
 
-scalaVersion := "2.11.7"
+scalaVersion := Common.scalaVersion
 
-val javacppVersion = "1.2"
-
-val opencvVersion = "3.1.0"
-
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint",
-  "-Xfatal-warnings", "-Ywarn-unused-import")
+scalacOptions ++= Common.scalacOptions
 
 scalacOptions in Test ++= Seq("-Yrangepos")
 
-lazy val platform = org.bytedeco.javacpp.Loader.getPlatform
-
 classpathTypes += "maven-plugin"
 
-resolvers ++= Seq(Resolver.mavenLocal,
-  DefaultMavenRepository,
-  Resolver.typesafeRepo("releases"),
-  Resolver.typesafeRepo("snapshots"),
-  Resolver.typesafeIvyRepo("snapshots"),
-  Resolver.sonatypeRepo("releases"),
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.defaultLocal,
-  bintray.Opts.resolver.jcenter)
+resolvers ++= Common.resolvers
 
-libraryDependencies ++= Seq(
-  "com.typesafe.akka"      %% "akka-actor"     % "2.3.15",
-  "com.typesafe.akka"      %% "akka-testkit"     % "2.3.15" % "test",
-  "org.bytedeco"                 % "javacpp"         % "1.2.1",
-  "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier platform,
-  "org.specs2"        %% "specs2-core"             % "3.7.2"           % "test"
-)
+libraryDependencies ++= Common.javacvDeps
+
+libraryDependencies ++= Common.javacvPlatformDeps("runtime")
+
+libraryDependencies ++= Common.specs2Deps
+
+libraryDependencies ++= Common.akkaDeps
 
 autoCompilerPlugins := true
 
@@ -47,11 +30,11 @@ parallelExecution in Test := false
 
 fork := true
 
-javaOptions += "-Xmx1G"
+javaOptions += Common.javaOptions
 
-maxErrors := 99
+maxErrors := Common.maxErrors
 
-traceLevel := 10
+traceLevel := Common.traceLevel
 
 scalastyleFailOnError := true
 

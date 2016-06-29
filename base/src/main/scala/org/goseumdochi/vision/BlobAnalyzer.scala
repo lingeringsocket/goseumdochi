@@ -42,6 +42,13 @@ object BlobAnalysis
     def merge(rects : Seq[Rect]) : Seq[Rect]
   }
 
+  class IgnoreMedium(threshold1 : Int, threshold2 : Int) extends BlobFilter
+  {
+    override def apply(rect : Rect) : Boolean =
+      ((rect.size.width > threshold1) && (rect.size.height > threshold2)) ||
+      ((rect.size.width > threshold2) && (rect.size.height > threshold1))
+  }
+
   class IgnoreSmall(threshold : Int) extends BlobFilter
   {
     override def apply(rect : Rect) : Boolean =
@@ -127,6 +134,7 @@ trait BlobAnalyzer extends VisionAnalyzer
   {
     cvClearMemStorage(storage)
     var contour = new CvSeq(null)
+    cvDilate(img, img, null, 2)
     cvFindContours(img, storage, contour, Loader.sizeof(classOf[CvContour]),
       CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0))
 

@@ -12,13 +12,14 @@
   <string name="about_text">
 With Watchdog for Sphero, you can position your Android device for surveillance of an area of your home, and whenever the camera detects any motion in that area, Sphero will roll towards the intruder with a challenge.  Good fun for pets, friends, and family members, but don\'t rely on it to protect the family jewels :) 
   </string>
-  <string name="about_version">Watchdog for Sphero (v0.6)</string>
+  <string name="about_version">Watchdog for Sphero (v0.8)</string>
   <string name="about_copyright">&#169;2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
   <string name="help_url">https://goseumdochi.org/watchdog-help#tips</string>
   <string name="ok">OK</string>
-  <string name="setup_instructions_text">Position camera so that crosshairs are centered on area to be monitored, wake up your paired Sphero and place it in the center, then press Connect</string>
+  <string name="setup_instructions_orientation">Position your Android device on its side in a stable location, in landscape orientation.</string>
+  <string name="setup_instructions_camera">Position camera so that crosshairs are centered on area to be monitored, wake up your paired Sphero and place it in the center, then press Connect</string>
   <string name="bump_text">
 Camera motion was detected, causing surveillance to end.  Each time your Android device moves, the new camera position must be recalibrated.  If you think this is being triggered in error, disable motion detection from the preferences menu.
   </string>
@@ -48,11 +49,11 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="speech_bluetooth_lost">Bluetooth connection lost.</string>
   <string name="speech_bump_detected">Camera motion detected.</string>
   <string name="speech_invalid_format">Invalid format string.</string>
-  <string name="speech_INITIALIZING">Initializing.</string>
   <string name="speech_LOCALIZING">Determining initial location.</string>
   <string name="speech_ORIENTING">Calibrating direction.</string>
-  <string name="speech_ACTIVE">Initialization complete.</string>
-  <string name="speech_PANIC">Help!</string>
+  <string name="speech_ACTIVE">Ready to roll.</string>
+  <string name="speech_PANIC">Visibility lost.</string>
+  <string name="speech_RECOVERED">Back in business.</string>
   <string name="speech_CENTERING">Centering.</string>
   <string name="speech_MEASURING">Measuring perspective transformation.</string>
 

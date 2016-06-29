@@ -1,18 +1,14 @@
 name := "goseumdochi-root"
 
-val javacppVersion = "1.2"
+organization := Common.organization
 
-val opencvVersion = "3.1.0"
-
-val ffmpegVersion = "3.0.2"
-
-version := "0.1"
+version := Common.version
 
 isSnapshot := true
 
-scalaVersion := "2.11.7"
+scalaVersion := Common.scalaVersion
 
-lazy val platform = org.bytedeco.javacpp.Loader.getPlatform
+scalacOptions := Common.scalacOptions
 
 classpathTypes += "maven-plugin"
 
@@ -22,7 +18,7 @@ parallelExecution in Test := false
 
 fork := true
 
-javaOptions += "-Xmx1G"
+javaOptions += Common.javaOptions
 
 lazy val base = project
 
@@ -37,24 +33,20 @@ lazy val android = project.dependsOn(base)
 
 mainClass in Compile := Some("org.goseumdochi.ConsoleMain")
 
-resolvers ++= Seq(Resolver.mavenLocal,
-  DefaultMavenRepository,
-  Resolver.typesafeRepo("releases"),
-  Resolver.typesafeRepo("snapshots"),
-  Resolver.typesafeIvyRepo("snapshots"),
-  Resolver.sonatypeRepo("releases"),
-  Resolver.sonatypeRepo("snapshots"),
-  Resolver.defaultLocal,
-  bintray.Opts.resolver.jcenter)
+resolvers ++= Common.resolvers
 
 libraryDependencies ++= Seq(
-  "org.bytedeco"                 % "javacpp"         % "1.2.1",
-  "org.bytedeco"                 % "javacv"          % javacppVersion,
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "opencv" % (opencvVersion + "-" + javacppVersion) classifier platform,
-  "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier "",
-  "org.bytedeco.javacpp-presets" % "ffmpeg" % (ffmpegVersion + "-" + javacppVersion) classifier platform,
   "org.scalafx" %% "scalafx" % "8.0.60-R9"
 )
+
+libraryDependencies ++= Common.javacvDeps
+
+libraryDependencies ++= Common.javacvPlatformDeps("runtime")
+
+libraryDependencies ++= Common.ffmpegPlatformDeps("runtime")
+
+maxErrors := Common.maxErrors
+
+traceLevel := Common.traceLevel
 
 publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath+"/.ivy2/local/org.goseumdochi")))
