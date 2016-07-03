@@ -86,7 +86,7 @@ class ColorfulBodyDetector(
               return None
             }
             setDiffCutoff = true
-            maxDiffCutoff = (0.8*baselineMin + 0.2*newMin).toInt
+            maxDiffCutoff = (0.9*baselineMin + 0.1*newMin).toInt
             compareColors(currentHsv, color)
           }
           cvThreshold(
