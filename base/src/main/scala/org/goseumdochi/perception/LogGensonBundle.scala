@@ -92,7 +92,8 @@ private[perception] object TimeSpanConverter extends Converter[TimeSpan]
 @HandleClassMetadata
 private[perception] object ColorConverter extends Converter[LightColor]
 {
-  override def serialize(color : LightColor, writer : ObjectWriter, cx : Context)
+  override def serialize(
+    color : LightColor, writer : ObjectWriter, cx : Context)
   {
     writer.beginObject
     writer.writeName("red").writeValue(color.red.toInt)
