@@ -98,6 +98,9 @@ class IntrusionDetectionFsm()
         stay
       }
     }
+    case Event(msg : ControlActor.BodyMovedMsg, Empty) => {
+      stay using Paused(msg.eventTime + pausePeriod)
+    }
     case Event(msg : ControlActor.BodyMovedMsg, _) => {
       stay using BodyAt(msg.pos)
     }

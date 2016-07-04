@@ -163,6 +163,8 @@ class ControlActor(
 
   private val monitorVisibility = settings.Control.monitorVisibility
 
+  private val testsActive = settings.Test.active
+
   private val visionActor = context.actorOf(
     visionProps,
     VISION_ACTOR_NAME)
@@ -402,7 +404,11 @@ class ControlActor(
       }
     }
     lastImpulse = Some(cappedImpulse)
-    movingUntil = eventTime + cappedImpulse.duration + sensorDelay
+    // FIXME:  get rid of the testsActive clause after regenerating
+    // test scenarios
+    if (testsActive || (status != LOCALIZING)) {
+      movingUntil = eventTime + cappedImpulse.duration + sensorDelay
+    }
     actuator.actuateMotion(cappedImpulse)
   }
 

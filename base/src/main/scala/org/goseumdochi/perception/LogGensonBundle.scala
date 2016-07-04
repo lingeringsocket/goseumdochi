@@ -31,7 +31,7 @@ private[perception] class LogGensonBundle extends ScalaBundle
       .useIndentation(true)
       .useClassMetadata(true)
       .useRuntimeType(true)
-      .withConverters(TimePointConverter, TimeSpanConverter)
+      .withConverters(TimePointConverter, TimeSpanConverter, ColorConverter)
   }
 }
 
@@ -86,5 +86,35 @@ private[perception] object TimeSpanConverter extends Converter[TimeSpan]
   override def deserialize(reader : ObjectReader, cx : Context) : TimeSpan =
   {
     deserializeSpan(reader)
+  }
+}
+
+@HandleClassMetadata
+private[perception] object ColorConverter extends Converter[LightColor]
+{
+  override def serialize(color : LightColor, writer : ObjectWriter, cx : Context)
+  {
+    writer.beginObject
+    writer.writeName("red").writeValue(color.red.toInt)
+    writer.writeName("green").writeValue(color.green.toInt)
+    writer.writeName("blue").writeValue(color.blue.toInt)
+    writer.endObject
+  }
+
+  override def deserialize(reader : ObjectReader, cx : Context) : LightColor =
+  {
+    reader.beginObject
+    val color = new LightColor(0, 0, 0, 0)
+    while (reader.hasNext) {
+      reader.next
+      reader.name match {
+        case "red" => color.red(reader.valueAsInt)
+        case "green" => color.green(reader.valueAsInt)
+        case "blue" => color.blue(reader.valueAsInt)
+        case _ =>
+      }
+    }
+    reader.endObject
+    color
   }
 }
