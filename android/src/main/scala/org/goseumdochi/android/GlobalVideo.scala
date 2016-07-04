@@ -59,11 +59,15 @@ object GlobalVideo extends ContextBase
     dir.mkdirs
     val file = new File(
       dir, sdfFilename.format(Calendar.getInstance.getTime) + ".mkv")
-    new VideoFileTheater(file)
+    new VideoFileTheater(file, false)
   }
 
   def closeTheater(theater : VideoFileTheater)
   {
+    if (!theater.isEnabled) {
+      theater.quit
+      return
+    }
     toastLong(R.string.toast_saving_video)
     implicit val execContext = ExecutionContext.fromExecutor(
       AsyncTask.THREAD_POOL_EXECUTOR)

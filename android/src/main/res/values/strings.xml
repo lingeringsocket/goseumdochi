@@ -37,8 +37,8 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="pref_title_intruder_alert">Intruder Alert Message</string>
   <string name="pref_summary_intruder_alert">The phrase to speak when an intruder is detected</string>
   <string name="pref_default_intruder_alert">Intruder detected at %1$d o\'clock!</string>
-  <string name="pref_title_record_video">Video Recording</string>
-  <string name="pref_summary_record_video">Store each surveillance session as a video file</string>
+  <string name="pref_title_video_trigger">Video Recording Mode</string>
+  <string name="pref_summary_video_trigger">When to start recording surveillance session as a video file</string>
   <string name="pref_title_detect_bumps">Stop On Camera Motion</string>
   <string name="pref_summary_detect_bumps">Automatically stop surveillance when camera motion is detected</string>
   <string name="pref_title_white_balance">Camera White Balance</string>
@@ -63,6 +63,23 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="toast_video_saved">Video file saved successfully</string>
   <string name="toast_video_save_failed">Failed to save video file</string>
   
+  <string-array name="video_trigger_options">
+    <item>None</item>
+    <item>Before Initialization Starts</item>
+    <item>After Initialization Completes</item>
+    <item>Wait For First Intruder</item>
+  </string-array>
+  <string-array name="video_trigger_option_values">
+    <item>@string/pref_val_video_trigger_none</item>
+    <item>@string/pref_val_video_trigger_before_initialization_start</item>
+    <item>@string/pref_val_video_trigger_after_initialization_complete</item>
+    <item>@string/pref_val_video_trigger_first_intruder</item>
+  </string-array>
+  <string name="pref_val_video_trigger_none">none</string>
+  <string name="pref_val_video_trigger_after_initialization_complete">after-initialization-complete</string>
+  <string name="pref_val_video_trigger_first_intruder">first-intruder</string>
+  <string name="pref_val_video_trigger_before_initialization_start">before-initialization-start</string>
+
   <string-array name="white_balance_options">
     <item>Auto</item>
     <item>Incandescent</item>

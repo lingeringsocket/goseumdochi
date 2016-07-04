@@ -10,11 +10,15 @@
       android:defaultValue="@string/pref_default_intruder_alert"
       android:key="pref_key_intruder_alert"
       android:summary="@string/pref_summary_intruder_alert" />
-  <CheckBoxPreference
-      android:title="@string/pref_title_record_video"
-      android:defaultValue="false"
-      android:summary="@string/pref_summary_record_video"
-      android:key="pref_key_record_video" />
+  <ListPreference
+      android:title="@string/pref_title_video_trigger"
+      android:defaultValue="@string/pref_val_video_trigger_none"
+      android:summary="@string/pref_summary_video_trigger"
+      android:entries="@array/video_trigger_options"
+      android:entryValues="@array/video_trigger_option_values"
+      android:dialogTitle="@string/pref_title_video_trigger"
+      android:key="pref_key_video_trigger">
+  </ListPreference>
   <CheckBoxPreference
       android:title="@string/pref_title_detect_bumps"
       android:defaultValue="true"

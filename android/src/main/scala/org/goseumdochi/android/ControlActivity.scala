@@ -89,14 +89,33 @@ class ControlActivity extends ActivityBaseNoCompat
 
   private var videoFileTheater : Option[VideoFileTheater] = None
 
+  private lazy val videoMode = readVideoMode
+
+  private lazy val videoModeNone = getString(
+      R.string.pref_val_video_trigger_none)
+  private lazy val videoModeFull = getString(
+      R.string.pref_val_video_trigger_before_initialization_start)
+  private lazy val videoModeAfterInitialization = getString(
+      R.string.pref_val_video_trigger_after_initialization_complete)
+  private lazy val videoModeFirstIntruder = getString(
+      R.string.pref_val_video_trigger_first_intruder)
+
   class ControlListener extends Actor
   {
     def receive =
     {
       case msg : ControlActor.StatusUpdateMsg => {
+        if (msg.status == ControlActor.ControlStatus.ACTIVE) {
+          if (videoMode == videoModeAfterInitialization) {
+            videoFileTheater.foreach(_.enable())
+          }
+        }
         controlStatus = msg.status.toString
         var actualMessage = msg.messageKey
         if (msg.messageKey == "INTRUDER") {
+          if (videoMode == videoModeFirstIntruder) {
+            videoFileTheater.foreach(_.enable())
+          }
           val prefs = PreferenceManager.getDefaultSharedPreferences(
             ControlActivity.this)
           val defaultValue = getString(R.string.pref_default_intruder_alert)
@@ -337,16 +356,23 @@ class ControlActivity extends ActivityBaseNoCompat
   {
   }
 
+  private def readVideoMode() =
+  {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(
+      ControlActivity.this)
+    prefs.getString(
+      SettingsActivity.PREF_VIDEO_TRIGGER, videoModeNone)
+  }
+
   private def createTheater() : RetinalTheater =
   {
     val androidTheater = new AndroidTheater(controlView, outputQueue)
-    val prefs = PreferenceManager.getDefaultSharedPreferences(
-      ControlActivity.this)
-    val recordVideo = prefs.getBoolean(
-      SettingsActivity.PREF_RECORD_VIDEO, false)
-    if (recordVideo) {
+    if (videoMode != videoModeNone) {
       if (hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
         val fileTheater = GlobalVideo.createVideoFileTheater
+        if (videoMode == videoModeFull) {
+          fileTheater.enable()
+        }
         videoFileTheater = Some(fileTheater)
         return new TeeTheater(Seq(androidTheater, fileTheater))
       }
