@@ -148,6 +148,12 @@ class ControlActivity extends ActivityBaseNoCompat
               msg.messageParams)
         }
         speak(actualMessage)
+        if (msg.status == ControlActor.ControlStatus.LOST) {
+          pencilsDown
+          val intent = new Intent(ControlActivity.this, classOf[SetupActivity])
+          intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+          finish
+        }
       }
     }
   }

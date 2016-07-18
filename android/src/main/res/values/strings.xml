@@ -55,6 +55,7 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="speech_ORIENTING">Calibrating direction.</string>
   <string name="speech_ACTIVE">Ready to roll.</string>
   <string name="speech_PANIC">Visibility lost.</string>
+  <string name="speech_LOST">Visibility lost.  Please try setup again.</string>
   <string name="speech_RECOVERED">Back in business.</string>
   <string name="speech_CENTERING">Centering.</string>
   <string name="speech_MEASURING">Measuring perspective transformation.</string>
