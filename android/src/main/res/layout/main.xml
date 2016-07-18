@@ -69,7 +69,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_centerHorizontal="true"
-      android:layout_below="@+id/step_3_text"
-      android:layout_marginTop="10dp"
+      android:layout_alignParentBottom="true"
+      android:layout_marginBottom="10dp"
       android:onClick="onSetupClicked" />
 </RelativeLayout>

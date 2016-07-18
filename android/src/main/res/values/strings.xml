@@ -3,6 +3,7 @@
   <string name="settings_label">Preferences</string>
   <string name="about_label">About</string>
   <string name="help_label">Help</string>  
+  <string name="bugs_label">Report A Bug</string>
   <string name="setup_label">Let\'s Go</string>
   <string name="connect_label">Connect</string>
   <string name="about_title">About Watchdog for Sphero</string>
@@ -17,6 +18,7 @@ With Watchdog for Sphero, you can position your Android device for surveillance 
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
   <string name="help_url">https://goseumdochi.org/watchdog-help#tips</string>
+  <string name="bugs_url">https://goseumdochi.org/report-a-bug#details</string>
   <string name="ok">OK</string>
   <string name="setup_instructions_orientation">Position your Android device on its side in a stable location, in landscape orientation.</string>
   <string name="setup_instructions_camera">Position camera so that crosshairs are centered on area to be monitored, wake up your paired Sphero and place it in the center, then press Connect</string>
@@ -29,8 +31,8 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="control_status_message_text">Message:</string>
 
   <string name="main_step_1_text">1. Position your Android device\'s camera to monitor an area.  If you don\'t have a phone holder, <a href="https://goseumdochi.org/the-better-to-see-you-with#photo">maybe you can build one out of plastic bricks</a>?</string>
-  <string name="main_step_2_text">2. Activate your paired Sphero in the middle of the area being monitored.</string>
-  <string name="main_step_3_text">3. Sit back and watch what happens when intruders enter!</string>
+  <string name="main_step_2_text">2. Activate your paired Sphero in the middle of the area being monitored and then start the automatic setup procedure.</string>
+  <string name="main_step_3_text">3. Sit back and watch what happens when intruders enter!  Don\'t forget to <a href="https://goseumdochi.org/submit-your-own-video/">capture some video footage and submit it to our website</a> :)</string>
 
   <string name="pref_title_enable_voice">Enable Voice</string>
   <string name="pref_summary_enable_voice">Announce all watchdog activity out loud (using your Android device\'s current text-to-speech preferences).</string>
@@ -49,7 +51,7 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="speech_bluetooth_lost">Bluetooth connection lost.</string>
   <string name="speech_bump_detected">Camera motion detected.</string>
   <string name="speech_invalid_format">Invalid format string.</string>
-  <string name="speech_LOCALIZING">Determining initial location.</string>
+  <string name="speech_LOCALIZING">Starting setup.  This may take a few minutes.</string>
   <string name="speech_ORIENTING">Calibrating direction.</string>
   <string name="speech_ACTIVE">Ready to roll.</string>
   <string name="speech_PANIC">Visibility lost.</string>
@@ -59,10 +61,14 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
 
   <string name="toast_bluetooth_required">Watchdog cannot run without Bluetooth enabled.</string>
   <string name="toast_permissions_required">Watchdog cannot run until all requested permissions have been granted.</string>
-  <string name="toast_saving_video">Saving video file...please wait for completion notice</string>
+  <string name="toast_saving_video">Saving video file...please wait for completion notification</string>
   <string name="toast_video_saved">Video file saved successfully</string>
   <string name="toast_video_save_failed">Failed to save video file</string>
   
+  <string name="notification_saving_video">Saving video file...</string>
+  <string name="notification_video_saved">Video file is ready to view</string>
+  <string name="notification_video_save_failed">Failed to save video file</string>
+
   <string-array name="video_trigger_options">
     <item>None</item>
     <item>Before Initialization Starts</item>

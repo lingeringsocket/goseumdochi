@@ -50,6 +50,7 @@ class MainActivity extends MainMenuActivityBase
     GlobalTts.init(getApplicationContext, enableVoice)
     GlobalVideo.init(getApplicationContext, this)
     findView(TR.cctv_text).setMovementMethod(LinkMovementMethod.getInstance)
+    findView(TR.step_3_text).setMovementMethod(LinkMovementMethod.getInstance)
     requestPrerequisites
   }
 
