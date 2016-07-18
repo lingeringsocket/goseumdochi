@@ -21,10 +21,11 @@ import org.bytedeco.javacv._
 
 import java.io._
 
-class VideoFileTheater(file : File, filterString : String = "")
+class VideoFileTheater(
+  file : File, enabledInit : Boolean = true, filterString : String = "")
     extends RetinalTheater
 {
-  private val SKIP_START = 5
+  private val SKIP_AT_LEAST = 5
 
   private var recorder : Option[FrameRecorder] = None
 
@@ -38,6 +39,8 @@ class VideoFileTheater(file : File, filterString : String = "")
 
   private var stopped = false
 
+  private var enabled = enabledInit
+
   private def initRecorder(firstFrame : Frame) =
   {
     val width = firstFrame.imageWidth
@@ -50,7 +53,7 @@ class VideoFileTheater(file : File, filterString : String = "")
     val r = new FFmpegFrameRecorder(file, width, height)
     val skipTime = firstFrameTime - firstSkipTime
     val estimatedFrameRate =
-      ((1000.0 * SKIP_START) / skipTime.toMillis.toDouble)
+      ((1000.0 * skipped) / skipTime.toMillis.toDouble)
     val frameRate = {
       if (estimatedFrameRate < 2.0) {
         2
@@ -64,6 +67,13 @@ class VideoFileTheater(file : File, filterString : String = "")
     r
   }
 
+  def enable(enabledNow : Boolean = true)
+  {
+    enabled = enabledNow
+  }
+
+  def isEnabled = enabled
+
   override def display(frame : Frame, frameTime : TimePoint)
   {
     this.synchronized {
@@ -73,8 +83,8 @@ class VideoFileTheater(file : File, filterString : String = "")
       if (skipped == 0) {
         firstSkipTime = frameTime
       }
-      if (skipped < SKIP_START) {
-        skipped += 1
+      skipped += 1
+      if (!enabled || (skipped < SKIP_AT_LEAST)) {
         return
       }
       if (recorder.isEmpty) {

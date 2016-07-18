@@ -3,6 +3,7 @@
   <string name="settings_label">Preferences</string>
   <string name="about_label">About</string>
   <string name="help_label">Help</string>  
+  <string name="bugs_label">Report A Bug</string>
   <string name="setup_label">Let\'s Go</string>
   <string name="connect_label">Connect</string>
   <string name="about_title">About Watchdog for Sphero</string>
@@ -12,11 +13,12 @@
   <string name="about_text">
 With Watchdog for Sphero, you can position your Android device for surveillance of an area of your home, and whenever the camera detects any motion in that area, Sphero will roll towards the intruder with a challenge.  Good fun for pets, friends, and family members, but don\'t rely on it to protect the family jewels :) 
   </string>
-  <string name="about_version">Watchdog for Sphero (v0.8)</string>
-  <string name="about_copyright">&#169;2016 Lingering Socket Labs</string>
+  <string name="about_version">Watchdog for Sphero (v1.0 beta)</string>
+  <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
   <string name="help_url">https://goseumdochi.org/watchdog-help#tips</string>
+  <string name="bugs_url">https://goseumdochi.org/report-a-bug#details</string>
   <string name="ok">OK</string>
   <string name="setup_instructions_orientation">Position your Android device on its side in a stable location, in landscape orientation.</string>
   <string name="setup_instructions_camera">Position camera so that crosshairs are centered on area to be monitored, wake up your paired Sphero and place it in the center, then press Connect</string>
@@ -29,16 +31,16 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="control_status_message_text">Message:</string>
 
   <string name="main_step_1_text">1. Position your Android device\'s camera to monitor an area.  If you don\'t have a phone holder, <a href="https://goseumdochi.org/the-better-to-see-you-with#photo">maybe you can build one out of plastic bricks</a>?</string>
-  <string name="main_step_2_text">2. Activate your paired Sphero in the middle of the area being monitored.</string>
-  <string name="main_step_3_text">3. Sit back and watch what happens when intruders enter!</string>
+  <string name="main_step_2_text">2. Activate your paired Sphero in the middle of the area being monitored and then start the automatic setup procedure.</string>
+  <string name="main_step_3_text">3. Sit back and watch what happens when intruders enter!  Don\'t forget to <a href="https://goseumdochi.org/submit-your-own-video/">capture some video footage and submit it to our website</a> :)</string>
 
   <string name="pref_title_enable_voice">Enable Voice</string>
   <string name="pref_summary_enable_voice">Announce all watchdog activity out loud (using your Android device\'s current text-to-speech preferences).</string>
   <string name="pref_title_intruder_alert">Intruder Alert Message</string>
   <string name="pref_summary_intruder_alert">The phrase to speak when an intruder is detected</string>
   <string name="pref_default_intruder_alert">Intruder detected at %1$d o\'clock!</string>
-  <string name="pref_title_record_video">Video Recording</string>
-  <string name="pref_summary_record_video">Store each surveillance session as a video file</string>
+  <string name="pref_title_video_trigger">Video Recording Mode</string>
+  <string name="pref_summary_video_trigger">When to start recording surveillance session as a video file</string>
   <string name="pref_title_detect_bumps">Stop On Camera Motion</string>
   <string name="pref_summary_detect_bumps">Automatically stop surveillance when camera motion is detected</string>
   <string name="pref_title_white_balance">Camera White Balance</string>
@@ -49,20 +51,42 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
   <string name="speech_bluetooth_lost">Bluetooth connection lost.</string>
   <string name="speech_bump_detected">Camera motion detected.</string>
   <string name="speech_invalid_format">Invalid format string.</string>
-  <string name="speech_LOCALIZING">Determining initial location.</string>
+  <string name="speech_LOCALIZING">Starting setup.  This may take a few minutes.</string>
   <string name="speech_ORIENTING">Calibrating direction.</string>
   <string name="speech_ACTIVE">Ready to roll.</string>
   <string name="speech_PANIC">Visibility lost.</string>
+  <string name="speech_LOST">Visibility lost.  Please try setup again.</string>
   <string name="speech_RECOVERED">Back in business.</string>
   <string name="speech_CENTERING">Centering.</string>
   <string name="speech_MEASURING">Measuring perspective transformation.</string>
 
   <string name="toast_bluetooth_required">Watchdog cannot run without Bluetooth enabled.</string>
   <string name="toast_permissions_required">Watchdog cannot run until all requested permissions have been granted.</string>
-  <string name="toast_saving_video">Saving video file...please wait for completion notice</string>
+  <string name="toast_saving_video">Saving video file...please wait for completion notification</string>
   <string name="toast_video_saved">Video file saved successfully</string>
   <string name="toast_video_save_failed">Failed to save video file</string>
   
+  <string name="notification_saving_video">Saving video file...</string>
+  <string name="notification_video_saved">Video file is ready to view</string>
+  <string name="notification_video_save_failed">Failed to save video file</string>
+
+  <string-array name="video_trigger_options">
+    <item>None</item>
+    <item>Before Initialization Starts</item>
+    <item>After Initialization Completes</item>
+    <item>Wait For First Intruder</item>
+  </string-array>
+  <string-array name="video_trigger_option_values">
+    <item>@string/pref_val_video_trigger_none</item>
+    <item>@string/pref_val_video_trigger_before_initialization_start</item>
+    <item>@string/pref_val_video_trigger_after_initialization_complete</item>
+    <item>@string/pref_val_video_trigger_first_intruder</item>
+  </string-array>
+  <string name="pref_val_video_trigger_none">none</string>
+  <string name="pref_val_video_trigger_after_initialization_complete">after-initialization-complete</string>
+  <string name="pref_val_video_trigger_first_intruder">first-intruder</string>
+  <string name="pref_val_video_trigger_before_initialization_start">before-initialization-start</string>
+
   <string-array name="white_balance_options">
     <item>Auto</item>
     <item>Incandescent</item>

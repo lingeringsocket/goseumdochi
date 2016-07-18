@@ -41,6 +41,10 @@ trait MainMenuActivityBase extends ActivityBase
         val uri = Uri.parse(getString(R.string.help_url))
         startActivity(new Intent(Intent.ACTION_VIEW, uri))
         true
+      case R.id.bugs =>
+        val uri = Uri.parse(getString(R.string.bugs_url))
+        startActivity(new Intent(Intent.ACTION_VIEW, uri))
+        true
       case R.id.settings =>
         val intent = new Intent(this, classOf[SettingsActivity])
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)

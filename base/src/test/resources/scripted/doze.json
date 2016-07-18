@@ -38,7 +38,6 @@
   "msg":{
     "@class":"org.goseumdochi.control.ControlActor$UseVisionAnalyzersMsg",
     "analyzerClassNames":[
-      "org.goseumdochi.vision.FlashyBodyDetector",
       "org.goseumdochi.vision.FineMotionDetector"
     ],
     "eventTime":{
@@ -62,22 +61,6 @@
     },
     "eventTime":{
       "millis":6205
-    }
-  }
-}
-,
-{
-  "description":"",
-  "sender":"visionActor",
-  "receiver":"controlActor",
-  "msg":{
-    "@class":"org.goseumdochi.vision.BodyDetector$BodyDetectedMsg",
-    "pos":{
-      "x":-0.26980080781908133,
-      "y":-0.3488052056764149
-    },
-    "eventTime":{
-      "millis":7901
     }
   }
 }

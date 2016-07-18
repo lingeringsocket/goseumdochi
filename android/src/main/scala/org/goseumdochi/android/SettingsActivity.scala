@@ -27,7 +27,7 @@ object SettingsActivity
 {
   final val PREF_ENABLE_VOICE = "pref_key_enable_voice"
   final val PREF_INTRUDER_ALERT = "pref_key_intruder_alert"
-  final val PREF_RECORD_VIDEO = "pref_key_record_video"
+  final val PREF_VIDEO_TRIGGER = "pref_key_video_trigger"
   final val PREF_DETECT_BUMPS = "pref_key_detect_bumps"
   final val PREF_WHITE_BALANCE = "pref_key_white_balance"
 
@@ -85,9 +85,10 @@ class SettingsActivity
           GlobalTts.speak(speech)
         }
       }
-      case PREF_RECORD_VIDEO => {
-        val record = prefs.getBoolean(key, false)
-        if (record) {
+      case PREF_VIDEO_TRIGGER => {
+        val modeNone = getString(R.string.pref_val_video_trigger_none)
+        val mode = prefs.getString(key, modeNone)
+        if (mode != modeNone) {
           requestWritePermission
         }
       }

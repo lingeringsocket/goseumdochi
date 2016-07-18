@@ -30,6 +30,17 @@ import ControlStatus._
 class ControlActorSpec extends AkkaSpecification(
   "birdseye-orientation-test.conf")
 {
+  private val zeroTime = TimePoint.ZERO
+  private val initialPos = PlanarPos(25.0, 10.0)
+  private val initialTime = zeroTime + 1.second
+  private val corner = RetinalPos(100.0, 100.0)
+  private val bodyFoundTime = zeroTime + 10.seconds
+  private val orientationPos = PlanarPos(50.0, 20.0)
+  private val orientationTime = zeroTime + 17.seconds
+  private val visibleTime = zeroTime + 18.seconds
+  private val invisibleTime = zeroTime + 22.seconds
+  private val retinalPos = RetinalPos(0, 0)
+
   private def expectStatusMsg(
     statusProbe : TestProbe, status : ControlStatus, eventTime : TimePoint)
   {
@@ -52,19 +63,6 @@ class ControlActorSpec extends AkkaSpecification(
         ControlActor.CONTROL_ACTOR_NAME)
       ControlActor.addListener(controlActor, statusProbe.ref)
 
-      val zeroTime = TimePoint.ZERO
-
-      val initialPos = PlanarPos(25.0, 10.0)
-      val initialTime = zeroTime + 1.second
-      val corner = RetinalPos(100.0, 100.0)
-
-      val bodyFoundTime = zeroTime + 10.seconds
-
-      val orientationPos = PlanarPos(50.0, 20.0)
-      val orientationTime = zeroTime + 17.seconds
-      val visibleTime = zeroTime + 18.seconds
-      val invisibleTime = zeroTime + 22.seconds
-
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
 
       expectStatusMsg(statusProbe, LOCALIZING, initialTime)
@@ -76,7 +74,6 @@ class ControlActorSpec extends AkkaSpecification(
 
       expectQuiescence
 
-      val retinalPos = RetinalPos(0, 0)
       controlActor ! MotionDetector.MotionDetectedMsg(
         initialPos, retinalPos, retinalPos, initialTime)
       controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
@@ -108,6 +105,46 @@ class ControlActorSpec extends AkkaSpecification(
       panicImpulse.speed must be closeTo(0.5 +/- 0.01)
       panicImpulse.duration.toMillis must be equalTo 250
       panicImpulse.theta must be closeTo(3.14 +/- 0.01)
+
+      expectQuiescence
+    }
+
+    "get lost" in new AkkaExample
+    {
+      val actuator = new TestActuator(system, true)
+      val statusProbe = TestProbe()(system)
+
+      val controlActor = system.actorOf(
+        Props(
+          classOf[ControlActor],
+          actuator,
+          Props(classOf[NullActor])),
+        ControlActor.CONTROL_ACTOR_NAME)
+      ControlActor.addListener(controlActor, statusProbe.ref)
+
+      controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
+
+      expectStatusMsg(statusProbe, LOCALIZING, initialTime)
+
+      val backwardImpulse = actuator.expectImpulse
+      backwardImpulse must be equalTo(PolarImpulse(0.5, 500.milliseconds, PI))
+
+      controlActor ! VisionActor.HintBodyLocationMsg(initialPos, initialTime)
+
+      expectQuiescence
+
+      controlActor ! MotionDetector.MotionDetectedMsg(
+        initialPos, retinalPos, retinalPos, initialTime)
+      controlActor ! BodyDetector.BodyDetectedMsg(initialPos, bodyFoundTime)
+
+      expectStatusMsg(statusProbe, ORIENTING, initialTime)
+
+      val orientationImpulse = actuator.expectImpulse
+      orientationImpulse must be equalTo(
+        PolarImpulse(0.5, 500.milliseconds, 0.0))
+
+      controlActor ! CheckVisibilityMsg(invisibleTime)
+      expectStatusMsg(statusProbe, LOST, invisibleTime)
 
       expectQuiescence
     }

@@ -48,7 +48,10 @@ object LocalizationFsm
   // data
   case object Empty extends Data
   final case class WithControl(
-    controlActor : ActorRef, eventTime : TimePoint, forward : Boolean)
+    controlActor : ActorRef,
+    eventTime : TimePoint,
+    waitExpiration : TimePoint,
+    forward : Boolean)
       extends Data
 }
 import LocalizationFsm._
@@ -79,17 +82,20 @@ class LocalizationFsm()
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         classOf[FineSizeMotionDetector].getName),
         eventTime)
+      val waitExpiration = eventTime + quietPeriod
       goto(WaitingForQuiet) using WithControl(
-        sender, eventTime + quietPeriod, false)
+        sender, waitExpiration, waitExpiration, false)
     }
   }
 
   when(WaitingForQuiet, stateTimeout = adjustedTimeout) {
-    case Event(StateTimeout, WithControl(controlActor, eventTime, _)) => {
+    case Event(
+      StateTimeout, WithControl(controlActor, eventTime, waitExpiration, _)) =>
+    {
       controlActor ! ControlActor.ActuateImpulseMsg(
         backwardImpulse, eventTime)
       goto(FindingBody) using WithControl(
-        controlActor, eventTime, true)
+        controlActor, eventTime + quietPeriod, waitExpiration, true)
     }
     case _ => {
       stay
@@ -99,7 +105,7 @@ class LocalizationFsm()
   when(FindingBody, stateTimeout = adjustedTimeout) {
     case Event(
       msg : MotionDetector.MotionDetectedMsg,
-      WithControl(_, waitExpiration, _)) =>
+      WithControl(_, _, waitExpiration, _)) =>
     {
       if (msg.eventTime >= waitExpiration) {
         sender ! VisionActor.HintBodyLocationMsg(msg.pos, msg.eventTime)
@@ -108,12 +114,16 @@ class LocalizationFsm()
         stay
       }
     }
-    case Event(StateTimeout, WithControl(controlActor, eventTime, forward)) => {
+    case Event(
+      StateTimeout,
+      WithControl(controlActor, eventTime, waitExpiration, forward)) =>
+    {
       // we should probably try increasing the motion duration
       // in case it was initially too small to be detected
       controlActor ! ControlActor.ActuateImpulseMsg(
         if (forward) { forwardImpulse } else { backwardImpulse }, eventTime)
-      stay using WithControl(controlActor, eventTime + quietPeriod, !forward)
+      stay using WithControl(
+        controlActor, eventTime + quietPeriod, waitExpiration, !forward)
     }
   }
 

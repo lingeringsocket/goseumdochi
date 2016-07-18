@@ -29,7 +29,7 @@ object ControlActor
 {
   object ControlStatus extends Enumeration {
     type ControlStatus = Value
-    val LOCALIZING, ORIENTING, ACTIVE, PANIC, RECOVERED = Value
+    val LOCALIZING, ORIENTING, ACTIVE, PANIC, RECOVERED, LOST = Value
   }
   import ControlStatus._
 
@@ -120,6 +120,8 @@ object ControlActor
 
   final val PANIC_ACTOR_NAME = "panicActor"
 
+  final val LOST_ACTOR_NAME = "lostActor"
+
   def readOrientation(settings : Settings) : (RetinalTransform, BodyMapping) =
   {
     val seq = PerceptualLog.deserialize(settings.Orientation.persistenceFile)
@@ -163,6 +165,8 @@ class ControlActor(
 
   private val monitorVisibility = settings.Control.monitorVisibility
 
+  private val testsActive = settings.Test.active
+
   private val visionActor = context.actorOf(
     visionProps,
     VISION_ACTOR_NAME)
@@ -178,6 +182,9 @@ class ControlActor(
   private val panicActor = context.actorOf(
     Props(Class.forName(settings.Control.panicClassName)),
     PANIC_ACTOR_NAME)
+  private val lostActor = context.actorOf(
+    Props(classOf[NullActor]),
+    LOST_ACTOR_NAME)
 
   private var modeActor = localizationActor
 
@@ -314,6 +321,8 @@ class ControlActor(
         observation.messageParams))
     }
     case VisionActor.HintBodyLocationMsg(pos, eventTime) => {
+      lastSeenTime = eventTime
+      lastSeenPos = pos
       if (status == LOCALIZING) {
         if (lightRequired) {
           actuator.actuateLight(NamedColor.BLACK)
@@ -344,6 +353,9 @@ class ControlActor(
               enterMode(PANIC, checkTime)
               sendOutput(behaviorActor, PanicAttackMsg(lastImpulse, checkTime))
               sendOutput(panicActor, PanicAttackMsg(lastImpulse, checkTime))
+            } else if (status == ORIENTING) {
+              modeActor ! PoisonPill.getInstance
+              enterMode(LOST, checkTime)
             }
           } else {
             // all is well
@@ -376,6 +388,7 @@ class ControlActor(
       case ORIENTING => orientationActor
       case ACTIVE => behaviorActor
       case PANIC => panicActor
+      case LOST => lostActor
       case _ => localizationActor
     }
     log.info("NEW STATUS:  " + newStatus)
@@ -402,7 +415,11 @@ class ControlActor(
       }
     }
     lastImpulse = Some(cappedImpulse)
-    movingUntil = eventTime + cappedImpulse.duration + sensorDelay
+    // FIXME:  get rid of the testsActive clause after regenerating
+    // test scenarios
+    if (testsActive || (status != LOCALIZING)) {
+      movingUntil = eventTime + cappedImpulse.duration + sensorDelay
+    }
     actuator.actuateMotion(cappedImpulse)
   }
 

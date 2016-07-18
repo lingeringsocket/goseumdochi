@@ -57,6 +57,7 @@ object PerspectiveOrientationFsm
     lastPos : PlanarPos,
     bottomRight : RetinalPos,
     scale : Double = 0.0,
+    centeringUndershootFactor : Double = 1.0,
     measurements : Vector[RetinalPos] = Vector.empty) extends Data
 }
 import PerspectiveOrientationFsm._
@@ -64,8 +65,6 @@ import PerspectiveOrientationFsm._
 class PerspectiveOrientationFsm()
     extends BehaviorFsm[State, Data]
 {
-  val centeringUndershootFactor = settings.Orientation.centeringUndershootFactor
-
   val alignmentSmallAngle = settings.Orientation.alignmentSmallAngle
 
   private var retinalTransform = FlipRetinalTransform
@@ -152,11 +151,17 @@ class PerspectiveOrientationFsm()
             }
           }
           val bodyMapping = BodyMapping(a.scale, 0.0)
-          val motion = PolarVector(centeringUndershootFactor * dist, theta)
+          val motion = PolarVector(a.centeringUndershootFactor * dist, theta)
           val impulse = bodyMapping.transformMotion(
             motion, settings.Motor.defaultSpeed)
           applyImpulse(impulse, a.lastTheta, eventTime)
-          stay using a.copy(lastPos = pos)
+          var newUndershootFactor = a.centeringUndershootFactor * 0.8
+          if (newUndershootFactor < 0.3) {
+            newUndershootFactor = a.centeringUndershootFactor
+          }
+          stay using a.copy(
+            lastPos = pos,
+            centeringUndershootFactor = newUndershootFactor)
         }
       }
     }
