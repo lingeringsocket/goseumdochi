@@ -28,10 +28,10 @@ class LocalizationFsmSpec extends AkkaSpecification
 {
   "LocalizationFsm" should
   {
-    "find body" in new AkkaExample
+    "find body via motion" in new AkkaExample
     {
       val fsm = system.actorOf(
-        Props(classOf[LocalizationFsm]))
+        Props(classOf[MotionLocalizationFsm]))
 
       fsm ! ControlActor.CameraAcquiredMsg(DEFAULT_DIMS, TimePoint.ZERO)
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(

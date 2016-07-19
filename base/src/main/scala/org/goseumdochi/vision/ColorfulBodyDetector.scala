@@ -221,4 +221,6 @@ class ColorfulBodyDetector(
     // TODO:  choose contrasting color
     NamedColor.MAGENTA
   }
+
+  override def isLongLived() : Boolean = true
 }

@@ -222,8 +222,6 @@ class ControlActor(
 
   private val perception = new PlanarPerception(settings)
 
-  private var lightRequired = false
-
   private var status = LOCALIZING
 
   private def getActorString(ref : ActorRef) = ref.path.name
@@ -256,9 +254,6 @@ class ControlActor(
       val bodyMapping = calibratedMsg.bodyMapping
       retinalTransform = calibratedMsg.xform
       bodyMappingOpt = Some(BodyMapping(bodyMapping.scale, 0.0))
-      if (lightRequired) {
-        actuator.actuateLight(NamedColor.BLACK)
-      }
       val spinDuration = 500.milliseconds
       actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
       orientationActor ! PoisonPill.getInstance
@@ -286,7 +281,6 @@ class ControlActor(
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
     case VisionActor.RequireLightMsg(color, eventTime) => {
-      lightRequired = true
       actuator.actuateLight(color)
     }
     // note that this pattern needs to be matched BEFORE the
@@ -324,9 +318,6 @@ class ControlActor(
       lastSeenTime = eventTime
       lastSeenPos = pos
       if (status == LOCALIZING) {
-        if (lightRequired) {
-          actuator.actuateLight(NamedColor.BLACK)
-        }
         if (doOrientation) {
           enterMode(ORIENTING, eventTime)
           sendOutput(

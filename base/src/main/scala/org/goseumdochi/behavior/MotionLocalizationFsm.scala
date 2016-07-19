@@ -24,7 +24,7 @@ import akka.actor._
 
 import scala.concurrent.duration._
 
-object LocalizationFsm
+object MotionLocalizationFsm
 {
   sealed trait State
   sealed trait Data
@@ -54,9 +54,9 @@ object LocalizationFsm
     forward : Boolean)
       extends Data
 }
-import LocalizationFsm._
+import MotionLocalizationFsm._
 
-class LocalizationFsm()
+class MotionLocalizationFsm()
     extends BehaviorFsm[State, Data]
 {
   private val quietPeriod = settings.Orientation.quietPeriod
