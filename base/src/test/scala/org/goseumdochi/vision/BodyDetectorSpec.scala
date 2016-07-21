@@ -184,7 +184,7 @@ class BodyDetectorSpec extends VisualizableSpecification
       val pos = msgs4.head.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
 
       pos.x must be closeTo(486.0 +/- 0.1)
-      pos.y must be closeTo(-487.0 +/- 0.1)
+      pos.y must be closeTo(-489.0 +/- 0.1)
 
       // now you see it, now you don't
       imageDeck.cycle(img1)
@@ -198,8 +198,8 @@ class BodyDetectorSpec extends VisualizableSpecification
     "ignore sparkles while detecting magenta body" >> {
       Fragment.foreach(
         Seq(
-          ("gnex1", PlanarPos(575.0, -521.0)),
-          ("gnex2", PlanarPos(141.0, -652.0))))
+          ("gnex1", PlanarPos(570.0, -529.0)),
+          ("gnex2", PlanarPos(132.0, -659.0))))
       { case (prefix, expectedPos) =>
 
         "using file prefix " + prefix ! {

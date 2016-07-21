@@ -102,11 +102,13 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       }
     }
     case ActivateAnalyzersMsg(analyzerClassNames, xform, eventTime) => {
-      closeAnalyzers
+      closeAnalyzers(true)
       retinalTransform = xform
-      analyzers = analyzerClassNames.map(
-        settings.instantiateObject(_, xform).
-          asInstanceOf[VisionAnalyzer])
+      val existing = analyzers.map(_.getClass.getName)
+      analyzers = (analyzers ++ analyzerClassNames.
+        filterNot(existing.contains(_)).map(
+          settings.instantiateObject(_, xform).
+            asInstanceOf[VisionAnalyzer]))
     }
     case ActivateAugmentersMsg(augmenterClassNames, eventTime) => {
       closeAugmenters
@@ -199,15 +201,21 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       retinalInput.quit
       theater.quit
     }
-    closeAnalyzers
+    closeAnalyzers(false)
     closeAugmenters
     imageDeck.clear
   }
 
-  private def closeAnalyzers()
+  private def closeAnalyzers(shortLivedOnly : Boolean)
   {
-    analyzers.foreach(_.close)
-    analyzers = Seq.empty
+    if (shortLivedOnly) {
+      val shortLived = analyzers.filterNot(_.isLongLived)
+      analyzers = analyzers.filter(_.isLongLived)
+      shortLived.foreach(_.close)
+    } else {
+      analyzers.foreach(_.close)
+      analyzers = Seq.empty
+    }
   }
 
   private def closeAugmenters()

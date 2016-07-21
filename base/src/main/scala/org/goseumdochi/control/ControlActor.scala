@@ -222,8 +222,6 @@ class ControlActor(
 
   private val perception = new PlanarPerception(settings)
 
-  private var lightRequired = false
-
   private var status = LOCALIZING
 
   private def getActorString(ref : ActorRef) = ref.path.name
@@ -256,9 +254,6 @@ class ControlActor(
       val bodyMapping = calibratedMsg.bodyMapping
       retinalTransform = calibratedMsg.xform
       bodyMappingOpt = Some(BodyMapping(bodyMapping.scale, 0.0))
-      if (lightRequired) {
-        actuator.actuateLight(NamedColor.BLACK)
-      }
       val spinDuration = 500.milliseconds
       actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
       orientationActor ! PoisonPill.getInstance
@@ -282,11 +277,11 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       bottomRight = pos
+      lastSeenTime = eventTime
       enterMode(LOCALIZING, eventTime)
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
     case VisionActor.RequireLightMsg(color, eventTime) => {
-      lightRequired = true
       actuator.actuateLight(color)
     }
     // note that this pattern needs to be matched BEFORE the
@@ -324,9 +319,6 @@ class ControlActor(
       lastSeenTime = eventTime
       lastSeenPos = pos
       if (status == LOCALIZING) {
-        if (lightRequired) {
-          actuator.actuateLight(NamedColor.BLACK)
-        }
         if (doOrientation) {
           enterMode(ORIENTING, eventTime)
           sendOutput(
@@ -353,7 +345,7 @@ class ControlActor(
               enterMode(PANIC, checkTime)
               sendOutput(behaviorActor, PanicAttackMsg(lastImpulse, checkTime))
               sendOutput(panicActor, PanicAttackMsg(lastImpulse, checkTime))
-            } else if (status == ORIENTING) {
+            } else if ((status == LOCALIZING) || (status == ORIENTING)) {
               modeActor ! PoisonPill.getInstance
               enterMode(LOST, checkTime)
             }

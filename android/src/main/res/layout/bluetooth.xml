@@ -13,12 +13,12 @@
       android:scaleType="fitCenter"
       android:adjustViewBounds="true"
       android:layout_gravity="center_horizontal"
-      android:src="@drawable/speedbump" />
+      android:src="@drawable/cross" />
   <TextView
-      android:id="@+id/bump_content"
+      android:id="@+id/bluetooth_error_content"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="@string/bump_text"
+      android:text="@string/bluetooth_error_text"
       android:layout_marginTop="10dp"
       android:layout_gravity="center" />
   <Button

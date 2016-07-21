@@ -165,4 +165,6 @@ class RoundBodyDetector(
       })
     }
   }
+
+  override def isLongLived() : Boolean = true
 }

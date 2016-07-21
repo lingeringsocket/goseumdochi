@@ -59,6 +59,8 @@ trait VisionAnalyzer extends AutoCloseable
   def xform : RetinalTransform
 
   override def close() {}
+
+  def isLongLived() : Boolean = false
 }
 
 class NullVisionAnalyzer(val settings : Settings, val xform : RetinalTransform)
