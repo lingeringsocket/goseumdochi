@@ -24,6 +24,7 @@ import android.preference._
 import android.view._
 
 import java.io._
+import java.util._
 
 import android.hardware.Camera
 
@@ -36,6 +37,7 @@ import com.typesafe.config._
 
 import com.orbotix._
 import com.orbotix.common._
+import com.orbotix.common.RobotChangedStateListener._
 
 import collection._
 
@@ -99,7 +101,11 @@ class ControlActivity extends ActivityBaseNoCompat
 
   private var expectDisconnect = false
 
+  private var found = false
+
   private var videoFileTheater : Option[VideoFileTheater] = None
+
+  private val connectionTimer = new Timer("Bluetooth Connection Timeout", true)
 
   private lazy val videoMode = readVideoMode
 
@@ -148,11 +154,15 @@ class ControlActivity extends ActivityBaseNoCompat
               msg.messageParams)
         }
         speak(actualMessage)
+        if (msg.status == ControlActor.ControlStatus.ORIENTING) {
+          found = true
+        }
         if (msg.status == ControlActor.ControlStatus.LOST) {
-          pencilsDown
-          val intent = new Intent(ControlActivity.this, classOf[SetupActivity])
-          intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-          finish
+          if (found) {
+            finishWithError(classOf[LostActivity])
+          } else {
+            finishWithError(classOf[UnfoundActivity])
+          }
         }
       }
     }
@@ -198,43 +208,60 @@ class ControlActivity extends ActivityBaseNoCompat
     if (!discoveryStarted) {
       DualStackDiscoveryAgent.getInstance.startDiscovery(
         getApplicationContext)
+      connectionTimer.schedule(new TimerTask {
+        override def run()
+        {
+          handleRobotChangedState(
+            null,
+            RobotChangedStateNotificationType.FailedConnect)
+        }
+      }, 20000)
       discoveryStarted = true
     }
   }
 
   override def handleRobotChangedState(
     r : Robot,
-    notification : RobotChangedStateListener.RobotChangedStateNotificationType)
+    notification : RobotChangedStateNotificationType)
   {
     if (expectDisconnect) {
       return
     }
-    if (notification ==
-      RobotChangedStateListener.RobotChangedStateNotificationType.Online)
-    {
-      robot = Some(new ConvenienceRobot(r))
-      val file = new File(
-        getApplicationContext.getFilesDir, "orientation.ser")
-      System.setProperty(
-        "GOSEUMDOCHI_ORIENTATION_FILE",
-        file.getAbsolutePath)
-      val props = Props(
-        classOf[ControlActor],
-        actuator,
-        Props(classOf[VisionActor], retinalInput, theater))
-      val controlActor = actorSystem.actorOf(
-        props, ControlActor.CONTROL_ACTOR_NAME)
-      controlActorOpt = Some(controlActor)
-      ControlActor.addListener(
-        controlActor,
-        actorSystem.actorOf(
-          Props(classOf[ControlListener], this), "statusActor"))
-    } else {
-      if (!robot.isEmpty) {
-        connectionStatus = "DISCONNECTED"
-        speak(R.string.speech_bluetooth_lost)
+    notification match {
+      case RobotChangedStateNotificationType.Online => {
+        connectionTimer.cancel
+        robot = Some(new ConvenienceRobot(r))
+        val file = new File(
+          getApplicationContext.getFilesDir, "orientation.ser")
+        System.setProperty(
+          "GOSEUMDOCHI_ORIENTATION_FILE",
+          file.getAbsolutePath)
+        val props = Props(
+          classOf[ControlActor],
+          actuator,
+          Props(classOf[VisionActor], retinalInput, theater))
+        val controlActor = actorSystem.actorOf(
+          props, ControlActor.CONTROL_ACTOR_NAME)
+        controlActorOpt = Some(controlActor)
+        ControlActor.addListener(
+          controlActor,
+          actorSystem.actorOf(
+            Props(classOf[ControlListener], this), "statusActor"))
       }
-      robot = None
+      case RobotChangedStateNotificationType.Disconnected => {
+        if (!robot.isEmpty) {
+          connectionStatus = "CONNECTION LOST"
+          speak(R.string.speech_bluetooth_lost)
+          robot = None
+          finishWithError(classOf[BluetoothErrorActivity])
+        }
+      }
+      case RobotChangedStateNotificationType.FailedConnect => {
+        connectionStatus = "FAILED"
+        speak(R.string.speech_bluetooth_failed)
+        finishWithError(classOf[BluetoothErrorActivity])
+      }
+      case _ =>
     }
   }
 
@@ -266,11 +293,16 @@ class ControlActivity extends ActivityBaseNoCompat
   {
     super.onPause
     pencilsDown
-    finish
+    if (!isFinishing) {
+      finish
+    }
   }
 
   private def pencilsDown()
   {
+    connectionStatus = "DISCONNECTED"
+    expectDisconnect = true
+    connectionTimer.cancel
     sensorMgr.foreach(_.unregisterListener(this))
     gyroscope = None
     gyroscopeBaseline.clear
@@ -281,7 +313,6 @@ class ControlActivity extends ActivityBaseNoCompat
       actorSystem.shutdown
     })
     controlActorOpt = None
-    expectDisconnect = true
     if (DualStackDiscoveryAgent.getInstance.isDiscovering) {
       DualStackDiscoveryAgent.getInstance.stopDiscovery
     }
@@ -324,14 +355,18 @@ class ControlActivity extends ActivityBaseNoCompat
       case _ =>
     }
     if (bumpDetected) {
-      expectDisconnect = true
-      pencilsDown
       speak(R.string.speech_bump_detected)
-      val intent = new Intent(this, classOf[BumpActivity])
-      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-      finish
-      startActivity(intent)
+      finishWithError(classOf[BumpActivity])
     }
+  }
+
+  private def finishWithError(errorClass : Class[_])
+  {
+    val intent = new Intent(this, errorClass)
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    pencilsDown
+    finish
+    startActivity(intent)
   }
 
   private def checkSensor(

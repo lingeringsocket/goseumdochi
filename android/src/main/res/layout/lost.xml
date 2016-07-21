@@ -13,12 +13,12 @@
       android:scaleType="fitCenter"
       android:adjustViewBounds="true"
       android:layout_gravity="center_horizontal"
-      android:src="@drawable/speedbump" />
+      android:src="@drawable/lost" />
   <TextView
-      android:id="@+id/bump_content"
+      android:id="@+id/lost_content"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="@string/bump_text"
+      android:text="@string/lost_text"
       android:layout_marginTop="10dp"
       android:layout_gravity="center" />
   <Button

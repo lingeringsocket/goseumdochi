@@ -48,19 +48,24 @@ class ControlActorSpec extends AkkaSpecification(
       status, ControlActor.messageKeyFor(status), eventTime))
   }
 
+  private def newControlActor(system : ActorSystem, actuator : TestActuator) =
+  {
+    system.actorOf(
+      Props(
+        classOf[ControlActor],
+        actuator,
+        Props(classOf[NullActor])),
+      ControlActor.CONTROL_ACTOR_NAME)
+  }
+
   "ControlActor" should
   {
-    "keep cool" in new AkkaExample
+    "panic after orientation" in new AkkaExample
     {
       val actuator = new TestActuator(system, true)
       val statusProbe = TestProbe()(system)
 
-      val controlActor = system.actorOf(
-        Props(
-          classOf[ControlActor],
-          actuator,
-          Props(classOf[NullActor])),
-        ControlActor.CONTROL_ACTOR_NAME)
+      val controlActor = newControlActor(system, actuator)
       ControlActor.addListener(controlActor, statusProbe.ref)
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
@@ -109,17 +114,30 @@ class ControlActorSpec extends AkkaSpecification(
       expectQuiescence
     }
 
-    "get lost" in new AkkaExample
+    "get lost during localization" in new AkkaExample
     {
       val actuator = new TestActuator(system, true)
       val statusProbe = TestProbe()(system)
 
-      val controlActor = system.actorOf(
-        Props(
-          classOf[ControlActor],
-          actuator,
-          Props(classOf[NullActor])),
-        ControlActor.CONTROL_ACTOR_NAME)
+      val controlActor = newControlActor(system, actuator)
+      ControlActor.addListener(controlActor, statusProbe.ref)
+
+      controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)
+
+      expectStatusMsg(statusProbe, LOCALIZING, initialTime)
+
+      controlActor ! CheckVisibilityMsg(invisibleTime)
+      expectStatusMsg(statusProbe, LOST, invisibleTime)
+
+      expectQuiescence
+    }
+
+    "get lost during orientation" in new AkkaExample
+    {
+      val actuator = new TestActuator(system, true)
+      val statusProbe = TestProbe()(system)
+
+      val controlActor = newControlActor(system, actuator)
       ControlActor.addListener(controlActor, statusProbe.ref)
 
       controlActor ! VisionActor.DimensionsKnownMsg(corner, initialTime)

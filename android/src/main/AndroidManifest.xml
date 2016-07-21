@@ -51,7 +51,22 @@
       </activity>
       <activity
           android:name=".BumpActivity"
-          android:label="@string/bump_title"
+          android:label="@string/error_title"
+          android:screenOrientation="landscape">
+      </activity>
+      <activity
+          android:name=".LostActivity"
+          android:label="@string/error_title"
+          android:screenOrientation="landscape">
+      </activity>
+      <activity
+          android:name=".UnfoundActivity"
+          android:label="@string/error_title"
+          android:screenOrientation="landscape">
+      </activity>
+      <activity
+          android:name=".BluetoothErrorActivity"
+          android:label="@string/error_title"
           android:screenOrientation="landscape">
       </activity>
     </application>

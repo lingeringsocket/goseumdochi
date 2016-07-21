@@ -277,6 +277,7 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       bottomRight = pos
+      lastSeenTime = eventTime
       enterMode(LOCALIZING, eventTime)
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
@@ -344,7 +345,7 @@ class ControlActor(
               enterMode(PANIC, checkTime)
               sendOutput(behaviorActor, PanicAttackMsg(lastImpulse, checkTime))
               sendOutput(panicActor, PanicAttackMsg(lastImpulse, checkTime))
-            } else if (status == ORIENTING) {
+            } else if ((status == LOCALIZING) || (status == ORIENTING)) {
               modeActor ! PoisonPill.getInstance
               enterMode(LOST, checkTime)
             }

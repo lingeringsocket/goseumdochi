@@ -57,6 +57,8 @@ class ColorfulBodyDetector(
 
   private var waitUntil = TimePoint.ZERO
 
+  private val minLoc = new Array[Int](2)
+
   private def totalDiffs = totalDiffsOpt.get
 
   override def analyzeFrame(
@@ -86,8 +88,10 @@ class ColorfulBodyDetector(
               return None
             }
             setDiffCutoff = true
-            maxDiffCutoff = (0.9*baselineMin + 0.1*newMin).toInt
-            compareColors(currentHsv, color)
+            maxDiffCutoff = 5
+            val correctedColor = cvGet2D(currentBgr, minLoc(1), minLoc(0))
+            hueOpt = None
+            compareColors(currentHsv, correctedColor)
           }
           cvThreshold(
             totalDiffs, totalDiffs, maxDiffCutoff, 255,
@@ -212,7 +216,7 @@ class ColorfulBodyDetector(
   private def computeMinDiff() =
   {
     val minVal = new Array[Double](1)
-    cvMinMaxLoc(totalDiffs, minVal, null, null, null, null)
+    cvMinMaxLoc(totalDiffs, minVal, null, minLoc, null, null)
     minVal(0).toInt
   }
 

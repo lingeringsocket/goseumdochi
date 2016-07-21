@@ -19,12 +19,12 @@ import android.content._
 import android.os._
 import android.view._
 
-class BumpActivity extends MainMenuActivityBase
+abstract class ErrorActivity(viewId : Int) extends MainMenuActivityBase
 {
   override protected def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.bump)
+    setContentView(viewId)
   }
 
   def onOkClicked(v : View)
@@ -35,3 +35,11 @@ class BumpActivity extends MainMenuActivityBase
     startActivity(intent)
   }
 }
+
+class BumpActivity extends ErrorActivity(R.layout.bump)
+
+class LostActivity extends ErrorActivity(R.layout.lost)
+
+class UnfoundActivity extends ErrorActivity(R.layout.unfound)
+
+class BluetoothErrorActivity extends ErrorActivity(R.layout.bluetooth)
