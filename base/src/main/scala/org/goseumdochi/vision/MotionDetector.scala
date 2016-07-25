@@ -84,7 +84,8 @@ object MotionDetector
 import MotionDetector._
 
 abstract class MotionDetector(
-  val settings : Settings, val xform : RetinalTransform,
+  val settings : Settings,
+  val retinalTransformProvider : RetinalTransformProvider,
   blobFilter : BlobFilter, blobSorter : BlobSorter)
     extends BlobAnalyzer
 {
@@ -161,28 +162,36 @@ abstract class MotionDetector(
   }
 }
 
-class CoarseGravityMotionDetector(settings : Settings, xform : RetinalTransform)
+class CoarseGravityMotionDetector(
+  settings : Settings,
+  retinalTransformProvider : RetinalTransformProvider)
     extends MotionDetector(
-      settings, xform,
+      settings, retinalTransformProvider,
       new IgnoreMedium(
         settings.MotionDetection.coarseThreshold,
         settings.MotionDetection.fineThreshold),
       GravitySorter)
 
-class CoarseSizeMotionDetector(settings : Settings, xform : RetinalTransform)
+class CoarseSizeMotionDetector(
+  settings : Settings,
+  retinalTransformProvider : RetinalTransformProvider)
     extends MotionDetector(
-      settings, xform,
+      settings, retinalTransformProvider,
       new IgnoreSmall(settings.MotionDetection.coarseThreshold),
       BlobSizeSorter)
 
-class FineGravityMotionDetector(settings : Settings, xform : RetinalTransform)
+class FineGravityMotionDetector(
+  settings : Settings,
+  retinalTransformProvider : RetinalTransformProvider)
     extends MotionDetector(
-      settings, xform,
+      settings, retinalTransformProvider,
       new IgnoreSmall(settings.MotionDetection.fineThreshold),
       GravitySorter)
 
-class FineSizeMotionDetector(settings : Settings, xform : RetinalTransform)
+class FineSizeMotionDetector(
+  settings : Settings,
+  retinalTransformProvider : RetinalTransformProvider)
     extends MotionDetector(
-      settings, xform,
+      settings, retinalTransformProvider,
       new IgnoreSmall(settings.MotionDetection.fineThreshold),
       BlobSizeSorter)

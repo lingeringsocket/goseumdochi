@@ -30,7 +30,8 @@ import BlobAnalysis._
 import BodyDetector._
 
 class ColorfulBodyDetector(
-  val settings : Settings, val xform : RetinalTransform)
+  val settings : Settings,
+  val retinalTransformProvider : RetinalTransformProvider)
     extends BodyDetector with BlobAnalyzer
 {
   private val minDiameter = settings.BodyRecognition.minRadius*2

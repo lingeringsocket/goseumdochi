@@ -69,6 +69,7 @@ import VisionActor._
 
 class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     extends Actor with Listeners with RetinalTheaterListener
+    with RetinalTransformProvider
 {
   private val settings = ActorSettings(context)
 
@@ -87,6 +88,8 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
   private var retinalTransform : RetinalTransform = FlipRetinalTransform
 
   private var shutDown = false
+
+  override def getRetinalTransform = retinalTransform
 
   def receive =
   {
@@ -107,7 +110,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
       val existing = analyzers.map(_.getClass.getName)
       analyzers = (analyzers ++ analyzerClassNames.
         filterNot(existing.contains(_)).map(
-          settings.instantiateObject(_, xform).
+          settings.instantiateObject(_, this).
             asInstanceOf[VisionAnalyzer]))
     }
     case ActivateAugmentersMsg(augmenterClassNames, eventTime) => {
