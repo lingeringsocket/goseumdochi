@@ -18,10 +18,18 @@ package org.goseumdochi.android
 import org.goseumdochi.common._
 import org.goseumdochi.sphero._
 
+import com.orbotix._
 import com.orbotix.command._
 import com.orbotix.`macro`._
 
-class AndroidSpheroActuator(context : ControlActivity) extends SpheroActuator
+trait ConvenienceRobotProvider
+{
+  def getRobot : Option[ConvenienceRobot]
+}
+
+class AndroidSpheroActuator(
+  context : ConvenienceRobotProvider)
+    extends SpheroActuator
 {
   override protected def executeTemporaryMacro(builder : SpheroMacroBuilder)
   {

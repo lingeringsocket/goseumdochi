@@ -13,40 +13,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.android
+package org.goseumdochi.android.watchdog
+
+import org.goseumdochi.android._
+import org.goseumdochi.android.R
 
 import android.content._
-import android.net._
 import android.os._
+import android.text.method._
 import android.view._
+import android.widget._
 
-class AboutActivity extends ActivityBase
-    with View.OnClickListener
+abstract class ErrorActivity(
+  viewId : Int, linkView : Option[TypedResource[TextView]] = None)
+    extends MainMenuActivityBase
 {
   override protected def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.about)
-
-    val okButton = findView(TR.about_ok)
-    okButton.setOnClickListener(this)
-    val projectUrl = findView(TR.project_url)
-    projectUrl.setOnClickListener(this)
+    setContentView(viewId)
+    linkView.foreach(
+      findView(_).setMovementMethod(LinkMovementMethod.getInstance))
   }
 
-  def onClick(v : View)
+  def onOkClicked(v : View)
   {
-    v.getId match {
-      case R.id.about_ok => finish
-      case R.id.project_url => openProjectUrlInBrowser
-      case _ =>
-    }
-  }
-
-  private def openProjectUrlInBrowser()
-  {
-    val uri = Uri.parse(getString(R.string.about_project_url))
-    val intent = new Intent(Intent.ACTION_VIEW, uri)
+    val intent = new Intent(this, classOf[SetupActivity])
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    finish
     startActivity(intent)
   }
 }
+
+class BumpActivity extends ErrorActivity(R.layout.bump)
+
+class LostActivity extends ErrorActivity(R.layout.lost)
+
+class UnfoundActivity extends ErrorActivity(R.layout.unfound)
+
+class BluetoothErrorActivity extends ErrorActivity(
+  R.layout.bluetooth, Some(TR.bluetooth_error_content))
