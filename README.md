@@ -1,1 +1,2 @@
-# goseumdochi
+* [[Ubuntu Build]]
+* 
