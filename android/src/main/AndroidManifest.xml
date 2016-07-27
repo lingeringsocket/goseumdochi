@@ -14,7 +14,7 @@
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <application
         android:label="@string/app_name"
-        android:name=".MultidexApplication"
+        android:name=".lib.MultidexApplication"
         android:theme="@style/GoseumdochiTheme"
         android:icon="@drawable/icon">
       <activity

@@ -15,8 +15,8 @@
 
 package org.goseumdochi.android.watchdog
 
-import org.goseumdochi.android._
 import org.goseumdochi.android.R
+import org.goseumdochi.android.TR
 
 import android.content._
 import android.net._
