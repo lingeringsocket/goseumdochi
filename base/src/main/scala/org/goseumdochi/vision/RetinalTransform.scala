@@ -17,11 +17,17 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
-trait RetinalTransform
+trait RetinalTransformProvider
+{
+  def getRetinalTransform : RetinalTransform
+}
+
+trait RetinalTransform extends RetinalTransformProvider
 {
   def retinaToWorld(pos : RetinalPos) : PlanarPos
   def worldToRetina(pos : PlanarPos) : RetinalPos
   def isValid(pos : RetinalPos) : Boolean = true
+  override def getRetinalTransform = this
 }
 
 // assume your basic parallel projection, but make the retinal y axis point

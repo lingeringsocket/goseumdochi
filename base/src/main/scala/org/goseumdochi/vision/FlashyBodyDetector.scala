@@ -23,13 +23,14 @@ import BlobAnalysis._
 import BodyDetector._
 
 class FlashyBodyDetector(
-  val settings : Settings, val xform : RetinalTransform)
+  val settings : Settings,
+  val retinalTransformProvider : RetinalTransformProvider)
     extends BodyDetector
 {
   private val random = scala.util.Random
 
   class BodyMotionDetector extends MotionDetector(
-    settings, xform,
+    settings, retinalTransformProvider,
     new IgnoreLarge(settings.MotionDetection.bodyThreshold),
     MotionDetector.GravitySorter)
 

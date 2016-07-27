@@ -26,7 +26,7 @@ object BodyDetector
     override def renderOverlay(overlay : RetinalOverlay)
     {
       overlay.drawCircle(
-        overlay.xform.worldToRetina(pos), 6, NamedColor.RED, 2)
+        overlay.xform.worldToRetina(pos), 30, NamedColor.RED, 2)
     }
   }
 }

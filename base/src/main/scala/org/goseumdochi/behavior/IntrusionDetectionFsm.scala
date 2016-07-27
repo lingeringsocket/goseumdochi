@@ -44,6 +44,7 @@ object IntrusionDetectionFsm
 
   // data
   case object Empty extends Data
+  case object Panicky extends Data
   final case class BodyAt(
     pos : PlanarPos
   ) extends Data
@@ -98,7 +99,7 @@ class IntrusionDetectionFsm()
         stay
       }
     }
-    case Event(msg : ControlActor.BodyMovedMsg, Empty) => {
+    case Event(msg : ControlActor.BodyMovedMsg, Panicky) => {
       stay using Paused(msg.eventTime + pausePeriod)
     }
     case Event(msg : ControlActor.BodyMovedMsg, _) => {
@@ -108,7 +109,7 @@ class IntrusionDetectionFsm()
 
   whenUnhandled {
     case Event(msg : ControlActor.PanicAttackMsg, _) => {
-      goto(WaitingForIntruder) using Empty
+      goto(WaitingForIntruder) using Panicky
     }
     case event => handleUnknown(event)
   }

@@ -13,7 +13,7 @@
   <string name="about_text">
 With Watchdog for Sphero, you can position your Android device for surveillance of an area of your home, and whenever the camera detects any motion in that area, Sphero will roll towards the intruder with a challenge.  Good fun for pets, friends, and family members, but don\'t rely on it to protect the family jewels :) 
   </string>
-  <string name="about_version">Watchdog for Sphero (v1.1 beta)</string>
+  <string name="about_version">Watchdog for Sphero (v1.2 beta)</string>
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
@@ -29,7 +29,7 @@ Camera motion was detected, causing surveillance to end.  Each time your Android
 The magenta light from Sphero could not be located.  Try an environment without direct sunlight, and adjust the camera white balance using the preferences menu if necessary.  Also, remove any objects with colors close to magenta from the scene.  Then try setup again.
   </string>
   <string name="bluetooth_error_text">
-Bluetooth connection to Sphero failed.  Please make sure Sphero is paired and awake with its battery charged, then try setup again.
+Bluetooth connection to Sphero failed.  <a href="https://goseumdochi.org/sphero-connection/#tips">Please make sure Sphero is paired and awake with its battery charged</a>, then try setup again.
   </string>
   <string name="lost_text">
 Sphero is no longer visible to your camera, and attempts to move it back into view did not help.  Please perform setup again.

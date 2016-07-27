@@ -218,7 +218,7 @@ class ControlActor(
 
   private val sensorDelay = settings.Vision.sensorDelay
 
-  private val maxRollDuration = settings.Control.maxRollDuration
+  private val maxMoveDuration = settings.Control.maxMoveDuration
 
   private val perception = new PlanarPerception(settings)
 
@@ -268,9 +268,16 @@ class ControlActor(
     }
     case ActuateMoveMsg(from, to, speed, extraTime, eventTime) => {
       val impulse = bodyMapping.computeImpulse(from, to, speed, extraTime)
+      val cappedImpulse = {
+        if (impulse.duration > maxMoveDuration) {
+          PolarImpulse(impulse.speed, maxMoveDuration, impulse.theta)
+        } else {
+          impulse
+        }
+      }
       // maybe we should interpolate HintBodyLocationMsgs along
       // the way as well?
-      actuateImpulse(impulse, eventTime)
+      actuateImpulse(cappedImpulse, eventTime)
     }
     case ActuateTwirlMsg(theta, duration, eventTime) => {
       actuator.actuateTwirl(theta, duration, false)
@@ -300,6 +307,7 @@ class ControlActor(
       }
     }
     case UseVisionAnalyzersMsg(analyzers, eventTime) => {
+      lastSeenTime = eventTime
       sendOutput(
         visionActor,
         VisionActor.ActivateAnalyzersMsg(
@@ -399,20 +407,13 @@ class ControlActor(
 
   private def actuateImpulse(impulse : PolarImpulse, eventTime : TimePoint)
   {
-    val cappedImpulse = {
-      if (impulse.duration > maxRollDuration) {
-        PolarImpulse(impulse.speed, maxRollDuration, impulse.theta)
-      } else {
-        impulse
-      }
-    }
-    lastImpulse = Some(cappedImpulse)
+    lastImpulse = Some(impulse)
     // FIXME:  get rid of the testsActive clause after regenerating
     // test scenarios
     if (testsActive || (status != LOCALIZING)) {
-      movingUntil = eventTime + cappedImpulse.duration + sensorDelay
+      movingUntil = eventTime + impulse.duration + sensorDelay
     }
-    actuator.actuateMotion(cappedImpulse)
+    actuator.actuateMotion(impulse)
   }
 
   override def preStart()

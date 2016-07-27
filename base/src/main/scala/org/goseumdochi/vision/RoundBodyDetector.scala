@@ -28,7 +28,8 @@ import util._
 import BodyDetector._
 
 class RoundBodyDetector(
-  val settings : Settings, val xform : RetinalTransform)
+  val settings : Settings,
+  val retinalTransformProvider : RetinalTransformProvider)
     extends BodyDetector
 {
   // use integers to allow for hash-based filtering

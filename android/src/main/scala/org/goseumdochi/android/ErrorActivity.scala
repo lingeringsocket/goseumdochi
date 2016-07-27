@@ -17,14 +17,20 @@ package org.goseumdochi.android
 
 import android.content._
 import android.os._
+import android.text.method._
 import android.view._
+import android.widget._
 
-abstract class ErrorActivity(viewId : Int) extends MainMenuActivityBase
+abstract class ErrorActivity(
+  viewId : Int, linkView : Option[TypedResource[TextView]] = None)
+    extends MainMenuActivityBase
 {
   override protected def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
     setContentView(viewId)
+    linkView.foreach(
+      findView(_).setMovementMethod(LinkMovementMethod.getInstance))
   }
 
   def onOkClicked(v : View)
@@ -42,4 +48,5 @@ class LostActivity extends ErrorActivity(R.layout.lost)
 
 class UnfoundActivity extends ErrorActivity(R.layout.unfound)
 
-class BluetoothErrorActivity extends ErrorActivity(R.layout.bluetooth)
+class BluetoothErrorActivity extends ErrorActivity(
+  R.layout.bluetooth, Some(TR.bluetooth_error_content))
