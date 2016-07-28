@@ -13,15 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.android
+package org.goseumdochi.android.lib
 
 import org.goseumdochi.common._
 import org.goseumdochi.sphero._
 
+import com.orbotix._
 import com.orbotix.command._
 import com.orbotix.`macro`._
 
-class AndroidSpheroActuator(context : ControlActivity) extends SpheroActuator
+trait ConvenienceRobotProvider
+{
+  def getRobot : Option[ConvenienceRobot]
+}
+
+class AndroidSpheroActuator(
+  context : ConvenienceRobotProvider)
+    extends SpheroActuator
 {
   override protected def executeTemporaryMacro(builder : SpheroMacroBuilder)
   {

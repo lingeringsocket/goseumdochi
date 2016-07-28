@@ -13,7 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.android
+package org.goseumdochi.android.watchdog
+
+import org.goseumdochi.android.lib._
+import org.goseumdochi.android.R
+import org.goseumdochi.android.TR
 
 import android._
 import android.content._
@@ -60,6 +64,7 @@ import ControlActivity._
 
 class ControlActivity extends ActivityBaseNoCompat
     with RobotChangedStateListener with SensorEventListener
+    with ConvenienceRobotProvider
 {
   private var robot : Option[ConvenienceRobot] = None
 
@@ -323,7 +328,7 @@ class ControlActivity extends ActivityBaseNoCompat
 
   def isRobotConnected = !robot.isEmpty
 
-  def getRobot = robot
+  override def getRobot = robot
 
   def getRobotState = {
     if (isRobotConnected) {
