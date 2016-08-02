@@ -53,7 +53,7 @@ dexMinimizeMain in Android := true
 dexMaxProcessCount := 1
 
 dexMainClasses in Android := Seq(
-  "org/goseumdochi/android/MultidexApplication.class",
+  "org/goseumdochi/android/lib/MultidexApplication.class",
   "android/support/multidex/BuildConfig.class",
   "android/support/multidex/MultiDex$V14.class",
   "android/support/multidex/MultiDex$V19.class",

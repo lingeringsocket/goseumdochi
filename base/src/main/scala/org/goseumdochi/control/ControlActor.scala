@@ -33,9 +33,11 @@ object ControlActor
   }
   import ControlStatus._
 
-  // sent messages (to behavior)
+  // sent messages (to VisionActor)
   // VisionActor.ActivateAnalyzersMsg
   // VisionActor.ActivateAugmentersMsg
+
+  // sent messages (to behavior)
   final case class CameraAcquiredMsg(
     bottomRight : RetinalPos, eventTime : TimePoint)
       extends EventMsg
