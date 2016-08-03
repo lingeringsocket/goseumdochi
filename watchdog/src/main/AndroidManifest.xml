@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.goseumdochi.android"
+    android:versionCode="14"
+    android:versionName="1.4" >
+    <uses-sdk android:minSdkVersion="11" android:targetSdkVersion="23"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <application
+        android:label="@string/app_name"
+        android:name=".lib.MultidexApplication"
+        android:theme="@style/GoseumdochiTheme"
+        android:icon="@drawable/icon">
+      <activity
+          android:name=".watchdog.MainActivity"
+          android:label="@string/app_name"
+          android:screenOrientation="portrait">
+        <intent-filter>
+          <action android:name="android.intent.action.MAIN" />
+          <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+      </activity>
+      <activity
+          android:name=".watchdog.ControlActivity"
+          android:label="@string/app_name"
+          android:theme="@style/GoseumdochiThemeNoTitleBar"
+          android:noHistory="true"
+          android:screenOrientation="landscape">
+      </activity>
+      <activity
+          android:name=".watchdog.AboutActivity"
+          android:label="@string/about_title"
+          android:screenOrientation="portrait">
+      </activity>
+      <activity
+          android:name=".watchdog.SettingsActivity"
+          android:label="@string/prefs_title"
+          android:screenOrientation="portrait">
+      </activity>
+      <activity
+          android:name=".watchdog.SetupActivity"
+          android:label="@string/setup_title"
+          android:theme="@style/GoseumdochiThemeNoTitleBar"
+          android:screenOrientation="landscape">
+      </activity>
+      <activity
+          android:name=".watchdog.BumpActivity"
+          android:label="@string/error_title"
+          android:screenOrientation="landscape">
+      </activity>
+      <activity
+          android:name=".watchdog.LostActivity"
+          android:label="@string/error_title"
+          android:screenOrientation="landscape">
+      </activity>
+      <activity
+          android:name=".watchdog.UnfoundActivity"
+          android:label="@string/error_title"
+          android:screenOrientation="landscape">
+      </activity>
+      <activity
+          android:name=".watchdog.BluetoothErrorActivity"
+          android:label="@string/error_title"
+          android:screenOrientation="landscape">
+      </activity>
+    </application>
+</manifest>

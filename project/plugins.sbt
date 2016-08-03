@@ -7,4 +7,4 @@ libraryDependencies += "org.bytedeco" % "javacpp" % "1.2"
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
 
-addSbtPlugin("org.scala-android" % "sbt-android" % "1.6.9")
+addSbtPlugin("org.scala-android" % "sbt-android" % "1.6.10")

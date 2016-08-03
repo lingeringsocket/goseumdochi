@@ -44,6 +44,10 @@ object Common {
 
   def ffmpegVersion = "3.0.2"
 
+  def androidPlatformTarget = "android-23"
+
+  def androidTargetSdkVersion = "23"
+
   lazy val defaultPlatform = org.bytedeco.javacpp.Loader.getPlatform
 
   def scalacOptionsAllowWarnings = Seq(
