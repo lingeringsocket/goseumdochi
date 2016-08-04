@@ -13,11 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.android.watchdog
+package org.goseumdochi.android.lib
 
-import org.goseumdochi.android._
-import org.goseumdochi.android.lib._
-import org.goseumdochi.android.R
+import org.goseumdochi.android.common._
 
 import android.content._
 import android.graphics._

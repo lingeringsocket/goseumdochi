@@ -13,6 +13,7 @@ Now you can take your Sphero for a walk!
   <string name="help_url">https://goseumdochi.org/leash-help#tips</string>
   <string name="bugs_url">https://goseumdochi.org/report-a-bug#details</string>
   <string name="ok">OK</string>
+  <string name="control_status_text">Status:</string>
 
   <string name="main_step_1_text">Blah blah blah</string>
 </resources>

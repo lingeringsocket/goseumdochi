@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+  <FrameLayout
+      android:id="@+id/control_preview"
+      android:layout_width="fill_parent"
+      android:layout_height="fill_parent"
+      android:layout_weight="1">
+    <LinearLayout
+        android:id="@+id/control_linear_layout"        
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|left"
+        android:layout_marginLeft="10dp"
+        android:orientation="vertical">
+      <TextView android:id="@+id/control_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/control_status_text"
+                android:textSize="20dip"
+                android:textColor="@color/red"
+                android:layout_marginTop="10dp"/>
+    </LinearLayout>
+  </FrameLayout>
+</LinearLayout>

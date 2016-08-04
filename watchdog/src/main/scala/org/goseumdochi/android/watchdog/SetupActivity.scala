@@ -76,7 +76,7 @@ class SetupActivity extends ActivityBaseNoCompat with TypedFindView
   def onConnectClicked(v : View)
   {
     preview.closeCamera
-    val intent = new Intent(this, classOf[ControlActivity])
+    val intent = new Intent(this, classOf[WatchdogControlActivity])
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     startActivity(intent)
   }

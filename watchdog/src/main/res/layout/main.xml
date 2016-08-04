@@ -18,7 +18,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="5dp"
-        android:onClick="onSetupClicked" />
+        android:onClick="onStartClicked" />
   </LinearLayout>
   <ScrollView
       android:layout_width="fill_parent"

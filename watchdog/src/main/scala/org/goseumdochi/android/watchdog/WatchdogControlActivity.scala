@@ -22,14 +22,9 @@ import org.goseumdochi.android.TR
 
 import android._
 import android.content._
-import android.graphics._
 import android.hardware._
 import android.os._
 import android.preference._
-import android.view._
-
-import java.io._
-import java.util._
 
 import android.hardware.Camera
 
@@ -38,62 +33,23 @@ import org.goseumdochi.control._
 
 import akka.actor._
 
-import com.typesafe.config._
-
-import com.orbotix._
-import com.orbotix.common._
-import com.orbotix.common.RobotChangedStateListener._
-
 import collection._
 
-object ControlActivity
+object WatchdogControlActivity
 {
   private final val INITIAL_STATUS = "CONNECTED"
 
   private final val SPEECH_RESOURCE_PREFIX = "speech_"
-
-  private var systemId = 0
-
-  private def nextId() =
-  {
-    systemId += 1
-    systemId
-  }
 }
 
-import ControlActivity._
+import WatchdogControlActivity._
 
-class ControlActivity extends ActivityBaseNoCompat
-    with RobotChangedStateListener with SensorEventListener
-    with ConvenienceRobotProvider with TypedFindView
+class WatchdogControlActivity extends ControlActivityBase
+    with SensorEventListener with TypedFindView
 {
-  private var robot : Option[ConvenienceRobot] = None
-
-  private val outputQueue =
-    new java.util.concurrent.ArrayBlockingQueue[Bitmap](1)
-
-  private val retinalInput = new AndroidRetinalInput
-
-  private lazy val controlView =
-    new ControlView(this, retinalInput, outputQueue)
-
-  private lazy val preview = new CameraPreview(this, controlView)
-
-  private lazy val theater = createTheater
-
-  private val actuator = new AndroidSpheroActuator(this)
-
-  private lazy val actorSystem = ActorSystem(
-    "AndroidActors" + ControlActivity.nextId,
-    ConfigFactory.load("android.conf"))
-
-  private var controlActorOpt : Option[ActorRef] = None
-
   private var controlStatus = INITIAL_STATUS
 
   private var lastVoiceMessage = ""
-
-  private var discoveryStarted = false
 
   private var connectionStatus = "WAITING FOR CONNECTION"
 
@@ -105,13 +61,9 @@ class ControlActivity extends ActivityBaseNoCompat
 
   private var detectBumps = false
 
-  private var expectDisconnect = false
-
   private var found = false
 
   private var videoFileTheater : Option[VideoFileTheater] = None
-
-  private val connectionTimer = new Timer("Bluetooth Connection Timeout", true)
 
   private lazy val videoMode = readVideoMode
 
@@ -141,7 +93,7 @@ class ControlActivity extends ActivityBaseNoCompat
             videoFileTheater.foreach(_.enable())
           }
           val prefs = PreferenceManager.getDefaultSharedPreferences(
-            ControlActivity.this)
+            WatchdogControlActivity.this)
           val defaultValue = getString(R.string.pref_default_intruder_alert)
           actualMessage = prefs.getString(
             WatchdogSettingsActivity.PREF_INTRUDER_ALERT, defaultValue)
@@ -156,7 +108,7 @@ class ControlActivity extends ActivityBaseNoCompat
         if (!msg.messageParams.isEmpty) {
           actualMessage =
             WatchdogSettingsActivity.applyFormat(
-              ControlActivity.this, actualMessage,
+              WatchdogControlActivity.this, actualMessage,
               msg.messageParams)
         }
         speak(actualMessage)
@@ -191,13 +143,14 @@ class ControlActivity extends ActivityBaseNoCompat
     }
 
     speak(R.string.speech_bluetooth_connection)
-
-    getWindow.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-    getWindow.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    startCamera
   }
 
-  private def startCamera()
+  override protected def createControlView() =
+  {
+    new WatchdogControlView(this, retinalInput, outputQueue)
+  }
+
+  override protected def startCamera()
   {
     setContentView(R.layout.control)
     val layout = findView(TR.control_preview)
@@ -208,67 +161,27 @@ class ControlActivity extends ActivityBaseNoCompat
     findView(TR.control_linear_layout).bringToFront
   }
 
-  private def startDiscovery()
+  override protected def handleConnectionEstablished()
   {
-    expectDisconnect = false
-    if (!discoveryStarted) {
-      DualStackDiscoveryAgent.getInstance.startDiscovery(
-        getApplicationContext)
-      connectionTimer.schedule(new TimerTask {
-        override def run()
-        {
-          handleRobotChangedState(
-            null,
-            RobotChangedStateNotificationType.FailedConnect)
-        }
-      }, 20000)
-      discoveryStarted = true
-    }
+    ControlActor.addListener(
+      controlActorOpt.get,
+      actorSystem.actorOf(
+        Props(classOf[ControlListener], this), "statusActor"))
   }
 
-  override def handleRobotChangedState(
-    r : Robot,
-    notification : RobotChangedStateNotificationType)
+  override protected def handleConnectionLost()
   {
-    if (expectDisconnect) {
-      return
-    }
-    notification match {
-      case RobotChangedStateNotificationType.Online => {
-        connectionTimer.cancel
-        robot = Some(new ConvenienceRobot(r))
-        val file = new File(
-          getApplicationContext.getFilesDir, "orientation.ser")
-        System.setProperty(
-          "GOSEUMDOCHI_ORIENTATION_FILE",
-          file.getAbsolutePath)
-        val props = Props(
-          classOf[ControlActor],
-          actuator,
-          Props(classOf[VisionActor], retinalInput, theater))
-        val controlActor = actorSystem.actorOf(
-          props, ControlActor.CONTROL_ACTOR_NAME)
-        controlActorOpt = Some(controlActor)
-        ControlActor.addListener(
-          controlActor,
-          actorSystem.actorOf(
-            Props(classOf[ControlListener], this), "statusActor"))
-      }
-      case RobotChangedStateNotificationType.Disconnected => {
-        if (!robot.isEmpty) {
-          connectionStatus = "CONNECTION LOST"
-          speak(R.string.speech_bluetooth_lost)
-          robot = None
-          finishWithError(classOf[BluetoothErrorActivity])
-        }
-      }
-      case RobotChangedStateNotificationType.FailedConnect => {
-        connectionStatus = "FAILED"
-        speak(R.string.speech_bluetooth_failed)
-        finishWithError(classOf[BluetoothErrorActivity])
-      }
-      case _ =>
-    }
+    super.handleConnectionLost
+    connectionStatus = "CONNECTION LOST"
+    speak(R.string.speech_bluetooth_lost)
+    finishWithError(classOf[BluetoothErrorActivity])
+  }
+
+  override protected def handleConnectionFailed()
+  {
+    connectionStatus = "FAILED"
+    speak(R.string.speech_bluetooth_failed)
+    finishWithError(classOf[BluetoothErrorActivity])
   }
 
   private def speak(voiceMessage : String)
@@ -285,8 +198,6 @@ class ControlActivity extends ActivityBaseNoCompat
   override protected def onStart()
   {
     super.onStart
-    DualStackDiscoveryAgent.getInstance.addRobotStateListener(this)
-    startDiscovery
     sensorMgr.foreach(sm => {
       gyroscope.foreach(sensor => {
         sm.registerListener(
@@ -295,41 +206,16 @@ class ControlActivity extends ActivityBaseNoCompat
     })
   }
 
-  override protected def onPause()
+  override protected def pencilsDown()
   {
-    super.onPause
-    pencilsDown
-    if (!isFinishing) {
-      finish
-    }
-  }
-
-  private def pencilsDown()
-  {
+    super.pencilsDown
     connectionStatus = "DISCONNECTED"
-    expectDisconnect = true
-    connectionTimer.cancel
     sensorMgr.foreach(_.unregisterListener(this))
     gyroscope = None
     gyroscopeBaseline.clear
     videoFileTheater.foreach(GlobalVideo.closeTheater(_))
     videoFileTheater = None
-    controlActorOpt.foreach(controlActor => {
-      actorSystem.stop(controlActor)
-      actorSystem.shutdown
-    })
-    controlActorOpt = None
-    if (DualStackDiscoveryAgent.getInstance.isDiscovering) {
-      DualStackDiscoveryAgent.getInstance.stopDiscovery
-    }
-    robot.foreach(_.disconnect)
-    robot = None
-    preview.closeCamera
   }
-
-  def isRobotConnected = !robot.isEmpty
-
-  override def getRobot = robot
 
   def getRobotState = {
     if (isRobotConnected) {
@@ -340,8 +226,6 @@ class ControlActivity extends ActivityBaseNoCompat
   }
 
   def getVoiceMessage = lastVoiceMessage
-
-  def getTheaterListener = theater.getListener
 
   override def onSensorChanged(event : SensorEvent)
   {
@@ -399,14 +283,14 @@ class ControlActivity extends ActivityBaseNoCompat
   private def readVideoMode() =
   {
     val prefs = PreferenceManager.getDefaultSharedPreferences(
-      ControlActivity.this)
+      WatchdogControlActivity.this)
     prefs.getString(
       WatchdogSettingsActivity.PREF_VIDEO_TRIGGER, videoModeNone)
   }
 
-  private def createTheater() : RetinalTheater =
+  override protected def createTheater() : RetinalTheater =
   {
-    val androidTheater = new AndroidTheater(controlView, outputQueue)
+    val androidTheater = super.createTheater
     if (videoMode != videoModeNone) {
       if (hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
         val fileTheater = GlobalVideo.createVideoFileTheater

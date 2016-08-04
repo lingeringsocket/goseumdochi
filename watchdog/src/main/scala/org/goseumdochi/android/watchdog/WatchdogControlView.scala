@@ -21,25 +21,18 @@ import org.goseumdochi.android.R
 import org.goseumdochi.android.TR
 
 import android.graphics._
-import android.hardware._
-import android.view._
 
-import java.io._
 import java.text._
 import java.util._
 import java.util.concurrent._
 
 import android.hardware.Camera
 
-import org.bytedeco.javacv._
-
-import org.goseumdochi.common._
-
-class ControlView(
-  context : ControlActivity,
+class WatchdogControlView(
+  context : WatchdogControlActivity,
   retinalInput : AndroidRetinalInput,
   outputQueue : ArrayBlockingQueue[Bitmap])
-    extends View(context) with Camera.PreviewCallback with View.OnTouchListener
+    extends ControlViewBase(context, retinalInput, outputQueue)
     with TypedFindView
 {
   private var frameNumber = 0
@@ -56,66 +49,9 @@ class ControlView(
 
   private val msgTextView = context.findView(TR.control_status_message)
 
-  private val paint = new Paint
-
-  override def onTouch(v : View, e : MotionEvent) =
-  {
-    context.getTheaterListener.foreach(
-      _.onTheaterClick(RetinalPos(e.getX, e.getY)))
-    true
-  }
-
-  override def onPreviewFrame(data : Array[Byte], camera : Camera)
-  {
-    try {
-      if (context.isRobotConnected) {
-        if (retinalInput.needsFrame) {
-          val bitmap = convertToBitmap(data, camera)
-          val converter = new AndroidFrameConverter
-          val frame = converter.convert(bitmap)
-          retinalInput.pushFrame(frame)
-        }
-      } else {
-        if (outputQueue.isEmpty) {
-          val bitmap = convertToBitmap(data, camera)
-          outputQueue.put(bitmap)
-          postInvalidate
-        }
-      }
-      camera.addCallbackBuffer(data)
-    } catch {
-      // need to swallow these to prevent spurious crashes
-      case e : RuntimeException =>
-    }
-  }
-
-  private def convertToBitmap(data : Array[Byte], camera : Camera) =
-  {
-    val size = camera.getParameters.getPreviewSize
-    val out = new ByteArrayOutputStream
-    val yuv = new YuvImage(
-      data, ImageFormat.NV21, size.width, size.height, null)
-    yuv.compressToJpeg(
-      new android.graphics.Rect(0, 0, size.width, size.height), 50, out)
-    val bytes = out.toByteArray
-    BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
-  }
-
   override protected def onDraw(canvas : Canvas)
   {
-    // janky way to hide the underlying camera preview...
-    // apparently these days we should be using SurfaceTexture instead
-    // (and camera2 API for that matter)
-    canvas.drawARGB(255, 0, 0, 0)
-
-    if (!outputQueue.isEmpty) {
-      val bitmap = outputQueue.take
-      val offsetX = (canvas.getWidth - bitmap.getWidth) / 2
-      val offsetY = (canvas.getHeight - bitmap.getHeight) / 2
-      linearLayout.setPadding(offsetX, offsetY, 0, 0)
-      canvas.drawBitmap(bitmap, offsetX, offsetY, paint)
-      frameNumber += 1
-    }
+    super.onDraw(canvas)
 
     val timeStamp = sdf.format(Calendar.getInstance.getTime)
     val robotState = context.getRobotState
@@ -130,5 +66,13 @@ class ControlView(
     msgTextView.setText(
       context.getString(R.string.control_status_message_text) +
         " " + lastVoiceMessage)
+  }
+
+  override protected def drawFrame(
+    canvas : Canvas, bitmap : Bitmap, offsetX : Int, offsetY : Int)
+  {
+    super.drawFrame(canvas, bitmap, offsetY, offsetY)
+    linearLayout.setPadding(offsetX, offsetY, 0, 0)
+    frameNumber += 1
   }
 }

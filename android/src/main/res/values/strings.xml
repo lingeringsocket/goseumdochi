@@ -8,6 +8,9 @@
   <string name="pref_summary_white_balance">White balance to set for camera feed (important for accurate color detection)</string>
   <string name="pref_default_white_balance">auto</string>
 
+  <string name="toast_bluetooth_required">Watchdog cannot run without Bluetooth enabled.</string>
+  <string name="toast_permissions_required">Watchdog cannot run until all requested permissions have been granted.</string>
+
   <string-array name="white_balance_options">
     <item>Auto</item>
     <item>Incandescent</item>

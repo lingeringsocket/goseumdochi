@@ -63,8 +63,6 @@ Sphero is no longer visible to your camera, and attempts to move it back into vi
   <string name="speech_CENTERING">Centering.</string>
   <string name="speech_MEASURING">Measuring perspective transformation.</string>
 
-  <string name="toast_bluetooth_required">Watchdog cannot run without Bluetooth enabled.</string>
-  <string name="toast_permissions_required">Watchdog cannot run until all requested permissions have been granted.</string>
   <string name="toast_saving_video">Saving video file...please wait for completion notification</string>
   <string name="toast_video_saved">Video file saved successfully</string>
   <string name="toast_video_save_failed">Failed to save video file</string>
