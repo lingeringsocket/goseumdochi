@@ -10,14 +10,9 @@ Now you can take your Sphero for a walk!
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
-  <string name="help_url">https://goseumdochi.org/watchdog-help#tips</string>
+  <string name="help_url">https://goseumdochi.org/leash-help#tips</string>
   <string name="bugs_url">https://goseumdochi.org/report-a-bug#details</string>
   <string name="ok">OK</string>
 
   <string name="main_step_1_text">Blah blah blah</string>
-
-  <string name="pref_title_white_balance">Camera White Balance</string>
-  <string name="pref_summary_white_balance">White balance to set for camera feed (important for accurate color detection)</string>
-  <string name="pref_default_white_balance">auto</string>
-
 </resources>

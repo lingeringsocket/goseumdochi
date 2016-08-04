@@ -15,6 +15,7 @@
 
 package org.goseumdochi.android.watchdog
 
+import org.goseumdochi.android._
 import org.goseumdochi.android.lib._
 import org.goseumdochi.android.R
 
@@ -22,17 +23,15 @@ import android._
 import android.app._
 import android.content._
 import android.os._
-import android.preference._
 
 import java.util._
 
-object SettingsActivity
+object WatchdogSettingsActivity
 {
   final val PREF_ENABLE_VOICE = "pref_key_enable_voice"
   final val PREF_INTRUDER_ALERT = "pref_key_intruder_alert"
   final val PREF_VIDEO_TRIGGER = "pref_key_video_trigger"
   final val PREF_DETECT_BUMPS = "pref_key_detect_bumps"
-  final val PREF_WHITE_BALANCE = "pref_key_white_balance"
 
   def applyFormat(context : Activity, phrase : String, params : Seq[Any])
       : String =
@@ -47,30 +46,14 @@ object SettingsActivity
   }
 }
 
-import SettingsActivity._
+import WatchdogSettingsActivity._
 
-class SettingsActivity
-    extends PreferenceActivity with ActivityBaseNoCompat
-    with SharedPreferences.OnSharedPreferenceChangeListener
+class WatchdogSettingsActivity extends SettingsActivityBase with TypedFindView
 {
   override def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
     addPreferencesFromResource(R.xml.preferences)
-  }
-
-  private def getPrefs = PreferenceManager.getDefaultSharedPreferences(this)
-
-  override protected def onPause()
-  {
-    super.onPause
-    getPrefs.unregisterOnSharedPreferenceChangeListener(this)
-  }
-
-  override protected def onResume()
-  {
-    super.onResume
-    getPrefs.registerOnSharedPreferenceChangeListener(this)
   }
 
   override def onSharedPreferenceChanged(

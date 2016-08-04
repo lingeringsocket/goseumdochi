@@ -16,6 +16,7 @@
 package org.goseumdochi.android.watchdog
 
 import org.goseumdochi.android._
+import org.goseumdochi.android.lib._
 import org.goseumdochi.android.R
 import org.goseumdochi.vision._
 

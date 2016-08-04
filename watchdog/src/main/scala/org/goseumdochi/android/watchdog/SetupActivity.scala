@@ -16,6 +16,7 @@
 package org.goseumdochi.android.watchdog
 
 import org.goseumdochi.android._
+import org.goseumdochi.android.lib._
 import org.goseumdochi.android.R
 import org.goseumdochi.android.TR
 
@@ -24,7 +25,7 @@ import android.hardware._
 import android.os._
 import android.view._
 
-class SetupActivity extends ActivityBaseNoCompat
+class SetupActivity extends ActivityBaseNoCompat with TypedFindView
 {
   private var orientation = 0
 

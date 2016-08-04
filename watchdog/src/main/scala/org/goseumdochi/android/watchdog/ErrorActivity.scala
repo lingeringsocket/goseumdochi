@@ -26,7 +26,7 @@ import android.widget._
 
 abstract class ErrorActivity(
   viewId : Int, linkView : Option[TypedResource[TextView]] = None)
-    extends MainMenuActivityBase
+    extends WatchdogMainMenuActivityBase
 {
   override protected def onCreate(savedInstanceState : Bundle)
   {

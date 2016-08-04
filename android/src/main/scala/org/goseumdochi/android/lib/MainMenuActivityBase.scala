@@ -13,13 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.android.watchdog
+package org.goseumdochi.android.lib
 
-import org.goseumdochi.android._
-import org.goseumdochi.android.R
+import org.goseumdochi.android.common._
 
-import android.content._
-import android.net._
 import android.view._
 
 trait MainMenuActivityBase extends ActivityBase
@@ -34,27 +31,29 @@ trait MainMenuActivityBase extends ActivityBase
 
   override def onOptionsItemSelected(item : MenuItem) =
   {
-    item.getItemId match {
-      case R.id.about =>
-        val intent = new Intent(this, classOf[AboutActivity])
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        startActivity(intent)
-        true
-      case R.id.help =>
-        val uri = Uri.parse(getString(R.string.help_url))
-        startActivity(new Intent(Intent.ACTION_VIEW, uri))
-        true
-      case R.id.bugs =>
-        val uri = Uri.parse(getString(R.string.bugs_url))
-        startActivity(new Intent(Intent.ACTION_VIEW, uri))
-        true
-      case R.id.settings =>
-        val intent = new Intent(this, classOf[SettingsActivity])
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        startActivity(intent)
-        true
-      case _ =>
-        false
+    val itemId = item.getItemId
+    if (itemId == R.id.about) {
+      startAboutActivity
+      true
+    } else if (itemId == R.id.help) {
+      startHelpActivity
+      true
+    } else if (itemId == R.id.bugs) {
+      startBugsActivity
+      true
+    } else if (itemId == R.id.settings) {
+      startSettingsActivity
+      true
+    } else {
+      false
     }
   }
+
+  protected def startAboutActivity()
+
+  protected def startHelpActivity()
+
+  protected def startBugsActivity()
+
+  protected def startSettingsActivity()
 }

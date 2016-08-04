@@ -15,11 +15,14 @@
 
 package org.goseumdochi.android.leash
 
-import android.app._
+import org.goseumdochi.android.lib._
+
+import android.content._
+import android.net._
 import android.os._
 import android.view._
 
-class LeashMainActivity extends Activity
+class LeashMainActivity extends MainMenuActivityBase with TypedFindView
 {
   override protected def onCreate(savedInstanceState : Bundle)
   {
@@ -29,5 +32,28 @@ class LeashMainActivity extends Activity
 
   def onSetupClicked(v : View)
   {
+  }
+
+  override protected def startAboutActivity()
+  {
+  }
+
+  override protected def startHelpActivity()
+  {
+    val uri = Uri.parse(getString(R.string.help_url))
+    startActivity(new Intent(Intent.ACTION_VIEW, uri))
+  }
+
+  override protected def startBugsActivity()
+  {
+    val uri = Uri.parse(getString(R.string.bugs_url))
+    startActivity(new Intent(Intent.ACTION_VIEW, uri))
+  }
+
+  override protected def startSettingsActivity()
+  {
+    val intent = new Intent(this, classOf[LeashSettingsActivity])
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    startActivity(intent)
   }
 }

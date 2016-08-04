@@ -13,9 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.android.watchdog
-
-import org.goseumdochi.android._
+package org.goseumdochi.android.lib
 
 import android.app._
 import android.content._
@@ -40,7 +38,7 @@ trait ContextBase
   }
 }
 
-trait ActivityBaseNoCompat extends Activity with TypedFindView with ContextBase
+trait ActivityBaseNoCompat extends Activity with ContextBase
 {
   protected final val PERMISSION_REQUEST = 42
 

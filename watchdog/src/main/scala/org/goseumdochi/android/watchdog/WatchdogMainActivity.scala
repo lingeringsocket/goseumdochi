@@ -15,6 +15,7 @@
 
 package org.goseumdochi.android.watchdog
 
+import org.goseumdochi.android._
 import org.goseumdochi.android.lib._
 import org.goseumdochi.android.R
 import org.goseumdochi.android.TR
@@ -24,6 +25,7 @@ import android.app._
 import android.bluetooth._
 import android.content._
 import android.content.pm._
+import android.net._
 import android.os._
 import android.preference._
 import android.text.method._
@@ -31,7 +33,37 @@ import android.view._
 
 import java.util._
 
-class MainActivity extends MainMenuActivityBase
+class WatchdogMainMenuActivityBase
+    extends MainMenuActivityBase with TypedFindView
+{
+  override protected def startAboutActivity()
+  {
+    val intent = new Intent(this, classOf[AboutActivity])
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    startActivity(intent)
+  }
+
+  override protected def startHelpActivity()
+  {
+    val uri = Uri.parse(getString(R.string.help_url))
+    startActivity(new Intent(Intent.ACTION_VIEW, uri))
+  }
+
+  override protected def startBugsActivity()
+  {
+    val uri = Uri.parse(getString(R.string.bugs_url))
+    startActivity(new Intent(Intent.ACTION_VIEW, uri))
+  }
+
+  override protected def startSettingsActivity()
+  {
+    val intent = new Intent(this, classOf[WatchdogSettingsActivity])
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    startActivity(intent)
+  }
+}
+
+class WatchdogMainActivity extends WatchdogMainMenuActivityBase
 {
   private final val ENABLE_BT_REQUEST = 43
 
@@ -50,7 +82,7 @@ class MainActivity extends MainMenuActivityBase
     setContentView(R.layout.main)
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     val enableVoice = prefs.getBoolean(
-      SettingsActivity.PREF_ENABLE_VOICE, true)
+      WatchdogSettingsActivity.PREF_ENABLE_VOICE, true)
     GlobalTts.init(getApplicationContext, enableVoice)
     GlobalVideo.init(getApplicationContext, this)
     findView(TR.cctv_text).setMovementMethod(LinkMovementMethod.getInstance)

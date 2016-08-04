@@ -15,6 +15,7 @@
 
 package org.goseumdochi.android.watchdog
 
+import org.goseumdochi.android._
 import org.goseumdochi.android.lib._
 import org.goseumdochi.android.R
 import org.goseumdochi.android.TR
@@ -39,6 +40,7 @@ class ControlView(
   retinalInput : AndroidRetinalInput,
   outputQueue : ArrayBlockingQueue[Bitmap])
     extends View(context) with Camera.PreviewCallback with View.OnTouchListener
+    with TypedFindView
 {
   private var frameNumber = 0
 

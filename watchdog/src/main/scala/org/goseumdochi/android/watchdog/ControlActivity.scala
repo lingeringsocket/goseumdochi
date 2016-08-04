@@ -15,6 +15,7 @@
 
 package org.goseumdochi.android.watchdog
 
+import org.goseumdochi.android._
 import org.goseumdochi.android.lib._
 import org.goseumdochi.android.R
 import org.goseumdochi.android.TR
@@ -64,7 +65,7 @@ import ControlActivity._
 
 class ControlActivity extends ActivityBaseNoCompat
     with RobotChangedStateListener with SensorEventListener
-    with ConvenienceRobotProvider
+    with ConvenienceRobotProvider with TypedFindView
 {
   private var robot : Option[ConvenienceRobot] = None
 
@@ -143,7 +144,7 @@ class ControlActivity extends ActivityBaseNoCompat
             ControlActivity.this)
           val defaultValue = getString(R.string.pref_default_intruder_alert)
           actualMessage = prefs.getString(
-            SettingsActivity.PREF_INTRUDER_ALERT, defaultValue)
+            WatchdogSettingsActivity.PREF_INTRUDER_ALERT, defaultValue)
         } else {
           val resourceName = SPEECH_RESOURCE_PREFIX + msg.messageKey
           val resourceId = getResources.getIdentifier(
@@ -154,7 +155,7 @@ class ControlActivity extends ActivityBaseNoCompat
         }
         if (!msg.messageParams.isEmpty) {
           actualMessage =
-            SettingsActivity.applyFormat(
+            WatchdogSettingsActivity.applyFormat(
               ControlActivity.this, actualMessage,
               msg.messageParams)
         }
@@ -179,7 +180,7 @@ class ControlActivity extends ActivityBaseNoCompat
 
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     detectBumps = prefs.getBoolean(
-      SettingsActivity.PREF_DETECT_BUMPS, true)
+      WatchdogSettingsActivity.PREF_DETECT_BUMPS, true)
 
     if (detectBumps) {
       val sysSensorMgr =
@@ -400,7 +401,7 @@ class ControlActivity extends ActivityBaseNoCompat
     val prefs = PreferenceManager.getDefaultSharedPreferences(
       ControlActivity.this)
     prefs.getString(
-      SettingsActivity.PREF_VIDEO_TRIGGER, videoModeNone)
+      WatchdogSettingsActivity.PREF_VIDEO_TRIGGER, videoModeNone)
   }
 
   private def createTheater() : RetinalTheater =
