@@ -24,24 +24,4 @@ Now you can take your Sphero for a walk!
   <string name="pref_summary_white_balance">White balance to set for camera feed (important for accurate color detection)</string>
   <string name="pref_default_white_balance">auto</string>
 
-  <string-array name="white_balance_options">
-    <item>Auto</item>
-    <item>Incandescent</item>
-    <item>Fluorescent</item>
-    <item>Warm Fluorescent</item>
-    <item>Daylight</item>
-    <item>Cloudy Daylight</item>
-    <item>Twilight</item>
-    <item>Shade</item>
-  </string-array>
-  <string-array name="white_balance_option_values">
-    <item>auto</item>
-    <item>incandescent</item>
-    <item>fluorescent</item>
-    <item>warm-fluorescent</item>
-    <item>daylight</item>
-    <item>cloudy-daylight</item>
-    <item>twilight</item>
-    <item>shade</item>
-  </string-array>
 </resources>

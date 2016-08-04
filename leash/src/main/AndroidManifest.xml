@@ -7,7 +7,6 @@
     <application
         android:label="@string/app_name"
         android:name="org.goseumdochi.android.lib.MultidexApplication"
-        android:theme="@style/GoseumdochiTheme"
         android:icon="@drawable/icon">
       <activity
           android:name=".LeashMainActivity"

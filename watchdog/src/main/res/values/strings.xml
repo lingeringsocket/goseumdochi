@@ -96,25 +96,4 @@ Sphero is no longer visible to your camera, and attempts to move it back into vi
   <string name="pref_val_video_trigger_after_initialization_complete">after-initialization-complete</string>
   <string name="pref_val_video_trigger_first_intruder">first-intruder</string>
   <string name="pref_val_video_trigger_before_initialization_start">before-initialization-start</string>
-
-  <string-array name="white_balance_options">
-    <item>Auto</item>
-    <item>Incandescent</item>
-    <item>Fluorescent</item>
-    <item>Warm Fluorescent</item>
-    <item>Daylight</item>
-    <item>Cloudy Daylight</item>
-    <item>Twilight</item>
-    <item>Shade</item>
-  </string-array>
-  <string-array name="white_balance_option_values">
-    <item>auto</item>
-    <item>incandescent</item>
-    <item>fluorescent</item>
-    <item>warm-fluorescent</item>
-    <item>daylight</item>
-    <item>cloudy-daylight</item>
-    <item>twilight</item>
-    <item>shade</item>
-  </string-array>
 </resources>

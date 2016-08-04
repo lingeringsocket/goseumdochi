@@ -5,6 +5,7 @@
     android:versionName="0.1" >
     <uses-sdk android:minSdkVersion="11" android:targetSdkVersion="23"/>
     <application
+        android:theme="@style/GoseumdochiTheme"
         android:installLocation="auto">
     </application>
 </manifest>
