@@ -1,9 +1,5 @@
 <resources>
   <string name="app_name">Watchdog for Sphero</string>
-  <string name="settings_label">Preferences</string>
-  <string name="about_label">About</string>
-  <string name="help_label">Help</string>  
-  <string name="bugs_label">Report A Bug</string>
   <string name="setup_label">Let\'s Go</string>
   <string name="connect_label">Connect</string>
   <string name="about_title">About Watchdog for Sphero</string>
