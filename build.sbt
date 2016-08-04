@@ -33,6 +33,8 @@ lazy val android = project.dependsOn(base)
 
 lazy val watchdog = project.androidBuildWith(android)
 
+lazy val leash = project.androidBuildWith(android)
+
 mainClass in Compile := Some("org.goseumdochi.ConsoleMain")
 
 resolvers ++= Common.resolvers

@@ -4,7 +4,7 @@ platformTarget in Android := Common.androidPlatformTarget
 
 targetSdkVersion in Android := Common.androidTargetSdkVersion
 
-name := """goseumdochi-watchdog"""
+name := """goseumdochi-leash"""
 
 organization := Common.organization
 
@@ -20,8 +20,6 @@ autoCompilerPlugins := true
 classpathTypes += "maven-plugin"
 
 resolvers ++= Common.resolvers
-
-libraryDependencies ++= Common.ffmpegPlatformDeps("compile", "android-arm")
 
 // Override the run task with the android:run
 run <<= run in Android

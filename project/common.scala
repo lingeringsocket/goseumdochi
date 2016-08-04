@@ -86,4 +86,68 @@ object Common {
   def maxErrors = 99
 
   def traceLevel = 10
+
+  def dexMainClasses = Seq(
+    "org/goseumdochi/android/lib/MultidexApplication.class",
+    "android/support/multidex/BuildConfig.class",
+    "android/support/multidex/MultiDex$V14.class",
+    "android/support/multidex/MultiDex$V19.class",
+    "android/support/multidex/MultiDex$V4.class",
+    "android/support/multidex/MultiDex.class",
+    "android/support/multidex/MultiDexApplication.class",
+    "android/support/multidex/MultiDexExtractor$1.class",
+    "android/support/multidex/MultiDexExtractor.class",
+    "android/support/multidex/ZipUtil$CentralDirectory.class",
+    "android/support/multidex/ZipUtil.class"
+  )
+
+  def proguardOptions = Seq(
+    "-ignorewarnings",
+    "-dontobfuscate",
+    "-keep class org.goseumdochi.** { *; }",
+    "-keep class scala.Dynamic",
+    "-keep class scala.Option",
+    "-keep class scala.Tuple*",
+    "-keep class scala.PartialFunction",
+    "-keep class scala.Function*",
+    "-keep @org.bytedeco.javacpp.annotation interface * {*;}",
+    "-keep @org.bytedeco.javacpp.annotation.Platform public class *",
+    "-keepclasseswithmembernames class * {@org.bytedeco.* <fields>;}",
+    "-keepclasseswithmembernames class * {@org.bytedeco.* <methods>;}",
+    "-keepattributes EnclosingMethod",
+    "-keep @interface org.bytedeco.javacpp.annotation.*,javax.inject.*",
+    "-keepattributes *Annotation*, Exceptions, Signature, Deprecated, SourceFile, SourceDir, LineNumberTable, LocalVariableTable, LocalVariableTypeTable, Synthetic, EnclosingMethod, RuntimeVisibleAnnotations, RuntimeInvisibleAnnotations, RuntimeVisibleParameterAnnotations, RuntimeInvisibleParameterAnnotations, AnnotationDefault, InnerClasses",
+    "-keep class com.orbotix.** {*;}",
+    "-keep class org.bytedeco.javacpp.* {*;}",
+    "-keep class org.bytedeco.javacpp.helper.* {*;}",
+    "-dontwarn java.awt.**",
+    "-dontwarn org.bytedeco.javacv.**",
+    "-dontwarn org.bytedeco.javacpp.**",
+    "-keep class akka.actor.LightArrayRevolverScheduler { *; }",
+    "-keep class akka.actor.LocalActorRefProvider { *; }",
+    "-keep class akka.actor.CreatorFunctionConsumer { *; }",
+    "-keep class akka.actor.TypedCreatorFunctionConsumer { *; }",
+    "-keep class akka.dispatch.BoundedDequeBasedMessageQueueSemantics { *; }",
+    "-keep class akka.dispatch.UnboundedMessageQueueSemantics { *; }",
+    "-keep class akka.dispatch.UnboundedDequeBasedMessageQueueSemantics { *; }",
+    "-keep class akka.dispatch.DequeBasedMessageQueueSemantics { *; }",
+    "-keep class akka.dispatch.MultipleConsumerSemantics { *; }",
+    "-keep class akka.actor.LocalActorRefProvider$Guardian { *; }",
+    "-keep class akka.actor.LocalActorRefProvider$SystemGuardian { *; }",
+    "-keep class akka.dispatch.UnboundedMailbox { *; }",
+    "-keep class akka.actor.DefaultSupervisorStrategy { *; }",
+    "-keep class macroid.akka.AkkaAndroidLogger { *; }",
+    "-keep class akka.event.Logging$LogExt { *; }"
+  )
+
+  def packagingExcludes = Seq(
+    "META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.properties",
+    "META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.xml",
+    "META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.properties",
+    "META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.xml",
+    "META-INF/MANIFEST.MF",
+    "META-INF/LICENSE.txt",
+    "META-INF/LICENSE",
+    "META-INF/NOTICE.txt",
+    "META-INF/NOTICE")
 }
