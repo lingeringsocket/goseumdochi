@@ -25,7 +25,7 @@ import android.net._
 import android.os._
 import android.view._
 
-class AboutActivity extends ActivityBase
+class WatchdogAboutActivity extends ActivityBase
     with View.OnClickListener with TypedFindView
 {
   override protected def onCreate(savedInstanceState : Bundle)

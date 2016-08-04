@@ -21,5 +21,10 @@
           android:label="@string/prefs_title"
           android:screenOrientation="portrait">
       </activity>
+      <activity
+          android:name=".LeashAboutActivity"
+          android:label="@string/about_title"
+          android:screenOrientation="portrait">
+      </activity>
     </application>
 </manifest>

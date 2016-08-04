@@ -1,12 +1,12 @@
 <resources>
-  <string name="app_name">Leash for Sphero</string>
+  <string name="app_name">InvisiLeash for Sphero</string>
   <string name="setup_label">Let\'s Go</string>
-  <string name="about_title">About Leash for Sphero</string>
-  <string name="prefs_title">Leash for Sphero Preferences</string>
+  <string name="about_title">About InvisiLeash for Sphero</string>
+  <string name="prefs_title">InvisiLeash for Sphero Preferences</string>
   <string name="about_text">
 Now you can take your Sphero for a walk!
   </string>
-  <string name="about_version">Leash for Sphero (v0.1)</string>
+  <string name="about_version">InvisiLeash for Sphero (v0.1)</string>
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>

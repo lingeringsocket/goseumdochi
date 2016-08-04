@@ -38,7 +38,7 @@ class WatchdogMainMenuActivityBase
 {
   override protected def startAboutActivity()
   {
-    val intent = new Intent(this, classOf[AboutActivity])
+    val intent = new Intent(this, classOf[WatchdogAboutActivity])
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     startActivity(intent)
   }

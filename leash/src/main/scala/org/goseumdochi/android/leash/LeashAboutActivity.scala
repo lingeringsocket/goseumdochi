@@ -22,41 +22,33 @@ import android.net._
 import android.os._
 import android.view._
 
-class LeashMainActivity extends MainMenuActivityBase with TypedFindView
+class LeashAboutActivity extends ActivityBase
+    with View.OnClickListener with TypedFindView
 {
   override protected def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.main)
+    setContentView(R.layout.about)
+
+    val okButton = findView(TR.about_ok)
+    okButton.setOnClickListener(this)
+    val projectUrl = findView(TR.project_url)
+    projectUrl.setOnClickListener(this)
   }
 
-  def onSetupClicked(v : View)
+  def onClick(v : View)
   {
+    v.getId match {
+      case R.id.about_ok => finish
+      case R.id.project_url => openProjectUrlInBrowser
+      case _ =>
+    }
   }
 
-  override protected def startAboutActivity()
+  private def openProjectUrlInBrowser()
   {
-    val intent = new Intent(this, classOf[LeashAboutActivity])
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-    startActivity(intent)
-  }
-
-  override protected def startHelpActivity()
-  {
-    val uri = Uri.parse(getString(R.string.help_url))
-    startActivity(new Intent(Intent.ACTION_VIEW, uri))
-  }
-
-  override protected def startBugsActivity()
-  {
-    val uri = Uri.parse(getString(R.string.bugs_url))
-    startActivity(new Intent(Intent.ACTION_VIEW, uri))
-  }
-
-  override protected def startSettingsActivity()
-  {
-    val intent = new Intent(this, classOf[LeashSettingsActivity])
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    val uri = Uri.parse(getString(R.string.about_project_url))
+    val intent = new Intent(Intent.ACTION_VIEW, uri)
     startActivity(intent)
   }
 }

@@ -32,7 +32,7 @@
           android:screenOrientation="landscape">
       </activity>
       <activity
-          android:name=".watchdog.AboutActivity"
+          android:name=".watchdog.WatchdogAboutActivity"
           android:label="@string/about_title"
           android:screenOrientation="portrait">
       </activity>
