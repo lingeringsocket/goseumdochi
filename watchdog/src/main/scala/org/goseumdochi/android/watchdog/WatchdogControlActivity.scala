@@ -31,14 +31,10 @@ import android.hardware.Camera
 import org.goseumdochi.vision._
 import org.goseumdochi.control._
 
-import akka.actor._
-
 import collection._
 
 object WatchdogControlActivity
 {
-  private final val INITIAL_STATUS = "CONNECTED"
-
   private final val SPEECH_RESOURCE_PREFIX = "speech_"
 }
 
@@ -47,11 +43,7 @@ import WatchdogControlActivity._
 class WatchdogControlActivity extends ControlActivityBase
     with SensorEventListener with TypedFindView
 {
-  private var controlStatus = INITIAL_STATUS
-
   private var lastVoiceMessage = ""
-
-  private var connectionStatus = "WAITING FOR CONNECTION"
 
   private var sensorMgr : Option[SensorManager] = None
 
@@ -76,52 +68,47 @@ class WatchdogControlActivity extends ControlActivityBase
   private lazy val videoModeFirstIntruder = getString(
       R.string.pref_val_video_trigger_first_intruder)
 
-  class ControlListener extends Actor
+  override protected def handleStatusUpdate(msg : ControlActor.StatusUpdateMsg)
   {
-    def receive =
-    {
-      case msg : ControlActor.StatusUpdateMsg => {
-        if (msg.status == ControlActor.ControlStatus.ACTIVE) {
-          if (videoMode == videoModeAfterInitialization) {
-            videoFileTheater.foreach(_.enable())
-          }
-        }
-        controlStatus = msg.status.toString
-        var actualMessage = msg.messageKey
-        if (msg.messageKey == "INTRUDER") {
-          if (videoMode == videoModeFirstIntruder) {
-            videoFileTheater.foreach(_.enable())
-          }
-          val prefs = PreferenceManager.getDefaultSharedPreferences(
-            WatchdogControlActivity.this)
-          val defaultValue = getString(R.string.pref_default_intruder_alert)
-          actualMessage = prefs.getString(
-            WatchdogSettingsActivity.PREF_INTRUDER_ALERT, defaultValue)
-        } else {
-          val resourceName = SPEECH_RESOURCE_PREFIX + msg.messageKey
-          val resourceId = getResources.getIdentifier(
-            resourceName, "string", getPackageName)
-          if (resourceId != 0) {
-            actualMessage = getString(resourceId)
-          }
-        }
-        if (!msg.messageParams.isEmpty) {
-          actualMessage =
-            WatchdogSettingsActivity.applyFormat(
-              WatchdogControlActivity.this, actualMessage,
-              msg.messageParams)
-        }
-        speak(actualMessage)
-        if (msg.status == ControlActor.ControlStatus.ORIENTING) {
-          found = true
-        }
-        if (msg.status == ControlActor.ControlStatus.LOST) {
-          if (found) {
-            finishWithError(classOf[LostActivity])
-          } else {
-            finishWithError(classOf[UnfoundActivity])
-          }
-        }
+    super.handleStatusUpdate(msg)
+    if (msg.status == ControlActor.ControlStatus.ACTIVE) {
+      if (videoMode == videoModeAfterInitialization) {
+        videoFileTheater.foreach(_.enable())
+      }
+    }
+    var actualMessage = msg.messageKey
+    if (msg.messageKey == "INTRUDER") {
+      if (videoMode == videoModeFirstIntruder) {
+        videoFileTheater.foreach(_.enable())
+      }
+      val prefs = PreferenceManager.getDefaultSharedPreferences(
+        WatchdogControlActivity.this)
+      val defaultValue = getString(R.string.pref_default_intruder_alert)
+      actualMessage = prefs.getString(
+        WatchdogSettingsActivity.PREF_INTRUDER_ALERT, defaultValue)
+    } else {
+      val resourceName = SPEECH_RESOURCE_PREFIX + msg.messageKey
+      val resourceId = getResources.getIdentifier(
+        resourceName, "string", getPackageName)
+      if (resourceId != 0) {
+        actualMessage = getString(resourceId)
+      }
+    }
+    if (!msg.messageParams.isEmpty) {
+      actualMessage =
+        WatchdogSettingsActivity.applyFormat(
+          WatchdogControlActivity.this, actualMessage,
+          msg.messageParams)
+    }
+    speak(actualMessage)
+    if (msg.status == ControlActor.ControlStatus.ORIENTING) {
+      found = true
+    }
+    if (msg.status == ControlActor.ControlStatus.LOST) {
+      if (found) {
+        finishWithError(classOf[LostActivity])
+      } else {
+        finishWithError(classOf[UnfoundActivity])
       }
     }
   }
@@ -161,25 +148,16 @@ class WatchdogControlActivity extends ControlActivityBase
     findView(TR.control_linear_layout).bringToFront
   }
 
-  override protected def handleConnectionEstablished()
-  {
-    ControlActor.addListener(
-      controlActorOpt.get,
-      actorSystem.actorOf(
-        Props(classOf[ControlListener], this), "statusActor"))
-  }
-
   override protected def handleConnectionLost()
   {
     super.handleConnectionLost
-    connectionStatus = "CONNECTION LOST"
     speak(R.string.speech_bluetooth_lost)
     finishWithError(classOf[BluetoothErrorActivity])
   }
 
   override protected def handleConnectionFailed()
   {
-    connectionStatus = "FAILED"
+    super.handleConnectionFailed
     speak(R.string.speech_bluetooth_failed)
     finishWithError(classOf[BluetoothErrorActivity])
   }
@@ -209,20 +187,11 @@ class WatchdogControlActivity extends ControlActivityBase
   override protected def pencilsDown()
   {
     super.pencilsDown
-    connectionStatus = "DISCONNECTED"
     sensorMgr.foreach(_.unregisterListener(this))
     gyroscope = None
     gyroscopeBaseline.clear
     videoFileTheater.foreach(GlobalVideo.closeTheater(_))
     videoFileTheater = None
-  }
-
-  def getRobotState = {
-    if (isRobotConnected) {
-      controlStatus
-    } else {
-      connectionStatus
-    }
   }
 
   def getVoiceMessage = lastVoiceMessage

@@ -31,4 +31,14 @@ class LeashControlView(
   private val linearLayout = context.findView(TR.control_linear_layout)
 
   private val statusTextView = context.findView(TR.control_status)
+
+  override protected def onDraw(canvas : Canvas)
+  {
+    super.onDraw(canvas)
+
+    val robotState = context.getRobotState
+
+    statusTextView.setText(
+      context.getString(R.string.control_status_text) + " " + robotState)
+  }
 }

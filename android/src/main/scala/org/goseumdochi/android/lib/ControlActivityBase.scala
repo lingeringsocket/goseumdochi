@@ -37,6 +37,8 @@ import com.orbotix.common.RobotChangedStateListener._
 
 object ControlActivityBase
 {
+  private final val INITIAL_STATUS = "CONNECTED"
+
   private var systemId = 0
 
   private def nextId() =
@@ -49,6 +51,10 @@ object ControlActivityBase
 abstract class ControlActivityBase extends ActivityBaseNoCompat
     with RobotChangedStateListener with ConvenienceRobotProvider
 {
+  private var controlStatus = ControlActivityBase.INITIAL_STATUS
+
+  private var connectionStatus = "WAITING FOR CONNECTION"
+
   private var robot : Option[ConvenienceRobot] = None
 
   protected val outputQueue =
@@ -64,17 +70,32 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
 
   private val actuator = new AndroidSpheroActuator(this)
 
-  protected lazy val actorSystem = ActorSystem(
+  private lazy val actorSystem = ActorSystem(
     "AndroidActors" + ControlActivityBase.nextId,
     ConfigFactory.load("android.conf"))
 
-  protected var controlActorOpt : Option[ActorRef] = None
+  private var controlActorOpt : Option[ActorRef] = None
 
   private var discoveryStarted = false
 
   private var expectDisconnect = false
 
   private val connectionTimer = new Timer("Bluetooth Connection Timeout", true)
+
+  class ControlListener extends Actor
+  {
+    def receive =
+    {
+      case msg : ControlActor.StatusUpdateMsg => {
+        handleStatusUpdate(msg)
+      }
+    }
+  }
+
+  protected def handleStatusUpdate(msg : ControlActor.StatusUpdateMsg)
+  {
+    controlStatus = msg.status.toString
+  }
 
   override protected def onCreate(savedInstanceState : Bundle)
   {
@@ -129,6 +150,10 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
         val controlActor = actorSystem.actorOf(
           props, ControlActor.CONTROL_ACTOR_NAME)
         controlActorOpt = Some(controlActor)
+        ControlActor.addListener(
+          controlActor,
+          actorSystem.actorOf(
+            Props(classOf[ControlListener], this), "statusActor"))
         handleConnectionEstablished
       }
       case RobotChangedStateNotificationType.Disconnected => {
@@ -149,11 +174,13 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
 
   protected def handleConnectionLost()
   {
+    connectionStatus = "CONNECTION LOST"
     robot = None
   }
 
   protected def handleConnectionFailed()
   {
+    connectionStatus = "FAILED"
   }
 
   override protected def onStart()
@@ -175,6 +202,7 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
   protected def pencilsDown()
   {
     expectDisconnect = true
+    connectionStatus = "DISCONNECTED"
     connectionTimer.cancel
     controlActorOpt.foreach(controlActor => {
       actorSystem.stop(controlActor)
@@ -192,6 +220,14 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
   def isRobotConnected = !robot.isEmpty
 
   override def getRobot = robot
+
+  def getRobotState = {
+    if (isRobotConnected) {
+      controlStatus
+    } else {
+      connectionStatus
+    }
+  }
 
   def getTheaterListener = theater.getListener
 
