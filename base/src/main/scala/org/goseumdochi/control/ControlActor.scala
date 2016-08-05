@@ -418,7 +418,8 @@ class ControlActor(
       movingUntil = eventTime + impulse.duration + sensorDelay
     }
     if (!testsActive && retinalTransform.isMirrorWorld) {
-      val flipped = PolarImpulse(impulse.speed, impulse.duration, -impulse.theta)
+      val flipped = PolarImpulse(
+        impulse.speed, impulse.duration, -impulse.theta)
       actuator.actuateMotion(flipped)
     } else {
       actuator.actuateMotion(impulse)
