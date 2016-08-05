@@ -22,13 +22,15 @@ import com.orbotix._
 import com.orbotix.command._
 import com.orbotix.`macro`._
 
-trait ConvenienceRobotProvider
+trait AndroidSpheroContext
 {
   def getRobot : Option[ConvenienceRobot]
+
+  def getRotationCompensation : Double = 0.0
 }
 
 class AndroidSpheroActuator(
-  context : ConvenienceRobotProvider)
+  context : AndroidSpheroContext)
     extends SpheroActuator
 {
   override protected def executeTemporaryMacro(builder : SpheroMacroBuilder)
@@ -55,5 +57,13 @@ class AndroidSpheroActuator(
     context.getRobot.foreach(robot => {
       robot.setLed(color.red.toFloat, color.green.toFloat, color.blue.toFloat)
     })
+  }
+
+  override def actuateMotion(impulse : PolarImpulse)
+  {
+    val rotated = PolarImpulse(
+      impulse.speed, impulse.duration,
+      impulse.theta - context.getRotationCompensation)
+    super.actuateMotion(rotated)
   }
 }

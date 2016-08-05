@@ -41,11 +41,9 @@ object WatchdogControlActivity
 import WatchdogControlActivity._
 
 class WatchdogControlActivity extends ControlActivityBase
-    with SensorEventListener with TypedFindView
+    with TypedFindView
 {
   private var lastVoiceMessage = ""
-
-  private var sensorMgr : Option[SensorManager] = None
 
   private var gyroscope : Option[Sensor] = None
 
@@ -122,11 +120,9 @@ class WatchdogControlActivity extends ControlActivityBase
       WatchdogSettingsActivity.PREF_DETECT_BUMPS, true)
 
     if (detectBumps) {
-      val sysSensorMgr =
-        getSystemService(Context.SENSOR_SERVICE).asInstanceOf[SensorManager]
-      sensorMgr = Some(sysSensorMgr)
+      initSensorMgr()
       gyroscope =
-        Option(sysSensorMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE))
+        Option(sensorMgr.get.getDefaultSensor(Sensor.TYPE_GYROSCOPE))
     }
 
     speak(R.string.speech_bluetooth_connection)
@@ -187,7 +183,6 @@ class WatchdogControlActivity extends ControlActivityBase
   override protected def pencilsDown()
   {
     super.pencilsDown
-    sensorMgr.foreach(_.unregisterListener(this))
     gyroscope = None
     gyroscopeBaseline.clear
     videoFileTheater.foreach(GlobalVideo.closeTheater(_))
@@ -243,10 +238,6 @@ class WatchdogControlActivity extends ControlActivityBase
       }
     }
     return false
-  }
-
-  override def onAccuracyChanged(sensor : Sensor, accuracy : Int)
-  {
   }
 
   private def readVideoMode() =

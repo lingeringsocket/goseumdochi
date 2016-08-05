@@ -36,9 +36,8 @@ class LeashControlView(
   {
     super.onDraw(canvas)
 
-    val robotState = context.getRobotState
-
     statusTextView.setText(
-      context.getString(R.string.control_status_text) + " " + robotState)
+      context.getString(R.string.control_status_text) + " " +
+        context.getRobotState + " / " + context.getRotationCompensation)
   }
 }

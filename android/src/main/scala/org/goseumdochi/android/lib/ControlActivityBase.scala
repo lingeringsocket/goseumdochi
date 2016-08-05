@@ -15,14 +15,16 @@
 
 package org.goseumdochi.android.lib
 
+import android.content._
 import android.graphics._
+import android.hardware._
 import android.os._
 import android.view._
 
+import android.hardware.Camera
+
 import java.io._
 import java.util._
-
-import android.hardware.Camera
 
 import org.goseumdochi.vision._
 import org.goseumdochi.control._
@@ -49,7 +51,8 @@ object ControlActivityBase
 }
 
 abstract class ControlActivityBase extends ActivityBaseNoCompat
-    with RobotChangedStateListener with ConvenienceRobotProvider
+    with SensorEventListener with RobotChangedStateListener
+    with AndroidSpheroContext
 {
   private var controlStatus = ControlActivityBase.INITIAL_STATUS
 
@@ -82,6 +85,8 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
 
   private val connectionTimer = new Timer("Bluetooth Connection Timeout", true)
 
+  protected var sensorMgr : Option[SensorManager] = None
+
   class ControlListener extends Actor
   {
     def receive =
@@ -108,6 +113,13 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
   protected def createControlView() : ControlViewBase
 
   protected def startCamera()
+
+  protected def initSensorMgr()
+  {
+    val sysSensorMgr =
+      getSystemService(Context.SENSOR_SERVICE).asInstanceOf[SensorManager]
+    sensorMgr = Some(sysSensorMgr)
+  }
 
   private def startDiscovery()
   {
@@ -215,6 +227,7 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
     robot.foreach(_.disconnect)
     robot = None
     preview.closeCamera
+    sensorMgr.foreach(_.unregisterListener(this))
   }
 
   def isRobotConnected = !robot.isEmpty
@@ -234,5 +247,13 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
   protected def createTheater() : RetinalTheater =
   {
     new AndroidTheater(controlView, outputQueue)
+  }
+
+  override def onSensorChanged(event : SensorEvent)
+  {
+  }
+
+  override def onAccuracyChanged(sensor : Sensor, accuracy : Int)
+  {
   }
 }
