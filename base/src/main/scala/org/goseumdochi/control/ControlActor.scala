@@ -280,6 +280,8 @@ class ControlActor(
       // maybe we should interpolate HintBodyLocationMsgs along
       // the way as well?
       actuateImpulse(cappedImpulse, eventTime)
+      sendOutput(
+        visionActor, VisionActor.GoalLocationMsg(Some(to), eventTime))
     }
     case ActuateTwirlMsg(theta, duration, eventTime) => {
       actuator.actuateTwirl(theta, duration, false)
@@ -415,7 +417,12 @@ class ControlActor(
     if (testsActive || (status != LOCALIZING)) {
       movingUntil = eventTime + impulse.duration + sensorDelay
     }
-    actuator.actuateMotion(impulse)
+    if (!testsActive && retinalTransform.isMirrorWorld) {
+      val flipped = PolarImpulse(impulse.speed, impulse.duration, -impulse.theta)
+      actuator.actuateMotion(flipped)
+    } else {
+      actuator.actuateMotion(impulse)
+    }
   }
 
   override def preStart()

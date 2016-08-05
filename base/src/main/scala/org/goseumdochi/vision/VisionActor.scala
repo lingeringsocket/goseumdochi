@@ -58,6 +58,9 @@ object VisionActor
       extends EventMsg
   final case class HintBodyLocationMsg(pos : PlanarPos, eventTime : TimePoint)
       extends EventMsg
+  final case class GoalLocationMsg(
+    pos : Option[PlanarPos], eventTime : TimePoint)
+      extends EventMsg
 
   def startFrameGrabber(visionActor : ActorRef, listener : ActorRef)
   {
@@ -84,6 +87,10 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
   private var corner : Option[RetinalPos] = None
 
   private var hintBodyPos : Option[PlanarPos] = None
+
+  private var goalPos : Option[PlanarPos] = None
+
+  private var goalExpiry = TimePoint.ZERO
 
   private var retinalTransform : RetinalTransform = FlipRetinalTransform
 
@@ -121,6 +128,10 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     }
     case HintBodyLocationMsg(pos, eventTime) => {
       hintBodyPos = Some(pos)
+    }
+    case GoalLocationMsg(pos, eventTime) => {
+      goalPos = pos
+      goalExpiry = eventTime + 10.seconds
     }
     case m : Any => {
       listenerManagement(m)
@@ -167,6 +178,17 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
         corner = Some(newCorner)
       }
       val overlay = new OpenCvRetinalOverlay(img, retinalTransform, corner.get)
+      if (frameTime > goalExpiry) {
+        goalPos = None
+      }
+      goalPos match {
+        case Some(pos) => {
+          overlay.drawCircle(
+            retinalTransform.worldToRetina(pos),
+            30, NamedColor.BLUE, 2)
+        }
+        case _ => {}
+      }
       if (analyze) {
         val msgs = analyzeFrame(img, frameTime)
         msgs.foreach(_.renderOverlay(overlay))
@@ -175,7 +197,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
           case Some(pos) => {
             overlay.drawCircle(
               retinalTransform.worldToRetina(pos),
-              6, NamedColor.GREEN, 2)
+              30, NamedColor.GREEN, 2)
           }
           case _ => {}
         }
