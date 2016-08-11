@@ -110,7 +110,6 @@ class Settings(rootConf : Config)
   object MotionDetection
   {
     val subConf = conf.getConfig("motion-detection")
-    val bodyThreshold = subConf.getInt("body-threshold")
     val fineThreshold = subConf.getInt("fine-threshold")
     val coarseThreshold = subConf.getInt("coarse-threshold")
   }

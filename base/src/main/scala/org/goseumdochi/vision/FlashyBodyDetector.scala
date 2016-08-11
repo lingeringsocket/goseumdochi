@@ -29,12 +29,16 @@ class FlashyBodyDetector(
 {
   private val random = scala.util.Random
 
-  class BodyMotionDetector extends MotionDetector(
+  class FlashyMotionDetector extends MotionDetector(
     settings, retinalTransformProvider,
-    new IgnoreLarge(settings.MotionDetection.bodyThreshold),
-    MotionDetector.GravitySorter)
+    new IgnoreExtremes(
+      settings.BodyRecognition.minRadius,
+      settings.BodyRecognition.maxRadius),
+    BlobSizeSorter)
 
-  private[vision] val motionDetector = new BodyMotionDetector
+  private[vision] val motionDetector = newMotionDetector
+
+  protected def newMotionDetector : MotionDetector = new FlashyMotionDetector
 
   override def analyzeFrame(
     imageDeck : ImageDeck, frameTime : TimePoint,

@@ -36,8 +36,13 @@ class AndroidSpheroActuator(
   override protected def executeTemporaryMacro(builder : SpheroMacroBuilder)
   {
     context.getRobot.foreach(robot => {
-      // kill motor on exit
-      val macroFlags = 1.toByte
+      val macroFlags = {
+        if (builder.isKillMotorOnExit) {
+          1.toByte
+        } else {
+          0.toByte
+        }
+      }
       robot.sendCommand(
         new SaveTemporaryMacroCommand(macroFlags, builder.getMacroBytes))
       robot.sendCommand(
@@ -65,5 +70,12 @@ class AndroidSpheroActuator(
       impulse.speed, impulse.duration,
       impulse.theta - context.getRotationCompensation)
     super.actuateMotion(rotated)
+  }
+
+  override def setMotionTimeout(duration : TimeSpan)
+  {
+    context.getRobot.foreach(robot => {
+      robot.sendCommand(new SetMotionTimeoutCommand(duration.toMillis.toInt))
+    })
   }
 }

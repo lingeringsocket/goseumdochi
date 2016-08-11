@@ -93,7 +93,7 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       val pos = msgs.last.asInstanceOf[BodyDetector.BodyDetectedMsg].pos
       pos.x must be closeTo(268.0 +/- 0.1)
-      pos.y must be closeTo(-372.0 +/- 0.1)
+      pos.y must be closeTo(-362.0 +/- 0.1)
     }
 
     "find circles for round body background elimination" in

@@ -25,6 +25,8 @@ class TestActuator(system : ActorSystem, includeHeading : Boolean)
 {
   val probe = TestProbe()(system)
 
+  override def setMotionTimeout(duration : TimeSpan) {}
+
   override def actuateMotion(impulse : PolarImpulse)
   {
     probe.ref ! ControlActor.ActuateImpulseMsg(impulse, TimePoint.ZERO)

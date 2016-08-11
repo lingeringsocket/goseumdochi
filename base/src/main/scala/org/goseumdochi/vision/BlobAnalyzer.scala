@@ -61,6 +61,15 @@ object BlobAnalysis
       (rect.size.width < threshold) && (rect.size.height < threshold)
   }
 
+  class IgnoreExtremes(lower : Int, upper : Int) extends BlobFilter
+  {
+    val ignoreSmall = new IgnoreSmall(lower)
+    val ignoreLarge = new IgnoreLarge(upper)
+
+    override def apply(rect : Rect) : Boolean =
+      ignoreSmall(rect) || ignoreLarge(rect)
+  }
+
   object KeepAll extends BlobFilter
   {
     override def apply(rect : Rect) : Boolean = true

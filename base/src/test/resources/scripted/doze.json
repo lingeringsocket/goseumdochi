@@ -131,6 +131,20 @@
 ,
 {
   "description":"",
+  "sender":"behaviorActor",
+  "receiver":"controlActor",
+  "msg":{
+    "@class":"org.goseumdochi.control.ControlActor$UseVisionAnalyzersMsg",
+    "analyzerClassNames":[
+    ],
+    "eventTime":{
+      "millis":7901
+    }
+  }
+}
+,
+{
+  "description":"",
   "sender":"controlActor",
   "receiver":"visionActor",
   "msg":{

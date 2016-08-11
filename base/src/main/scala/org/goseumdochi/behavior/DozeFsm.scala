@@ -37,6 +37,12 @@ class DozeFsm()
   startWith(Dozing, Empty)
 
   when(Dozing) {
+    case Event(ControlActor.CameraAcquiredMsg(_, eventTime), _) => {
+      sender ! ControlActor.UseVisionAnalyzersMsg(
+        Seq(),
+        eventTime)
+      stay
+    }
     case Event(msg : EventMsg, _) => {
       stay
     }

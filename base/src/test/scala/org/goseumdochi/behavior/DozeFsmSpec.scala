@@ -32,6 +32,11 @@ class DozeFsmSpec extends AkkaSpecification
       val initialPos = PlanarPos(0, 0)
 
       fsm ! ControlActor.CameraAcquiredMsg(DEFAULT_DIMS, TimePoint.ZERO)
+
+      expectMsg(ControlActor.UseVisionAnalyzersMsg(
+        Seq(),
+        TimePoint.ZERO))
+
       fsm ! ControlActor.BodyMovedMsg(initialPos, TimePoint.ZERO)
 
       expectQuiescence

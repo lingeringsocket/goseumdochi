@@ -33,15 +33,20 @@ abstract class SpheroActuator extends Actuator
 
   private def actuateMotion(impulse : PolarImpulse, withBrackets : Boolean)
   {
+    val indefinite = (impulse.duration == TimeSpans.INDEFINITE)
+    val brackets = withBrackets && !indefinite
     val builder = new SpheroMacroBuilder
-    if (withBrackets) {
+    if (brackets && (impulse.speed != 0)) {
       val spinImpulse = PolarImpulse(0.0, 500.milliseconds, impulse.theta)
       builder.roll(spinImpulse)
     }
     builder.roll(impulse)
-    if (withBrackets) {
+    if (brackets) {
       builder.stop
       builder.waitUntilStopped(10.seconds)
+    }
+    if (indefinite) {
+      builder.killMotor(false)
     }
     builder.end()
 

@@ -36,8 +36,34 @@ class LeashControlView(
   {
     super.onDraw(canvas)
 
+    val red = new Paint
+    red.setColor(Color.RED)
+    red.setStrokeWidth(5)
+
+    val blue = new Paint
+    blue.setColor(Color.BLUE)
+    blue.setStrokeWidth(5)
+
+    val left = 0f
+    val right = canvas.getWidth
+    val top = 0f
+    val bottom = canvas.getHeight
+    val centerX = (left + right) / 2
+    val centerY = (top + bottom) / 2
+
+    val force = context.getForce
+    val tipX = force.x
+    val tipY = force.y
+    val redX = centerX + tipX
+    val redY = centerY + tipY
+    val blueX = centerX - tipX
+    val blueY = centerY - tipY
+
+    canvas.drawLine(centerX, centerY, redX.toFloat, redY.toFloat, red)
+    canvas.drawLine(centerX, centerY, blueX.toFloat, blueY.toFloat, blue)
+
     statusTextView.setText(
       context.getString(R.string.control_status_text) + " " +
-        context.getRobotState + " / " + context.getRotationCompensation)
+        context.getState)
   }
 }

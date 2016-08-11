@@ -19,6 +19,8 @@ import org.goseumdochi.common._
 
 trait Actuator
 {
+  def setMotionTimeout(duration : TimeSpan)
+
   def actuateMotion(impulse : PolarImpulse)
 
   def actuateLight(color : LightColor)
@@ -28,6 +30,8 @@ trait Actuator
 
 object NullActuator extends Actuator
 {
+  override def setMotionTimeout(duration : TimeSpan) {}
+
   override def actuateMotion(impulse : PolarImpulse) {}
 
   override def actuateLight(color : LightColor) {}

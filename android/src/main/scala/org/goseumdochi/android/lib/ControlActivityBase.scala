@@ -26,8 +26,9 @@ import android.hardware.Camera
 import java.io._
 import java.util._
 
-import org.goseumdochi.vision._
+import org.goseumdochi.common._
 import org.goseumdochi.control._
+import org.goseumdochi.vision._
 
 import akka.actor._
 
@@ -71,13 +72,15 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
 
   protected lazy val preview = new CameraPreview(this, controlView)
 
-  private val actuator = new AndroidSpheroActuator(this)
+  protected val actuator = new AndroidSpheroActuator(this)
 
   private lazy val actorSystem = ActorSystem(
     "AndroidActors" + ControlActivityBase.nextId,
     ConfigFactory.load("android.conf"))
 
-  private var controlActorOpt : Option[ActorRef] = None
+  protected lazy val settings = ActorSettings(actorSystem)
+
+  protected var controlActorOpt : Option[ActorRef] = None
 
   private var discoveryStarted = false
 
