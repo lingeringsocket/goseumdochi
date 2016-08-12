@@ -9,20 +9,23 @@
       android:layout_width="fill_parent"
       android:layout_height="fill_parent"
       android:layout_weight="1">
-    <LinearLayout
-        android:id="@+id/control_linear_layout"        
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|left"
-        android:layout_marginLeft="10dp"
+    <RelativeLayout
+        android:id="@+id/control_relative_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:orientation="vertical">
       <TextView android:id="@+id/control_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/control_status_text"
                 android:textSize="20dip"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_centerInParent="true"
                 android:textColor="@color/red"
-                android:layout_marginTop="10dp"/>
-    </LinearLayout>
+                android:background="#60FFFFFF" />
+      android:layout_marginTop="10dp"/>
+    </RelativeLayout>
   </FrameLayout>
 </LinearLayout>

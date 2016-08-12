@@ -28,8 +28,6 @@ class LeashControlView(
     extends ControlViewBase(context, retinalInput, outputQueue)
     with TypedFindView
 {
-  private val linearLayout = context.findView(TR.control_linear_layout)
-
   private val statusTextView = context.findView(TR.control_status)
 
   override protected def onDraw(canvas : Canvas)
@@ -62,8 +60,14 @@ class LeashControlView(
     canvas.drawLine(centerX, centerY, redX.toFloat, redY.toFloat, red)
     canvas.drawLine(centerX, centerY, blueX.toFloat, blueY.toFloat, blue)
 
-    statusTextView.setText(
-      context.getString(R.string.control_status_text) + " " +
-        context.getState)
+    statusTextView.setText(context.getState)
+  }
+
+  override protected def drawFrame(
+    canvas : Canvas, bitmap : Bitmap, offsetX : Int, offsetY : Int)
+  {
+    if (context.isOrienting) {
+      super.drawFrame(canvas, bitmap, offsetX, offsetY)
+    }
   }
 }

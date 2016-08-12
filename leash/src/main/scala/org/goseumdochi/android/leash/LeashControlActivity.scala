@@ -92,6 +92,8 @@ class LeashControlActivity extends ControlActivityBase
   // 10 ms
   private val SENSOR_INTERVAL = 10000
 
+  private var orienting = false
+
   override protected def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
@@ -128,7 +130,7 @@ class LeashControlActivity extends ControlActivityBase
     layout.addView(preview)
     layout.addView(controlView)
     controlView.setOnTouchListener(controlView)
-    findView(TR.control_linear_layout).bringToFront
+    findView(TR.control_relative_layout).bringToFront
   }
 
   override protected def pencilsDown()
@@ -298,7 +300,11 @@ class LeashControlActivity extends ControlActivityBase
 
   def getState = {
     if (state == ATTACHING) {
-      getRobotState
+      if (orienting) {
+        "PLEASE HOLD CAMERA DIRECTLY ABOVE SPHERO"
+      } else {
+        getRobotState
+      }
     } else {
       state.toString
     }
@@ -312,6 +318,7 @@ class LeashControlActivity extends ControlActivityBase
   override protected def handleConnectionEstablished()
   {
     super.handleConnectionEstablished
+    orienting = true
     urgeSpeed = settings.Motor.defaultSpeed
     actuator.setMotionTimeout(10.seconds)
   }
@@ -326,6 +333,7 @@ class LeashControlActivity extends ControlActivityBase
   {
     super.handleStatusUpdate(msg)
     if (msg.status == ControlActor.ControlStatus.ACTIVE) {
+      orienting = false
       changeColor(NamedColor.MAGENTA)
       state = SITTING
       sensorMgr.foreach(mgr => {
@@ -348,4 +356,6 @@ class LeashControlActivity extends ControlActivityBase
       })
     }
   }
+
+  def isOrienting = orienting
 }
