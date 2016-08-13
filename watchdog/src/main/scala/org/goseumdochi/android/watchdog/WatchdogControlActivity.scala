@@ -21,7 +21,6 @@ import org.goseumdochi.android.R
 import org.goseumdochi.android.TR
 
 import android._
-import android.content._
 import android.hardware._
 import android.os._
 import android.preference._
@@ -148,14 +147,14 @@ class WatchdogControlActivity extends ControlActivityBase
   {
     super.handleConnectionLost
     speak(R.string.speech_bluetooth_lost)
-    finishWithError(classOf[BluetoothErrorActivity])
+    finishWithError(classOf[WatchdogBluetoothErrorActivity])
   }
 
   override protected def handleConnectionFailed()
   {
     super.handleConnectionFailed
     speak(R.string.speech_bluetooth_failed)
-    finishWithError(classOf[BluetoothErrorActivity])
+    finishWithError(classOf[WatchdogBluetoothErrorActivity])
   }
 
   private def speak(voiceMessage : String)
@@ -212,15 +211,6 @@ class WatchdogControlActivity extends ControlActivityBase
       speak(R.string.speech_bump_detected)
       finishWithError(classOf[BumpActivity])
     }
-  }
-
-  private def finishWithError(errorClass : Class[_])
-  {
-    val intent = new Intent(this, errorClass)
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-    pencilsDown
-    finish
-    startActivity(intent)
   }
 
   private def checkSensor(

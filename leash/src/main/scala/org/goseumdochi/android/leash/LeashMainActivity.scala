@@ -21,22 +21,9 @@ import android.content._
 import android.net._
 import android.os._
 
-class LeashMainActivity extends MainActivityBase with TypedFindView
+trait LeashMainMenuActivityBase
+    extends MainMenuActivityBase with TypedFindView
 {
-  override protected def onCreate(savedInstanceState : Bundle)
-  {
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.main)
-    requestPrerequisites
-  }
-
-  override protected def startNextActivity()
-  {
-    val intent = new Intent(this, classOf[LeashControlActivity])
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-    startActivity(intent)
-  }
-
   override protected def startAboutActivity()
   {
     val intent = new Intent(this, classOf[LeashAboutActivity])
@@ -59,6 +46,25 @@ class LeashMainActivity extends MainActivityBase with TypedFindView
   override protected def startSettingsActivity()
   {
     val intent = new Intent(this, classOf[LeashSettingsActivity])
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    startActivity(intent)
+  }
+}
+
+class LeashMainActivity
+    extends MainActivityBase
+    with LeashMainMenuActivityBase
+{
+  override protected def onCreate(savedInstanceState : Bundle)
+  {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.main)
+    requestPrerequisites
+  }
+
+  override protected def startNextActivity()
+  {
+    val intent = new Intent(this, classOf[LeashControlActivity])
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     startActivity(intent)
   }

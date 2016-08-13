@@ -259,4 +259,13 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
   override def onAccuracyChanged(sensor : Sensor, accuracy : Int)
   {
   }
+
+  protected def finishWithError(errorClass : Class[_])
+  {
+    val intent = new Intent(this, errorClass)
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    pencilsDown
+    finish
+    startActivity(intent)
+  }
 }

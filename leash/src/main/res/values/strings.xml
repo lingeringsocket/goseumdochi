@@ -2,6 +2,7 @@
   <string name="app_name">FollowMe for Sphero</string>
   <string name="setup_label">Let\'s Go</string>
   <string name="about_title">About FollowMe for Sphero</string>
+  <string name="error_title">FollowMe for Sphero Error</string>
   <string name="prefs_title">FollowMe for Sphero Preferences</string>
   <string name="about_text">
 Now you can take your Sphero for a walk!
@@ -12,7 +13,6 @@ Now you can take your Sphero for a walk!
   <string name="about_project_url">https://goseumdochi.org</string>
   <string name="help_url">https://goseumdochi.org/leash-help#tips</string>
   <string name="bugs_url">https://goseumdochi.org/report-a-bug#details</string>
-  <string name="ok">OK</string>
   <string name="control_status_text">Status:</string>
 
   <string name="main_step_1_text">Wake up your paired Sphero and then

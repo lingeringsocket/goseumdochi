@@ -57,7 +57,8 @@ trait WatchdogMainMenuActivityBase
   }
 }
 
-class WatchdogMainActivity extends MainActivityBase
+class WatchdogMainActivity
+    extends MainActivityBase
     with WatchdogMainMenuActivityBase
 {
   override protected def onCreate(savedInstanceState : Bundle)

@@ -323,10 +323,17 @@ class LeashControlActivity extends ControlActivityBase
     actuator.setMotionTimeout(10.seconds)
   }
 
+  override protected def handleConnectionFailed()
+  {
+    super.handleConnectionFailed
+    finishWithError(classOf[LeashBluetoothErrorActivity])
+  }
+
   override protected def handleConnectionLost()
   {
     super.handleConnectionLost
     state = ATTACHING
+    finishWithError(classOf[LeashBluetoothErrorActivity])
   }
 
   override protected def handleStatusUpdate(msg : ControlActor.StatusUpdateMsg)
