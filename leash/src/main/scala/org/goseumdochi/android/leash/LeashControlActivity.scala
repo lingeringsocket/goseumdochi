@@ -216,6 +216,7 @@ class LeashControlActivity extends ControlActivityBase
       twirl = false
       rotationLast = rotationLatest
       if (lastImpulse.speed == 0) {
+        changeColor(NamedColor.MAGENTA)
         state = SITTING
       }
     }

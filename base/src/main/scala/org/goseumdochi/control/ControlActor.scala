@@ -24,6 +24,7 @@ import akka.event._
 import akka.routing._
 
 import scala.concurrent.duration._
+import collection._
 
 object ControlActor
 {
@@ -226,16 +227,22 @@ class ControlActor(
 
   private var status = LOCALIZING
 
+  private val deadActors = new mutable.LinkedHashSet[ActorRef]
+
+  private var lightLocked = false
+
   private def getActorString(ref : ActorRef) = ref.path.name
 
   override def receive = LoggingReceive({
     case eventMsg : EventMsg => {
-      if (sender != self) {
-        perception.processEvent(
-          PerceptualEvent(
-            "", getActorString(sender), getActorString(self), eventMsg))
+      if (!deadActors.contains(sender)) {
+        if (sender != self) {
+          perception.processEvent(
+            PerceptualEvent(
+              "", getActorString(sender), getActorString(self), eventMsg))
+        }
+        receiveInput(eventMsg)
       }
-      receiveInput(eventMsg)
     }
     case m : Any => {
       listenerManagement(m)
@@ -258,11 +265,12 @@ class ControlActor(
       bodyMappingOpt = Some(BodyMapping(bodyMapping.scale, 0.0))
       val spinDuration = 500.milliseconds
       actuator.actuateTwirl(bodyMapping.thetaOffset, spinDuration, true)
-      orientationActor ! PoisonPill.getInstance
+      killActor(orientationActor)
       writeOrientation(settings, calibratedMsg)
       startActiveBehavior(calibratedMsg.eventTime)
     }
     case ActuateLightMsg(color : LightColor, eventTime) => {
+      lightLocked = true
       actuator.actuateLight(color)
     }
     case ActuateImpulseMsg(impulse, eventTime) => {
@@ -293,7 +301,9 @@ class ControlActor(
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
     case VisionActor.RequireLightMsg(color, eventTime) => {
-      actuator.actuateLight(color)
+      if (!lightLocked) {
+        actuator.actuateLight(color)
+      }
     }
     // note that this pattern needs to be matched BEFORE the
     // generic ObjDetectedMsg case
@@ -338,7 +348,7 @@ class ControlActor(
         } else {
           startActiveBehavior(eventTime)
         }
-        localizationActor ! PoisonPill.getInstance
+        killActor(localizationActor)
       }
       sendOutput(visionActor, VisionActor.HintBodyLocationMsg(pos, eventTime))
     }
@@ -358,7 +368,7 @@ class ControlActor(
               sendOutput(behaviorActor, PanicAttackMsg(lastImpulse, checkTime))
               sendOutput(panicActor, PanicAttackMsg(lastImpulse, checkTime))
             } else if ((status == LOCALIZING) || (status == ORIENTING)) {
-              modeActor ! PoisonPill.getInstance
+              killActor(modeActor)
               enterMode(LOST, checkTime)
             }
           } else {
@@ -443,5 +453,11 @@ class ControlActor(
   override def postStop()
   {
     perception.end()
+  }
+
+  private def killActor(actorRef : ActorRef)
+  {
+    deadActors += actorRef
+    actorRef ! PoisonPill.getInstance
   }
 }

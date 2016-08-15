@@ -22,7 +22,8 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_centerInParent="true"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
                 android:textColor="@color/red"
                 android:background="#60FFFFFF" />
       android:layout_marginTop="10dp"/>
