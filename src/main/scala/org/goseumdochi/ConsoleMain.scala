@@ -15,7 +15,7 @@
 
 package org.goseumdochi
 
-import collection.immutable._
+import scala.collection.immutable._
 
 object ConsoleMain extends App
 {

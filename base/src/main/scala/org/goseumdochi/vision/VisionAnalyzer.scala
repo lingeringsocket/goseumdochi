@@ -19,7 +19,7 @@ import org.goseumdochi.common._
 
 import org.bytedeco.javacpp.opencv_core._
 
-import collection._
+import scala.collection._
 
 trait VisionAnalyzer extends AutoCloseable
 {

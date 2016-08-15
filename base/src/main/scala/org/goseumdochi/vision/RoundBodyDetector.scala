@@ -22,8 +22,8 @@ import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
 
-import collection._
-import util._
+import scala.collection._
+import scala.util._
 
 import BodyDetector._
 

@@ -24,7 +24,7 @@ import org.bytedeco.javacpp.opencv_imgcodecs._
 
 import java.io._
 
-import collection._
+import scala.collection._
 
 import BlobAnalysis._
 import BodyDetector._

@@ -22,7 +22,7 @@ import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
 
-import collection._
+import scala.collection._
 
 import archery.RTree
 import archery.Entry

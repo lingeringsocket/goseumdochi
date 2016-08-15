@@ -17,7 +17,7 @@ package org.goseumdochi.vision
 
 import org.goseumdochi.common._
 
-import collection._
+import scala.collection._
 
 import BlobAnalysis._
 import BodyDetector._

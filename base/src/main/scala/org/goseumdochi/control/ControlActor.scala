@@ -24,7 +24,7 @@ import akka.event._
 import akka.routing._
 
 import scala.concurrent.duration._
-import collection._
+import scala.collection._
 
 object ControlActor
 {

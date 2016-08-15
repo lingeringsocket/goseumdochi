@@ -30,7 +30,7 @@ import android.hardware.Camera
 import org.goseumdochi.vision._
 import org.goseumdochi.control._
 
-import collection._
+import scala.collection._
 
 object WatchdogControlActivity
 {
