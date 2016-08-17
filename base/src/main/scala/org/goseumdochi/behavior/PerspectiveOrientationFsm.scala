@@ -39,6 +39,7 @@ object PerspectiveOrientationFsm
 
   // sent messages
   // * ControlActor.UseVisionAnalyzersMsg
+  // * ControlActor.UseVisionAugmentersMsg
   // * ControlActor.CalibratedMsg
   // * ControlActor.ActuateImpulseMsg
 

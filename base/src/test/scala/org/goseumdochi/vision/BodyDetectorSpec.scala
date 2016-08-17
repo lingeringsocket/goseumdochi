@@ -32,6 +32,8 @@ class BodyDetectorSpec extends VisualizableSpecification
     new FlashyBodyDetector(settings, FlipRetinalTransform)
   private val colorfulBodyDetector =
     new ColorfulBodyDetector(settings, FlipRetinalTransform)
+  private val templateBodyDetector =
+    new TemplateBodyDetector(settings, FlipRetinalTransform)
 
   "BodyDetector" should
   {
@@ -141,6 +143,29 @@ class BodyDetectorSpec extends VisualizableSpecification
 
       pos.x must be closeTo(363.0 +/- 0.1)
       pos.y must be closeTo(-539.0 +/- 0.1)
+    }
+
+    "detect template body" in
+    {
+      postVisualize(templateBodyDetector)
+      templateBodyDetector.setMaxRadius(25)
+
+      val img1 = cvLoadImage("data/circles1.jpg")
+      val gray1 = OpenCvUtil.grayscale(img1)
+      val img2 = cvLoadImage("data/circles2.jpg")
+      val gray2 = OpenCvUtil.grayscale(img2)
+      val hintPos = PlanarPos(363.0, -539.0)
+      val posOpt1 = templateBodyDetector.detectBody(img2, gray2, hintPos)
+      posOpt1 must not beEmpty
+      val pos1 = posOpt1.get
+      pos1.x must be closeTo(hintPos.x +/- 0.1)
+      pos1.y must be closeTo(hintPos.y +/- 0.1)
+
+      val posOpt2 = templateBodyDetector.detectBody(img1, gray1, hintPos)
+      posOpt2 must not beEmpty
+      val pos2 = posOpt2.get
+      pos2.x must be closeTo(477.0 +/- 0.1)
+      pos2.y must be closeTo(-564.0 +/- 0.1)
     }
 
     "detect magenta body" in

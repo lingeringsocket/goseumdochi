@@ -36,6 +36,7 @@ object BirdsEyeOrientationFsm
 
   // sent messages
   // * ControlActor.UseVisionAnalyzersMsg
+  // * ControlActor.UseVisionAugmentersMsg
   // * ControlActor.CalibratedMsg
   // * ControlActor.ActuateImpulseMsg
 
@@ -63,6 +64,9 @@ class BirdsEyeOrientationFsm()
     case Event(ControlActor.CameraAcquiredMsg(_, eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className),
+        eventTime)
+      sender ! ControlActor.UseVisionAugmentersMsg(Seq(
+        classOf[CrosshairsGuideline].getName),
         eventTime)
       goto(WaitingForStart)
     }

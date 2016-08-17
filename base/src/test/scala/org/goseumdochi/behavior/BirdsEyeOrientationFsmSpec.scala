@@ -33,6 +33,9 @@ class BirdsEyeOrientationFsmSpec extends AkkaSpecification
       expectMsg(ControlActor.UseVisionAnalyzersMsg(Seq(
         "org.goseumdochi.vision.RoundBodyDetector"),
         TimePoint.ZERO))
+      expectMsg(ControlActor.UseVisionAugmentersMsg(Seq(
+        "org.goseumdochi.vision.CrosshairsGuideline"),
+        TimePoint.ZERO))
 
       expectQuiescence
 

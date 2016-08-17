@@ -20,18 +20,29 @@ import org.goseumdochi.common._
 class CrosshairsGuideline(val settings : Settings)
     extends VisionAugmenter
 {
+  private val includeCircle = settings.Vision.crosshairsCircle
+
+  private val radius =
+    (settings.BodyRecognition.minRadius +
+      settings.BodyRecognition.maxRadius) / 2
+
   override def augmentFrame(
     overlay : RetinalOverlay, frameTime : TimePoint,
     hintBodyPos : Option[PlanarPos])
   {
     val xCenter = overlay.corner.x / 2
     val yCenter = overlay.corner.y / 2
+    val center = RetinalPos(xCenter, yCenter)
     val top = RetinalPos(xCenter, 0)
     val bottom = RetinalPos(xCenter, overlay.corner.y)
     val left = RetinalPos(0, yCenter)
     val right = RetinalPos(overlay.corner.x, yCenter)
     overlay.drawLineSegment(top, bottom, NamedColor.YELLOW, 1)
     overlay.drawLineSegment(left, right, NamedColor.YELLOW, 1)
+
+    if (includeCircle) {
+      overlay.drawCircle(center, radius, NamedColor.YELLOW, 1)
+    }
   }
 }
 

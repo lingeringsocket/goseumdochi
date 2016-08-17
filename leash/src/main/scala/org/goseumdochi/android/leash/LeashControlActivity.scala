@@ -16,6 +16,7 @@
 package org.goseumdochi.android.leash
 
 import org.goseumdochi.android.lib._
+import org.goseumdochi.behavior._
 import org.goseumdochi.common._
 import org.goseumdochi.common.MoreMath._
 import org.goseumdochi.control._
@@ -43,43 +44,21 @@ class LeashControlActivity extends ControlActivityBase
 
   private var accelerometer : Option[Sensor] = None
 
-  private var acceleration = PlanarFreeVector(0, 0)
+  private var rotationVector : Option[Sensor] = None
 
-  private var velocity = PlanarFreeVector(0, 0)
-
-  private var peakForce = PlanarFreeVector(0, 0)
-
-  private var peakLock = false
-
-  private var jerk = false
-
-  private var jerkLast = false
-
-  private var twirl = false
+  private var leash = new VirtualLeash(VirtualLeash.THREE_SEC)
 
   private var iStart = 0L
-
-  private var iLastRest = 0L
-
-  private var iLastMotion = 0L
-
-  private var iLastMotionStart = 0L
-
-  private var restingMax = 0.2
-
-  private var force = PlanarFreeVector(0, 0)
-
-  private var lastImpulse = PolarImpulse(0, 0.seconds, 0)
-
-  private var lastYank = 0L
-
-  private var rotationVector : Option[Sensor] = None
 
   private var rotationLast : Double = Double.MaxValue
 
   private var rotationLatest : Double = Double.MaxValue
 
   private var rotationBaseline : Double = Double.MaxValue
+
+  private var level = false
+
+  private var waitingForLevel = false
 
   private var urgeSpeed = 0.0
 
@@ -93,6 +72,8 @@ class LeashControlActivity extends ControlActivityBase
   private val SENSOR_INTERVAL = 10000
 
   private var orienting = false
+
+  private var active = false
 
   override protected def onCreate(savedInstanceState : Bundle)
   {
@@ -110,7 +91,7 @@ class LeashControlActivity extends ControlActivityBase
   {
     super.onStart
     sensorMgr.foreach(mgr => {
-      rotationVector.foreach(sensor => {
+      Seq(rotationVector, accelerometer).flatten.foreach(sensor => {
         mgr.registerListener(
           this, sensor, SENSOR_INTERVAL)
       })
@@ -145,6 +126,8 @@ class LeashControlActivity extends ControlActivityBase
   {
     event.sensor.getType match {
       case Sensor.TYPE_GAME_ROTATION_VECTOR => {
+        level = ((Math.abs(event.values(0)) < 0.1) &&
+          (Math.abs(event.values(1)) < 0.1))
         rotationLatest = 2.0*Math.asin(event.values(2))
         if (rotationBaseline == Double.MaxValue) {
           rotationBaseline = rotationLatest
@@ -167,142 +150,93 @@ class LeashControlActivity extends ControlActivityBase
 
   private def accelerationEvent(event : SensorEvent)
   {
-    val TENTH_SEC = 10000000L
-    val HALF_SEC = TENTH_SEC*5
-    val ONE_SEC = HALF_SEC*2
+    val (iSample, jerkNow, acceleration) = leash.processEvent(event)
 
-    val iSample = event.timestamp
-    acceleration = PlanarFreeVector(
-      event.values(0).toDouble,
-      event.values(1).toDouble)
-    val polar = polarMotion(acceleration)
-    val magnitude = polar.distance
-    var jerkNow = false
-    if (false) {
-      restingMax = Math.max(restingMax, 1.2*magnitude)
-      iLastRest = iSample
-    } else {
-      if (magnitude > restingMax) {
-        iLastMotion = iSample
-        if (iLastMotionStart == 0) {
-          iLastMotionStart = iLastMotion
-        }
-        if ((magnitude > 7.0) && !peakLock) {
-          jerkNow = true
-        }
-        if (magnitude > 10.0) {
-          jerkNow = true
-        }
-        if (!peakLock && jerkNow) {
-          jerk = true
-        }
-      } else {
-        if ((iSample - iLastMotion) > 7*TENTH_SEC) {
-          iLastRest = iSample
+    if (!active) {
+      if (leash.isResting(iSample)) {
+        if (level && waitingForLevel) {
+          waitingForLevel = false
+          controlActorOpt.foreach(controlActor => {
+            controlActor !
+              CenterLocalizationFsm.BodyCenteredMsg(TimePoint.now)
+          })
         }
       }
+      return
     }
-    if (iSample > iLastRest) {
-      val dT = (iSample - lastTime) / 1000000.0
-      velocity = vectorSum(
-        vectorScaled(acceleration, dT), velocity)
+
+    if (!leash.isResting(iSample)) {
+      leash.updateVelocity(iSample, lastTime, acceleration)
     } else {
-      velocity = PlanarFreeVector(0, 0)
-      peakForce = velocity
-      iLastMotionStart = 0
-      peakLock = false
-      jerk = false
-      jerkLast = false
-      twirl = false
+      leash.clear
       rotationLast = rotationLatest
-      if (lastImpulse.speed == 0) {
+      if (leash.isRobotStopped) {
         changeColor(NamedColor.MAGENTA)
         state = SITTING
       }
     }
 
-    var impulse = PolarImpulse(0, 0.seconds, lastImpulse.theta)
+    var impulse = PolarImpulse(0, 0.seconds, leash.getLastImpulse.theta)
     var yank = false
     val turnAngle = normalizeRadians(rotationLast - rotationLatest)
 
     if (state == SITTING) {
-      val robotForce = PlanarFreeVector(-velocity.y , velocity.x)
-      val motion = polarMotion(robotForce)
-      var peakMotion = polarMotion(peakForce)
-      if (!peakLock && (motion.distance > peakMotion.distance)) {
-        peakForce = robotForce
-        peakMotion = polarMotion(peakForce)
-      }
-      force = PlanarFreeVector(peakForce.x , -peakForce.y)
-      val dotProduct = vectorDot(robotForce, peakForce)
-      val strength = peakMotion.distance
-      val big = (strength > 300.0)
-      if (big &&
-        ((dotProduct < 0) || (motion.distance < 0.6*strength)))
-      {
-        peakLock = true
-      }
-      val sustained = (iLastMotion - iLastMotionStart) > 3*TENTH_SEC
-      val sufficientPause = (iSample - lastYank) > HALF_SEC
-      if (big && sustained && sufficientPause
-        && (lastImpulse.speed == 0) && !twirl)
-      {
+      val newState = leash.calculateState(iSample, turnAngle)
+      if (state != newState) {
         rotationLast = rotationLatest
-        if (!jerk && (Math.abs(turnAngle) > 0.25*HALF_PI)) {
-          twirl = true
+      }
+      state = newState
+      var speed = 0.0
+      state match {
+        case TWIRLING => {
           changeColor(NamedColor.BLUE)
-          state = TWIRLING
-        } else {
-          yank = true
-          var speed = urgeSpeed
-          if (jerk) {
-            speed = speed*2
-            jerkLast = true
-            changeColor(NamedColor.CYAN)
-            state = RUNNING
-          } else {
-            changeColor(NamedColor.GREEN)
-            state = WALKING
-          }
-          impulse = PolarImpulse(
-            speed,
-            TimeSpans.INDEFINITE,
-            normalizeRadians(peakMotion.theta))
         }
+        case RUNNING => {
+          speed = 2*urgeSpeed
+          changeColor(NamedColor.CYAN)
+        }
+        case WALKING => {
+          speed = urgeSpeed
+          changeColor(NamedColor.GREEN)
+        }
+        case _ =>
+      }
+      if (speed > 0) {
+        yank = true
+        impulse = PolarImpulse(
+          speed,
+          TimeSpans.INDEFINITE,
+          normalizeRadians(leash.getPeakMotion.theta))
       }
     }
     if (state != STOPPING) {
-      if (lastImpulse.speed > 0) {
-        val jerkStop = (!jerkLast && jerkNow)
-        val jerkExpired = (jerkLast && ((iSample - lastYank) > (10*ONE_SEC)))
-        val jerkFresh = (jerkLast && ((iSample - lastYank) < (5*ONE_SEC)))
-        val restStop = ((iSample == iLastRest) && !jerkFresh)
-        val turnStop = (Math.abs(turnAngle) > 0.5*HALF_PI)
-        if (restStop || jerkExpired || jerkStop || turnStop) {
-          impulse = PolarImpulse(0, 0.seconds, lastImpulse.theta)
-          yank = true
-          state = STOPPING
-        }
+      if (leash.stopRequested(iSample, jerkNow, turnAngle)) {
+        impulse = PolarImpulse(0, 0.seconds, leash.getLastImpulse.theta)
+        yank = true
+        state = STOPPING
       }
     }
     if (yank) {
-      lastYank = iSample
-      lastImpulse = impulse
+      leash.rememberYank(iSample, impulse)
       controlActorOpt.foreach(controlActor => {
         controlActor ! ControlActor.ActuateImpulseMsg(
-          lastImpulse,
+          impulse,
           TimePoint.now)
       })
     }
     lastTime = iSample
   }
 
-  def getForce = force
+  def getForce = leash.getForce
 
   def getState = {
     if (state == ATTACHING) {
       if (orienting) {
-        "PLEASE HOLD CAMERA DIRECTLY ABOVE SPHERO"
+        if (waitingForLevel) {
+          "PLEASE HOLD CAMERA DIRECTLY ABOVE SPHERO"
+        } else {
+          "PLEASE WAIT..."
+        }
       } else {
         getRobotState
       }
@@ -320,6 +254,7 @@ class LeashControlActivity extends ControlActivityBase
   {
     super.handleConnectionEstablished
     orienting = true
+    waitingForLevel = true
     urgeSpeed = settings.Motor.defaultSpeed
     actuator.setMotionTimeout(10.seconds)
   }
@@ -344,12 +279,8 @@ class LeashControlActivity extends ControlActivityBase
       orienting = false
       changeColor(NamedColor.MAGENTA)
       state = SITTING
-      sensorMgr.foreach(mgr => {
-        accelerometer.foreach(sensor => {
-          mgr.registerListener(
-            this, sensor, SENSOR_INTERVAL)
-        })
-      })
+      active = true
+      leash = new VirtualLeash(VirtualLeash.SEVEN_TENTHS_SEC)
     }
   }
 
@@ -366,4 +297,5 @@ class LeashControlActivity extends ControlActivityBase
   }
 
   def isOrienting = orienting
+
 }
