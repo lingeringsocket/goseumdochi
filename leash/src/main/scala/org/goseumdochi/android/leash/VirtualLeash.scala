@@ -27,15 +27,15 @@ import android.hardware._
 
 object VirtualLeash
 {
-  def TENTH_SEC = 10000000L
+  val TENTH_SEC = 10000000L
 
-  def HALF_SEC = TENTH_SEC*5
+  val HALF_SEC = TENTH_SEC*5
 
-  def ONE_SEC = HALF_SEC*2
+  val ONE_SEC = HALF_SEC*2
 
-  def SEVEN_TENTHS_SEC = TENTH_SEC*7
+  val SEVEN_TENTHS_SEC = TENTH_SEC*7
 
-  def THREE_SEC = ONE_SEC*3
+  val THREE_SEC = ONE_SEC*3
 }
 
 import VirtualLeash._
