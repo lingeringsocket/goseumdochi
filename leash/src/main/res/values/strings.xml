@@ -1,17 +1,17 @@
 <resources>
-  <string name="app_name">FollowMe for Sphero</string>
+  <string name="app_name">RollWithMe for Sphero</string>
   <string name="setup_label">Let\'s Go</string>
-  <string name="about_title">About FollowMe for Sphero</string>
-  <string name="error_title">FollowMe for Sphero Error</string>
-  <string name="prefs_title">FollowMe for Sphero Preferences</string>
+  <string name="about_title">About RollWithMe</string>
+  <string name="error_title">RollWithMe Error</string>
+  <string name="prefs_title">RollWithMe Preferences</string>
   <string name="about_text">
 Now you can take your Sphero for a walk!
   </string>
-  <string name="about_version">FollowMe for Sphero (v0.1)</string>
+  <string name="about_version">RollWithMe for Sphero (v0.1)</string>
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
-  <string name="help_url">https://goseumdochi.org/leash-help#tips</string>
+  <string name="help_url">https://goseumdochi.org/rollwithme-help#tips</string>
   <string name="bugs_url">https://goseumdochi.org/report-a-bug#details</string>
   <string name="control_status_text">Status:</string>
 
