@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-  <ListPreference
-      android:title="@string/pref_title_white_balance"
-      android:defaultValue="@string/pref_default_white_balance"
-      android:summary="@string/pref_summary_white_balance"
-      android:entries="@array/white_balance_options"
-      android:entryValues="@array/white_balance_option_values"
-      android:dialogTitle="@string/pref_title_white_balance"
-      android:key="pref_key_white_balance">
-  </ListPreference>
+  <PreferenceCategory
+      android:title="@string/pref_category_speed">
+    <SeekBarPreference
+        android:key="pref_key_walk_speed"
+        android:title="@string/pref_title_walk_speed"
+        android:max="100"
+        android:defaultValue="@string/pref_default_walk_speed" />
+    <SeekBarPreference
+        android:key="pref_key_run_speed"
+        android:title="@string/pref_title_run_speed"
+        android:max="100"
+        android:defaultValue="@string/pref_default_run_speed" />
+  </PreferenceCategory>
 </PreferenceScreen>

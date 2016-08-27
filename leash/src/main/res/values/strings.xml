@@ -15,6 +15,12 @@ Now you can take your Sphero for a walk!
   <string name="bugs_url">https://goseumdochi.org/report-a-bug#details</string>
   <string name="control_status_text">Status:</string>
 
+  <string name="pref_category_speed">Sphero Roll Speed</string>
+  <string name="pref_title_walk_speed">Walking</string>
+  <string name="pref_default_walk_speed">25</string>
+  <string name="pref_title_run_speed">Running</string>
+  <string name="pref_default_run_speed">100</string>
+
   <string name="main_step_1_text">Wake up your paired Sphero and then
   attach the leash!</string>
 </resources>

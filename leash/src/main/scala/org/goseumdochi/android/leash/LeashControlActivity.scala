@@ -60,7 +60,9 @@ class LeashControlActivity extends ControlActivityBase
 
   private var waitingForLevel = false
 
-  private var urgeSpeed = 0.0
+  private var walkingSpeed = 0.0
+
+  private var runningSpeed = 0.0
 
   private var lastTime = 0L
 
@@ -85,6 +87,8 @@ class LeashControlActivity extends ControlActivityBase
       accelerometer =
         Option(mgr.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION))
     })
+    walkingSpeed = LeashSettingsActivity.getWalkingSpeed(this)
+    runningSpeed = LeashSettingsActivity.getRunningSpeed(this)
   }
 
   override protected def onStart()
@@ -192,11 +196,11 @@ class LeashControlActivity extends ControlActivityBase
           changeColor(NamedColor.BLUE)
         }
         case RUNNING => {
-          speed = 2*urgeSpeed
+          speed = runningSpeed
           changeColor(NamedColor.CYAN)
         }
         case WALKING => {
-          speed = urgeSpeed
+          speed = walkingSpeed
           changeColor(NamedColor.GREEN)
         }
         case _ =>
@@ -255,7 +259,6 @@ class LeashControlActivity extends ControlActivityBase
     super.handleConnectionEstablished
     orienting = true
     waitingForLevel = true
-    urgeSpeed = settings.Motor.defaultSpeed
     actuator.setMotionTimeout(10.seconds)
   }
 
@@ -280,7 +283,8 @@ class LeashControlActivity extends ControlActivityBase
       changeColor(NamedColor.MAGENTA)
       state = SITTING
       active = true
-      leash = new VirtualLeash(VirtualLeash.SEVEN_TENTHS_SEC)
+      val restThreshold = VirtualLeash.SEVEN_TENTHS_SEC / (4*walkingSpeed)
+      leash = new VirtualLeash(restThreshold.toLong)
     }
   }
 

@@ -20,6 +20,7 @@ import org.goseumdochi.android.lib._
 import android.content._
 import android.net._
 import android.os._
+import android.preference._
 
 trait LeashMainMenuActivityBase
     extends MainMenuActivityBase with TypedFindView
@@ -58,6 +59,7 @@ class LeashMainActivity
   override protected def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
+    PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
     setContentView(R.layout.main)
     requestPrerequisites
   }
