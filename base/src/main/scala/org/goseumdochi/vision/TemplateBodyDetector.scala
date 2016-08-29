@@ -36,6 +36,8 @@ class TemplateBodyDetector(
 
   private var swatchOpt : Option[IplImage] = None
 
+  private var downSampleOpt : Option[IplImage] = None
+
   private var resultOpt : Option[IplImage] = None
 
   private[vision] def setMaxRadius(r : Int)
@@ -65,16 +67,18 @@ class TemplateBodyDetector(
     swatchOpt = None
     resultOpt.foreach(_.release)
     resultOpt = None
+    downSampleOpt.foreach(_.release)
+    downSampleOpt = None
   }
 
   private def copySwatch(img : IplImage, center : RetinalPos)
   {
-    val side = maxRadius*2
-    val swatch = AbstractIplImage.create(side, side, IPL_DEPTH_8U, 1)
+    val swatch = AbstractIplImage.create(maxRadius, maxRadius, IPL_DEPTH_8U, 1)
     swatchOpt = Some(swatch)
     val rect = new CvRect(
-      (center.x - maxRadius).toInt, (center.y - maxRadius).toInt,
-      side, side)
+      ((center.x - maxRadius)*0.5).toInt,
+      ((center.y - maxRadius)*0.5).toInt,
+      maxRadius, maxRadius)
     cvSetImageROI(img, rect)
     cvCopy(img, swatch)
     cvResetImageROI(img)
@@ -86,8 +90,8 @@ class TemplateBodyDetector(
     }
     resultOpt = Some(
       AbstractIplImage.create(
-        (img.width - side) + 1,
-        (img.height - side) + 1,
+        (img.width - maxRadius) + 1,
+        (img.height - maxRadius) + 1,
         IPL_DEPTH_32F, 1))
   }
 
@@ -101,26 +105,38 @@ class TemplateBodyDetector(
     frameTime : TimePoint)
       : Option[BodyDetectedMsg] =
   {
+    if (downSampleOpt.isEmpty) {
+      val downSample = AbstractIplImage.create(
+        gray.width / 2, gray.height / 2, IPL_DEPTH_8U, 1)
+      downSampleOpt = Some(downSample)
+    }
+    val downSample = downSampleOpt.get
+    cvPyrDown(gray, downSample)
+
     if (swatchOpt.isEmpty) {
-      copySwatch(gray, xform.worldToRetina(hintBodyPos))
+      copySwatch(downSample, xform.worldToRetina(hintBodyPos))
     }
     val swatch = swatchOpt.get
     val result = resultOpt.get
-    cvMatchTemplate(gray, swatch, result, CV_TM_CCORR_NORMED)
+    cvMatchTemplate(downSample, swatch, result, CV_TM_CCORR_NORMED)
     val minVal = new DoublePointer
-    val maxVal = new DoublePointer
+    val maxVal = new DoublePointer(1L)
     val minLoc = new CvPoint
     val maxLoc = new CvPoint
     cvMinMaxLoc(result, minVal, maxVal, minLoc, maxLoc, null)
-    val retinalPos = RetinalPos(maxLoc.x + maxRadius, maxLoc.y + maxRadius)
-    val msg =
-      BodyDetectedMsg(
-        xform.retinaToWorld(retinalPos),
-        frameTime)
-    newDebugger(img) { overlay =>
-      msg.renderOverlay(overlay)
+    if (maxVal.get < 0.98) {
+      None
+    } else {
+      val retinalPos = RetinalPos(maxLoc.x*2 + maxRadius, maxLoc.y*2 + maxRadius)
+      val msg =
+        BodyDetectedMsg(
+          xform.retinaToWorld(retinalPos),
+          frameTime)
+      newDebugger(img) { overlay =>
+        msg.renderOverlay(overlay)
+      }
+      Some(msg)
     }
-    Some(msg)
   }
 
   override def isLongLived() : Boolean = true

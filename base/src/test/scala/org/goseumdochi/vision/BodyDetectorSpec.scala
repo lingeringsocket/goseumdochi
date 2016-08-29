@@ -154,6 +154,8 @@ class BodyDetectorSpec extends VisualizableSpecification
       val gray1 = OpenCvUtil.grayscale(img1)
       val img2 = cvLoadImage("data/circles2.jpg")
       val gray2 = OpenCvUtil.grayscale(img2)
+      val img3 = cvLoadImage("data/walk1.jpg")
+      val gray3 = OpenCvUtil.grayscale(img3)
       val hintPos = PlanarPos(363.0, -539.0)
       val posOpt1 = templateBodyDetector.detectBody(img2, gray2, hintPos)
       posOpt1 must not beEmpty
@@ -165,7 +167,10 @@ class BodyDetectorSpec extends VisualizableSpecification
       posOpt2 must not beEmpty
       val pos2 = posOpt2.get
       pos2.x must be closeTo(477.0 +/- 0.1)
-      pos2.y must be closeTo(-564.0 +/- 0.1)
+      pos2.y must be closeTo(-565.0 +/- 0.1)
+
+      val posOpt3 = templateBodyDetector.detectBody(img3, gray3, hintPos)
+      posOpt3 must beEmpty
     }
 
     "detect magenta body" in
