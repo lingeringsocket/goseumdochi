@@ -127,7 +127,8 @@ class TemplateBodyDetector(
     if (maxVal.get < 0.98) {
       None
     } else {
-      val retinalPos = RetinalPos(maxLoc.x*2 + maxRadius, maxLoc.y*2 + maxRadius)
+      val retinalPos = RetinalPos(
+        maxLoc.x*2 + maxRadius, maxLoc.y*2 + maxRadius)
       val msg =
         BodyDetectedMsg(
           xform.retinaToWorld(retinalPos),

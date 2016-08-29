@@ -154,10 +154,10 @@ class LeashControlActivity extends ControlActivityBase
 
   private def accelerationEvent(event : SensorEvent)
   {
-    val (iSample, jerkNow, acceleration) = leash.processEvent(event)
+    val (jerkNow, acceleration) = leash.processEvent(event)
 
     if (!active) {
-      if (leash.isResting(iSample)) {
+      if (leash.isResting) {
         if (level && waitingForLevel) {
           waitingForLevel = false
           controlActorOpt.foreach(controlActor => {
@@ -169,8 +169,8 @@ class LeashControlActivity extends ControlActivityBase
       return
     }
 
-    if (!leash.isResting(iSample)) {
-      leash.updateVelocity(iSample, lastTime, acceleration)
+    if (!leash.isResting) {
+      leash.updateVelocity(lastTime, acceleration)
     } else {
       leash.clear
       rotationLast = rotationLatest
@@ -185,7 +185,7 @@ class LeashControlActivity extends ControlActivityBase
     val turnAngle = normalizeRadians(rotationLast - rotationLatest)
 
     if (state == SITTING) {
-      val newState = leash.calculateState(iSample, turnAngle)
+      val newState = leash.calculateState(turnAngle)
       if (state != newState) {
         rotationLast = rotationLatest
       }
@@ -214,21 +214,21 @@ class LeashControlActivity extends ControlActivityBase
       }
     }
     if (state != STOPPING) {
-      if (leash.stopRequested(iSample, jerkNow, turnAngle)) {
+      if (leash.stopRequested(jerkNow, turnAngle)) {
         impulse = PolarImpulse(0, 0.seconds, leash.getLastImpulse.theta)
         yank = true
         state = STOPPING
       }
     }
     if (yank) {
-      leash.rememberYank(iSample, impulse)
+      leash.rememberYank(impulse)
       controlActorOpt.foreach(controlActor => {
         controlActor ! ControlActor.ActuateImpulseMsg(
           impulse,
           TimePoint.now)
       })
     }
-    lastTime = iSample
+    lastTime = event.timestamp
   }
 
   def getForce = leash.getForce

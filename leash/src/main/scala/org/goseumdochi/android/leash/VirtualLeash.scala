@@ -54,6 +54,8 @@ class VirtualLeash(restThreshold : Long)
 
   private var twirl = false
 
+  private var iLatest = 0L
+
   private var iLastRest = 0L
 
   private var iLastMotion = 0L
@@ -72,7 +74,7 @@ class VirtualLeash(restThreshold : Long)
 
   def processEvent(event : SensorEvent) =
   {
-    val iSample = event.timestamp
+    iLatest = event.timestamp
     val acceleration = PlanarFreeVector(
       event.values(0).toDouble,
       event.values(1).toDouble)
@@ -80,7 +82,7 @@ class VirtualLeash(restThreshold : Long)
     val magnitude = polar.distance
     var jerkNow = false
     if (magnitude > restingMax) {
-      iLastMotion = iSample
+      iLastMotion = iLatest
       if (iLastMotionStart == 0) {
         iLastMotionStart = iLastMotion
       }
@@ -94,19 +96,18 @@ class VirtualLeash(restThreshold : Long)
         jerk = true
       }
     } else {
-      if ((iSample - iLastMotion) > restThreshold) {
-        iLastRest = iSample
+      if ((iLatest - iLastMotion) > restThreshold) {
+        iLastRest = iLatest
       }
     }
-    (iSample, jerkNow, acceleration)
+    (jerkNow, acceleration)
   }
 
   def updateVelocity(
-    iSample : Long,
     lastTime : Long,
     acceleration : PlanarFreeVector)
   {
-    val dT = (iSample - lastTime) / 1000000.0
+    val dT = (iLatest - lastTime) / 1000000.0
     velocity = vectorSum(
       vectorScaled(acceleration, dT), velocity)
   }
@@ -124,7 +125,7 @@ class VirtualLeash(restThreshold : Long)
 
   def isRobotStopped = (lastImpulse.speed == 0)
 
-  def isResting(iSample : Long) = (iSample == iLastRest)
+  def isResting = (iLatest == iLastRest)
 
   def getLastImpulse = lastImpulse
 
@@ -132,7 +133,7 @@ class VirtualLeash(restThreshold : Long)
 
   def getPeakMotion = peakMotion
 
-  def calculateState(iSample : Long, turnAngle : Double) =
+  def calculateState(turnAngle : Double) =
   {
     val robotForce = PlanarFreeVector(-velocity.y , velocity.x)
     val motion = polarMotion(robotForce)
@@ -151,7 +152,7 @@ class VirtualLeash(restThreshold : Long)
       peakLock = true
     }
     val sustained = (iLastMotion - iLastMotionStart) > 3*TENTH_SEC
-    val sufficientPause = (iSample - lastYank) > HALF_SEC
+    val sufficientPause = (iLatest - lastYank) > HALF_SEC
     var newState = SITTING
     if (big && sustained && sufficientPause
       && (lastImpulse.speed == 0) && !twirl)
@@ -171,14 +172,14 @@ class VirtualLeash(restThreshold : Long)
     newState
   }
 
-  def stopRequested(iSample : Long, jerkNow : Boolean, turnAngle : Double)
+  def stopRequested(jerkNow : Boolean, turnAngle : Double)
       : Boolean =
   {
     if (lastImpulse.speed > 0) {
       val jerkStop = (!jerkLast && jerkNow)
-      val jerkExpired = (jerkLast && ((iSample - lastYank) > (10*ONE_SEC)))
-      val jerkFresh = (jerkLast && ((iSample - lastYank) < (5*ONE_SEC)))
-      val restStop = ((iSample == iLastRest) && !jerkFresh)
+      val jerkExpired = (jerkLast && ((iLatest - lastYank) > (10*ONE_SEC)))
+      val jerkFresh = (jerkLast && ((iLatest - lastYank) < (5*ONE_SEC)))
+      val restStop = ((iLatest == iLastRest) && !jerkFresh)
       val turnStop = (Math.abs(turnAngle) > 0.5*HALF_PI)
       if (restStop || jerkExpired || jerkStop || turnStop) {
         return true
@@ -187,9 +188,9 @@ class VirtualLeash(restThreshold : Long)
     return false
   }
 
-  def rememberYank(iSample : Long, impulse : PolarImpulse)
+  def rememberYank(impulse : PolarImpulse)
   {
-    lastYank = iSample
+    lastYank = iLatest
     lastImpulse = impulse
   }
 }
