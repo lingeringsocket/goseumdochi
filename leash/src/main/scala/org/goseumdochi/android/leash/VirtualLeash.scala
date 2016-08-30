@@ -36,6 +36,8 @@ object VirtualLeash
   val SEVEN_TENTHS_SEC = TENTH_SEC*7
 
   val THREE_SEC = ONE_SEC*3
+
+  val RESTING_MAX = 0.2
 }
 
 import VirtualLeash._
@@ -62,8 +64,6 @@ class VirtualLeash(restThreshold : Long)
 
   private var iLastMotionStart = 0L
 
-  private val restingMax = 0.2
-
   private var force = PlanarFreeVector(0, 0)
 
   private var peakMotion = PolarVector(0, 0)
@@ -71,6 +71,10 @@ class VirtualLeash(restThreshold : Long)
   private var lastImpulse = PolarImpulse(0, 0.seconds, 0)
 
   private var lastYank = 0L
+
+  private var magnitudeSum = 0.0
+
+  private var magnitudeCount = 0
 
   def processEvent(event : SensorEvent) =
   {
@@ -80,8 +84,10 @@ class VirtualLeash(restThreshold : Long)
       event.values(1).toDouble)
     val polar = polarMotion(acceleration)
     val magnitude = polar.distance
+    magnitudeSum += magnitude
+    magnitudeCount += 1
     var jerkNow = false
-    if (magnitude > restingMax) {
+    if (magnitude > RESTING_MAX) {
       iLastMotion = iLatest
       if (iLastMotionStart == 0) {
         iLastMotionStart = iLastMotion
@@ -192,5 +198,17 @@ class VirtualLeash(restThreshold : Long)
   {
     lastYank = iLatest
     lastImpulse = impulse
+  }
+
+  def sampleMagnitude : Double =
+  {
+    if (magnitudeCount > 0) {
+      val avg = magnitudeSum / magnitudeCount
+      magnitudeSum = 0.0
+      magnitudeCount = 0
+      avg
+    } else {
+      0.0
+    }
   }
 }

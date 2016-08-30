@@ -24,8 +24,8 @@
                 android:layout_marginRight="10dp"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
-                android:textColor="@color/red"
-                android:background="#60FFFFFF" />
+                android:textColor="@color/white"
+                android:background="@color/white_transparent" />
       android:layout_marginTop="10dp"/>
     </RelativeLayout>
   </FrameLayout>

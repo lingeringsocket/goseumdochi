@@ -21,6 +21,8 @@ import android.graphics._
 
 import java.util.concurrent._
 
+import LeashControlActivity.LeashState._
+
 class LeashControlView(
   context : LeashControlActivity,
   retinalInput : AndroidRetinalInput,
@@ -34,33 +36,38 @@ class LeashControlView(
   {
     super.onDraw(canvas)
 
-    val red = new Paint
-    red.setColor(Color.RED)
-    red.setStrokeWidth(5)
+    if (context.getState != ATTACHING) {
+      val paint = new Paint
+      paint.setColor(Color.WHITE)
+      paint.setStrokeWidth(5)
+      paint.setStyle(Paint.Style.STROKE)
 
-    val blue = new Paint
-    blue.setColor(Color.BLUE)
-    blue.setStrokeWidth(5)
+      val left = 0f
+      val right = canvas.getWidth
+      val top = 0f
+      val bottom = canvas.getHeight
+      val centerX = (left + right) / 2
+      val centerY = (top + bottom) / 2
 
-    val left = 0f
-    val right = canvas.getWidth
-    val top = 0f
-    val bottom = canvas.getHeight
-    val centerX = (left + right) / 2
-    val centerY = (top + bottom) / 2
+      renderMotion(
+        canvas, centerX, centerY, context.getLeash.sampleMagnitude, paint)
+    }
 
-    val force = context.getForce
-    val tipX = force.x
-    val tipY = force.y
-    val redX = centerX + tipX
-    val redY = centerY + tipY
-    val blueX = centerX - tipX
-    val blueY = centerY - tipY
+    statusTextView.setText(context.getStateText)
+  }
 
-    canvas.drawLine(centerX, centerY, redX.toFloat, redY.toFloat, red)
-    canvas.drawLine(centerX, centerY, blueX.toFloat, blueY.toFloat, blue)
-
-    statusTextView.setText(context.getState)
+  private def renderMotion(
+    canvas : Canvas,
+    centerX : Float, centerY : Float,
+    motion : Double, paint : Paint)
+  {
+    val step = 60.0f
+    var r = Math.min((motion*300).toFloat, 300.0f)
+    while (r > step) {
+      canvas.drawRect(
+        centerX - r, centerY - r, centerX + r, centerY + r, paint)
+      r -= step
+    }
   }
 
   override protected def drawFrame(
@@ -68,6 +75,14 @@ class LeashControlView(
   {
     if (context.isOrienting) {
       super.drawFrame(canvas, bitmap, offsetX, offsetY)
+    } else {
+      val color = context.getState match {
+        case SITTING => Color.MAGENTA
+        case WALKING => Color.GREEN
+        case RUNNING => Color.CYAN
+        case _ => Color.BLACK
+      }
+      canvas.drawColor(color)
     }
   }
 }

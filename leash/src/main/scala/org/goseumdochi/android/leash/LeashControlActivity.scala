@@ -226,9 +226,9 @@ class LeashControlActivity extends ControlActivityBase
     lastTime = event.timestamp
   }
 
-  def getForce = leash.getForce
+  def getState = state
 
-  def getState =
+  def getStateText =
   {
     if (state == ATTACHING) {
       if (orienting) {
@@ -237,7 +237,8 @@ class LeashControlActivity extends ControlActivityBase
             "NOW CENTER CAMERA DIRECTLY ABOVE SPHERO AND " +
               "THEN TOUCH SCREEN IN CENTER OF CROSSHAIRS"
           } else {
-            "PLEASE HOLD CAMERA PARALLEL TO THE FLOOR, ABOVE SPHERO"
+            "PLEASE HOLD CAMERA PARALLEL TO THE FLOOR, " +
+              "ABOVE SPHERO AT WAIST HEIGHT"
           }
         } else {
           "PLEASE CONTINUE TO HOLD CAMERA MOTIONLESS..."
@@ -246,7 +247,12 @@ class LeashControlActivity extends ControlActivityBase
         getRobotState
       }
     } else {
-      state.toString
+      state match {
+        case SITTING => "READY TO FOLLOW YOU"
+        case WALKING => "WALKING (HOLD PHONE MOTIONLESS TO STOP)"
+        case RUNNING => "RUNNING (HOLD PHONE MOTIONLESS TO STOP)"
+        case _ => "HOLD PHONE MOTIONLESS"
+      }
     }
   }
 
@@ -283,8 +289,14 @@ class LeashControlActivity extends ControlActivityBase
       changeColor(NamedColor.MAGENTA)
       state = SITTING
       active = true
-      val restThreshold = VirtualLeash.SEVEN_TENTHS_SEC / (4*walkingSpeed)
-      leash = new VirtualLeash(restThreshold.toLong)
+      val restThreshold = {
+        if (walkingSpeed < 0.25) {
+          (VirtualLeash.SEVEN_TENTHS_SEC / (4*walkingSpeed)).toLong
+        } else {
+          VirtualLeash.SEVEN_TENTHS_SEC
+        }
+      }
+      leash = new VirtualLeash(restThreshold)
     }
     if (msg.status == ControlActor.ControlStatus.LOST) {
       finishWithError(classOf[LeashUnfoundActivity])
@@ -308,4 +320,5 @@ class LeashControlActivity extends ControlActivityBase
 
   def isOrienting = orienting
 
+  def getLeash = leash
 }
