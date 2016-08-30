@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_height="wrap_content"
+    android:layout_width="wrap_content"
+    android:layout_gravity="center">
+  <ImageView
+      android:layout_width="100dp"
+      android:layout_height="100dp"
+      android:scaleType="fitCenter"
+      android:adjustViewBounds="true"
+      android:layout_gravity="center_horizontal"
+      android:src="@drawable/unfound" />
+  <TextView
+      android:id="@+id/unfound_content"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/unfound_text"
+      android:layout_marginTop="10dp"
+      android:layout_gravity="center" />
+  <Button
+      android:text="@string/ok"
+      android:id="@+id/about_ok"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:layout_marginTop="10dp"
+      android:onClick="onOkClicked"
+      android:width="100dp" />
+</LinearLayout>

@@ -104,6 +104,9 @@ object ControlActor
     eventTime : TimePoint,
     messageParams : Seq[Any] = Seq.empty)
       extends EventMsg
+  final case class AnxietyMsg(
+    eventTime : TimePoint)
+      extends EventMsg
   final case class PanicEndMsg(
     eventTime : TimePoint)
       extends EventMsg
@@ -169,6 +172,8 @@ class ControlActor(
   private val monitorVisibility = settings.Control.monitorVisibility
 
   private val testsActive = settings.Test.active
+
+  private val panicBeforeOrientation = settings.Control.panicBeforeOrientation
 
   private val visionActor = context.actorOf(
     visionProps,
@@ -296,7 +301,9 @@ class ControlActor(
     }
     case VisionActor.DimensionsKnownMsg(pos, eventTime) => {
       bottomRight = pos
-      lastSeenTime = eventTime
+      if (panicBeforeOrientation) {
+        lastSeenTime = eventTime
+      }
       enterMode(LOCALIZING, eventTime)
       sendOutput(localizationActor, CameraAcquiredMsg(bottomRight, eventTime))
     }
@@ -321,7 +328,9 @@ class ControlActor(
       }
     }
     case UseVisionAnalyzersMsg(analyzers, eventTime) => {
-      lastSeenTime = eventTime
+      if (panicBeforeOrientation) {
+        lastSeenTime = eventTime
+      }
       sendOutput(
         visionActor,
         VisionActor.ActivateAnalyzersMsg(
@@ -352,6 +361,9 @@ class ControlActor(
       }
       sendOutput(visionActor, VisionActor.HintBodyLocationMsg(pos, eventTime))
     }
+    case AnxietyMsg(eventTime) => {
+      maybePanic(eventTime)
+    }
     case PanicEndMsg(eventTime) => {
       enterMode(ACTIVE, eventTime)
     }
@@ -363,14 +375,7 @@ class ControlActor(
           // never seen
         } else {
           if ((checkTime - lastSeenTime) > panicDelay) {
-            if (status == ACTIVE) {
-              enterMode(PANIC, checkTime)
-              sendOutput(behaviorActor, PanicAttackMsg(lastImpulse, checkTime))
-              sendOutput(panicActor, PanicAttackMsg(lastImpulse, checkTime))
-            } else if ((status == LOCALIZING) || (status == ORIENTING)) {
-              killActor(modeActor)
-              enterMode(LOST, checkTime)
-            }
+            maybePanic(checkTime)
           } else {
             // all is well
           }
@@ -383,6 +388,18 @@ class ControlActor(
       }
     }
     case _ =>
+  }
+
+  private def maybePanic(checkTime : TimePoint)
+  {
+    if (status == ACTIVE) {
+      enterMode(PANIC, checkTime)
+      sendOutput(behaviorActor, PanicAttackMsg(lastImpulse, checkTime))
+      sendOutput(panicActor, PanicAttackMsg(lastImpulse, checkTime))
+    } else if ((status == LOCALIZING) || (status == ORIENTING)) {
+      killActor(modeActor)
+      enterMode(LOST, checkTime)
+    }
   }
 
   private def startActiveBehavior(eventTime : TimePoint)

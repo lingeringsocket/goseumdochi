@@ -45,5 +45,10 @@
           android:label="@string/error_title"
           android:screenOrientation="landscape">
       </activity>
+      <activity
+          android:name=".LeashUnfoundActivity"
+          android:label="@string/error_title"
+          android:screenOrientation="landscape">
+      </activity>
     </application>
 </manifest>

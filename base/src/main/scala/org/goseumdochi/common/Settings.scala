@@ -56,10 +56,11 @@ class Settings(rootConf : Config)
   {
     val subConf = conf.getConfig("control")
     val orient = subConf.getBoolean("orient")
-    val panicDelay = getMillis(subConf, "panic-delay")
     val monitorVisibility = subConf.getBoolean("monitor-visibility")
     val visibilityCheckFreq = getMillis(subConf, "visibility-check-freq")
+    val panicDelay = getMillis(subConf, "panic-delay")
     val panicClassName = subConf.getString("panic-class-name")
+    val panicBeforeOrientation = subConf.getBoolean("panic-before-orientation")
     val maxMoveDuration = getMillis(subConf, "max-move-duration")
   }
 
@@ -98,6 +99,7 @@ class Settings(rootConf : Config)
     val quietPeriod = getMillis(subConf, "quiet-period")
     val persistenceFile = subConf.getString("persistence-file")
     val alignmentSmallAngle = subConf.getDouble("alignment-small-angle")
+    val motionThreshold = subConf.getDouble("motion-threshold")
   }
 
   object BodyRecognition

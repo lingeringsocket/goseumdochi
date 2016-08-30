@@ -23,4 +23,9 @@ Now you can take your Sphero for a walk!
 
   <string name="main_step_1_text">Wake up your paired Sphero and then
   attach the leash!</string>
+
+  <string name="unfound_text">
+Sphero could not be located.  Please try again.
+  </string>
+
 </resources>

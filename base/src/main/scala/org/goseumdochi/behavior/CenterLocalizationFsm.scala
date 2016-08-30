@@ -16,6 +16,7 @@
 package org.goseumdochi.behavior
 
 import org.goseumdochi.common._
+import org.goseumdochi.common.MoreMath._
 import org.goseumdochi.control._
 import org.goseumdochi.vision._
 
@@ -28,6 +29,7 @@ object CenterLocalizationFsm
 
   // received messages
   // * ControlActor.CameraAcquiredMsg
+  // * VisionActor.TheaterClickMsg
   final case class BodyCenteredMsg(eventTime : TimePoint)
       extends VisionActor.ObjDetectedMsg
 
@@ -42,7 +44,8 @@ object CenterLocalizationFsm
 
   // data
   case object Empty extends Data
-  final case class CenterPos(centerPos : PlanarPos) extends Data
+  final case class CenterPos(
+    retinalPos : RetinalPos, pos : PlanarPos) extends Data
 }
 import CenterLocalizationFsm._
 
@@ -59,15 +62,25 @@ class CenterLocalizationFsm()
         eventTime)
       val xform = FlipRetinalTransform
       val centerPos = RetinalPos(bottomRight.x / 2, bottomRight.y / 2)
-      goto(Waiting) using CenterPos(xform.retinaToWorld(centerPos))
+      goto(Waiting) using CenterPos(centerPos, xform.retinaToWorld(centerPos))
     }
   }
 
   when(Waiting) {
-    case Event(BodyCenteredMsg(eventTime), CenterPos(centerPos)) => {
+    case Event(BodyCenteredMsg(eventTime), cp : CenterPos) => {
       sender ! VisionActor.HintBodyLocationMsg(
-        centerPos, eventTime)
+        cp.pos, eventTime)
       goto(Done)
+    }
+    case Event(msg : VisionActor.TheaterClickMsg, cp : CenterPos) => {
+      val motion = polarMotion(msg.retinalPos, cp.retinalPos)
+      if (motion.distance < 400.0) {
+        sender ! VisionActor.HintBodyLocationMsg(
+          cp.pos, msg.eventTime)
+        goto(Done)
+      } else {
+        stay
+      }
     }
   }
 

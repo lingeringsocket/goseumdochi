@@ -103,9 +103,9 @@ class WatchdogControlActivity extends ControlActivityBase
     }
     if (msg.status == ControlActor.ControlStatus.LOST) {
       if (found) {
-        finishWithError(classOf[LostActivity])
+        finishWithError(classOf[WatchdogLostActivity])
       } else {
-        finishWithError(classOf[UnfoundActivity])
+        finishWithError(classOf[WatchdogUnfoundActivity])
       }
     }
   }
@@ -209,7 +209,7 @@ class WatchdogControlActivity extends ControlActivityBase
     }
     if (bumpDetected) {
       speak(R.string.speech_bump_detected)
-      finishWithError(classOf[BumpActivity])
+      finishWithError(classOf[WatchdogBumpActivity])
     }
   }
 

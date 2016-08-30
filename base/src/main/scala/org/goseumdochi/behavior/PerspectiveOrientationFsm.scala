@@ -66,7 +66,7 @@ import PerspectiveOrientationFsm._
 class PerspectiveOrientationFsm()
     extends BehaviorFsm[State, Data]
 {
-  val alignmentSmallAngle = settings.Orientation.alignmentSmallAngle
+  private val alignmentSmallAngle = settings.Orientation.alignmentSmallAngle
 
   private var retinalTransform = FlipRetinalTransform
 

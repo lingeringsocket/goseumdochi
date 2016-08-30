@@ -38,6 +38,18 @@ object VisionActor
     {}
   }
   trait ObjDetectedMsg extends AnalyzerResponseMsg
+  final case class TheaterClickMsg(
+    pos : PlanarPos,
+    retinalPos : RetinalPos,
+    eventTime : TimePoint)
+      extends ObjDetectedMsg
+  {
+    override def renderOverlay(overlay : RetinalOverlay)
+    {
+      overlay.drawCircle(
+        retinalPos, 10, NamedColor.RED, 2)
+    }
+  }
   final case class RequireLightMsg(
     color : LightColor,
     eventTime : TimePoint)
@@ -252,10 +264,9 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
   override def onTheaterClick(retinalPos : RetinalPos)
   {
     gossip(
-      MotionDetector.MotionDetectedMsg(
+      TheaterClickMsg(
         retinalTransform.retinaToWorld(retinalPos),
-        RetinalPos(retinalPos.x - 10, retinalPos.y - 10),
-        RetinalPos(retinalPos.x + 10, retinalPos.y + 10),
+        retinalPos,
         TimePoint.now))
   }
 

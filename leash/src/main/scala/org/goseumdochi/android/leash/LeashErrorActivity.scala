@@ -34,5 +34,7 @@ abstract class LeashErrorActivity(
   }
 }
 
+class LeashUnfoundActivity extends LeashErrorActivity(R.layout.unfound)
+
 class LeashBluetoothErrorActivity extends LeashErrorActivity(
   R.layout.bluetooth, Some(TR.bluetooth_error_content))

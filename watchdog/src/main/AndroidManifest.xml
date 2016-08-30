@@ -48,17 +48,17 @@
           android:screenOrientation="landscape">
       </activity>
       <activity
-          android:name=".watchdog.BumpActivity"
+          android:name=".watchdog.WatchdogBumpActivity"
           android:label="@string/error_title"
           android:screenOrientation="landscape">
       </activity>
       <activity
-          android:name=".watchdog.LostActivity"
+          android:name=".watchdog.WatchdogLostActivity"
           android:label="@string/error_title"
           android:screenOrientation="landscape">
       </activity>
       <activity
-          android:name=".watchdog.UnfoundActivity"
+          android:name=".watchdog.WatchdogUnfoundActivity"
           android:label="@string/error_title"
           android:screenOrientation="landscape">
       </activity>

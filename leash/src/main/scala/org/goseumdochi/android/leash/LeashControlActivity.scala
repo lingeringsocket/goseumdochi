@@ -16,7 +16,6 @@
 package org.goseumdochi.android.leash
 
 import org.goseumdochi.android.lib._
-import org.goseumdochi.behavior._
 import org.goseumdochi.common._
 import org.goseumdochi.common.MoreMath._
 import org.goseumdochi.control._
@@ -58,8 +57,6 @@ class LeashControlActivity extends ControlActivityBase
 
   private var level = false
 
-  private var waitingForLevel = false
-
   private var walkingSpeed = 0.0
 
   private var runningSpeed = 0.0
@@ -72,6 +69,8 @@ class LeashControlActivity extends ControlActivityBase
 
   // 10 ms
   private val SENSOR_INTERVAL = 10000
+
+  private var localizing = true
 
   private var orienting = false
 
@@ -139,12 +138,14 @@ class LeashControlActivity extends ControlActivityBase
         }
       }
       case Sensor.TYPE_LINEAR_ACCELERATION => {
-        if (iStart == 0) {
-          iStart = event.timestamp
-          lastTime = iStart
-        } else {
-          if (event.timestamp > lastTime) {
-            accelerationEvent(event)
+        if (active) {
+          if (iStart == 0) {
+            iStart = event.timestamp
+            lastTime = iStart
+          } else {
+            if (event.timestamp > lastTime) {
+              accelerationEvent(event)
+            }
           }
         }
       }
@@ -155,19 +156,6 @@ class LeashControlActivity extends ControlActivityBase
   private def accelerationEvent(event : SensorEvent)
   {
     val (jerkNow, acceleration) = leash.processEvent(event)
-
-    if (!active) {
-      if (leash.isResting) {
-        if (level && waitingForLevel) {
-          waitingForLevel = false
-          controlActorOpt.foreach(controlActor => {
-            controlActor !
-              CenterLocalizationFsm.BodyCenteredMsg(TimePoint.now)
-          })
-        }
-      }
-      return
-    }
 
     if (!leash.isResting) {
       leash.updateVelocity(lastTime, acceleration)
@@ -236,10 +224,15 @@ class LeashControlActivity extends ControlActivityBase
   def getState = {
     if (state == ATTACHING) {
       if (orienting) {
-        if (waitingForLevel) {
-          "PLEASE HOLD CAMERA DIRECTLY ABOVE SPHERO"
+        if (localizing) {
+          if (level) {
+            "NOW CENTER CAMERA DIRECTLY ABOVE SPHERO AND " +
+              "THEN TOUCH SCREEN IN CENTER OF CROSSHAIRS"
+          } else {
+            "PLEASE HOLD CAMERA PARALLEL TO THE FLOOR, ABOVE SPHERO"
+          }
         } else {
-          "PLEASE WAIT..."
+          "PLEASE CONTINUE TO HOLD CAMERA MOTIONLESS..."
         }
       } else {
         getRobotState
@@ -258,7 +251,6 @@ class LeashControlActivity extends ControlActivityBase
   {
     super.handleConnectionEstablished
     orienting = true
-    waitingForLevel = true
     actuator.setMotionTimeout(10.seconds)
   }
 
@@ -285,6 +277,12 @@ class LeashControlActivity extends ControlActivityBase
       active = true
       val restThreshold = VirtualLeash.SEVEN_TENTHS_SEC / (4*walkingSpeed)
       leash = new VirtualLeash(restThreshold.toLong)
+    }
+    if (msg.status == ControlActor.ControlStatus.LOST) {
+      finishWithError(classOf[LeashUnfoundActivity])
+    }
+    if (msg.status == ControlActor.ControlStatus.ORIENTING) {
+      localizing = false
     }
   }
 

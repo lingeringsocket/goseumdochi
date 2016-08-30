@@ -36,11 +36,11 @@ abstract class WatchdogErrorActivity(
   }
 }
 
-class BumpActivity extends WatchdogErrorActivity(R.layout.bump)
+class WatchdogBumpActivity extends WatchdogErrorActivity(R.layout.bump)
 
-class LostActivity extends WatchdogErrorActivity(R.layout.lost)
+class WatchdogLostActivity extends WatchdogErrorActivity(R.layout.lost)
 
-class UnfoundActivity extends WatchdogErrorActivity(R.layout.unfound)
+class WatchdogUnfoundActivity extends WatchdogErrorActivity(R.layout.unfound)
 
 class WatchdogBluetoothErrorActivity extends WatchdogErrorActivity(
   R.layout.bluetooth, Some(TR.bluetooth_error_content))

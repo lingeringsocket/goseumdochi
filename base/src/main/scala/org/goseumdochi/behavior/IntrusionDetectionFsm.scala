@@ -33,6 +33,7 @@ object IntrusionDetectionFsm
   // * ControlActor.CameraAcquiredMsg
   // * ControlActor.BodyMovedMsg
   // * MotionDetector.MotionDetectedMsg
+  // * VisionActor.TheaterClickMsg
 
   // sent messages
   // * ControlActor.UseVisionAnalyzersMsg
@@ -73,6 +74,14 @@ class IntrusionDetectionFsm()
   }
 
   when(WaitingForIntruder) {
+    case Event(VisionActor.TheaterClickMsg(pos, retinalPos, eventTime), _) => {
+      self ! MotionDetectedMsg(
+        pos,
+        RetinalPos(retinalPos.x - 10, retinalPos.y - 10),
+        RetinalPos(retinalPos.x + 10, retinalPos.y + 10),
+        eventTime)
+      stay
+    }
     case Event(msg : MotionDetectedMsg, BodyAt(bodyPos)) => {
       val eventTime = msg.eventTime
       val intruderPos = msg.pos
