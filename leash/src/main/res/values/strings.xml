@@ -27,5 +27,9 @@ Now you can take your Sphero for a walk!
   <string name="unfound_text">
 Sphero could not be located.  Please try again.
   </string>
+  <string name="nosensor_text">
+Unfortunately, your device does not support one or more required sensors
+(rotation vector and/or accelerometer).
+  </string>
 
 </resources>

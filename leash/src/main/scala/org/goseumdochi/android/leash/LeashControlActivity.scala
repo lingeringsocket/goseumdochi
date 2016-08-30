@@ -83,11 +83,18 @@ class LeashControlActivity extends ControlActivityBase
     sensorMgr.foreach(mgr => {
       rotationVector =
         Option(mgr.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR))
+      if (rotationVector.isEmpty) {
+        rotationVector =
+          Option(mgr.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR))
+      }
       accelerometer =
         Option(mgr.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION))
     })
     walkingSpeed = LeashSettingsActivity.getWalkingSpeed(this)
     runningSpeed = LeashSettingsActivity.getRunningSpeed(this)
+    if (rotationVector.isEmpty || accelerometer.isEmpty) {
+      finishWithError(classOf[LeashNoSensorActivity])
+    }
   }
 
   override protected def onStart()
@@ -128,7 +135,7 @@ class LeashControlActivity extends ControlActivityBase
   override def onSensorChanged(event : SensorEvent)
   {
     event.sensor.getType match {
-      case Sensor.TYPE_GAME_ROTATION_VECTOR => {
+      case Sensor.TYPE_ROTATION_VECTOR | Sensor.TYPE_GAME_ROTATION_VECTOR => {
         level = ((Math.abs(event.values(0)) < 0.1) &&
           (Math.abs(event.values(1)) < 0.1))
         rotationLatest = 2.0*Math.asin(event.values(2))
@@ -221,7 +228,8 @@ class LeashControlActivity extends ControlActivityBase
 
   def getForce = leash.getForce
 
-  def getState = {
+  def getState =
+  {
     if (state == ATTACHING) {
       if (orienting) {
         if (localizing) {

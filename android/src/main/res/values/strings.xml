@@ -9,8 +9,8 @@
   <string name="pref_summary_white_balance">White balance to set for camera feed (important for accurate color detection)</string>
   <string name="pref_default_white_balance">auto</string>
 
-  <string name="toast_bluetooth_required">Watchdog cannot run without Bluetooth enabled.</string>
-  <string name="toast_permissions_required">Watchdog cannot run until all requested permissions have been granted.</string>
+  <string name="toast_bluetooth_required">Unable to run without Bluetooth enabled.</string>
+  <string name="toast_permissions_required">Unable to run until all requested permissions have been granted.</string>
 
   <string name="bluetooth_error_text">
 Bluetooth connection to Sphero failed.  <a href="https://goseumdochi.org/sphero-connection/#tips">Please make sure Sphero is paired and awake with its battery charged</a>, then try setup again.

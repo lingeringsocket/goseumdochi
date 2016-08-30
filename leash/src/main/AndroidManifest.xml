@@ -50,5 +50,10 @@
           android:label="@string/error_title"
           android:screenOrientation="landscape">
       </activity>
+      <activity
+          android:name=".LeashNoSensorActivity"
+          android:label="@string/error_title"
+          android:screenOrientation="landscape">
+      </activity>
     </application>
 </manifest>
