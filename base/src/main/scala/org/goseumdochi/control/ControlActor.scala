@@ -111,6 +111,10 @@ object ControlActor
     eventTime : TimePoint)
       extends EventMsg
 
+  // pass-through messages (from listener to vision)
+  // VisionActor.OpenEyesMsg
+  // VisionActor.CloseEyesMsg
+
   // pass-through messages (from vision to behavior)
   // any kind of VisionActor.ObjDetectedMsg
 
@@ -340,6 +344,11 @@ class ControlActor(
       sendOutput(
         visionActor,
         VisionActor.ActivateAugmentersMsg(augmenters, eventTime))
+    }
+    case msg @ (_: VisionActor.OpenEyesMsg | _: VisionActor.CloseEyesMsg) => {
+      sendOutput(
+        visionActor,
+        msg)
     }
     case observation : ObservationMsg => {
       gossip(StatusUpdateMsg(

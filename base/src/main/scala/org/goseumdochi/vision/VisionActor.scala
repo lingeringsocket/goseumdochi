@@ -73,6 +73,12 @@ object VisionActor
   final case class GoalLocationMsg(
     pos : Option[PlanarPos], eventTime : TimePoint)
       extends EventMsg
+  final case class OpenEyesMsg(
+    eventTime : TimePoint)
+      extends EventMsg
+  final case class CloseEyesMsg(
+    eventTime : TimePoint)
+      extends EventMsg
 
   def startFrameGrabber(visionActor : ActorRef, listener : ActorRef)
   {
@@ -106,16 +112,25 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
 
   private var retinalTransform : RetinalTransform = FlipRetinalTransform
 
+  private var eyesOpen = true
+
   private var shutDown = false
 
   override def getRetinalTransform = retinalTransform
 
   def receive =
   {
+    case OpenEyesMsg(eventTime) => {
+      eyesOpen = true
+      self ! GrabFrameMsg(eventTime)
+    }
+    case CloseEyesMsg(eventTime) => {
+      eyesOpen = false
+    }
     case GrabFrameMsg(lastTime) => {
       if (!shutDown) {
         val thisTime = TimePoint.now
-        val analyze = (thisTime > lastTime + throttlePeriod)
+        val analyze = eyesOpen && (thisTime > lastTime + throttlePeriod)
         grabOne(analyze)
         import context.dispatcher
         context.system.scheduler.scheduleOnce(200.milliseconds) {

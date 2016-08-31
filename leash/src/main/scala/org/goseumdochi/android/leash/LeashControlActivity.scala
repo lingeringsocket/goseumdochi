@@ -19,6 +19,7 @@ import org.goseumdochi.android.lib._
 import org.goseumdochi.common._
 import org.goseumdochi.common.MoreMath._
 import org.goseumdochi.control._
+import org.goseumdochi.vision._
 
 import akka.actor._
 
@@ -285,6 +286,10 @@ class LeashControlActivity extends ControlActivityBase
   {
     super.handleStatusUpdate(msg)
     if (msg.status == ControlActor.ControlStatus.ACTIVE) {
+      controlActorOpt.foreach(controlActor => {
+        controlActor ! VisionActor.CloseEyesMsg(
+          TimePoint.now)
+      })
       orienting = false
       changeColor(NamedColor.MAGENTA)
       state = SITTING
