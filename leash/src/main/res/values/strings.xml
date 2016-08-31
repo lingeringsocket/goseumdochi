@@ -11,7 +11,7 @@ Now you can take your Sphero for a walk!
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
-  <string name="help_url">https://goseumdochi.org/rollwithme-help#tips</string>
+  <string name="help_url">https://goseumdochi.org/roll-with-me-help#tips</string>
   <string name="bugs_url">https://goseumdochi.org/report-a-bug#details</string>
   <string name="control_status_text">Status:</string>
 
@@ -21,8 +21,16 @@ Now you can take your Sphero for a walk!
   <string name="pref_title_run_speed">Running</string>
   <string name="pref_default_run_speed">100</string>
 
-  <string name="main_step_1_text">Wake up your paired Sphero and then
-  attach the leash!</string>
+  <string name="main_step_1_text">
+Ready to take Sphero for a walk?\n\n
+First, make sure your Sphero is paired and awake.\n\n
+Then, press the button below to start the setup.\n\n
+Follow the instructions as we use your camera to adjust an invisible "leash" between your phone and Sphero.\n\n
+Once Sphero turns <font fgcolor="#ff00ff">magenta</font>, it means it is ready to follow your lead whenever you start walking!
+  </string>
+  <string name="main_step_2_text">
+    Have fun!  <a href="https://goseumdochi.org/roll-with-me-help#tips">You can also get help or learn some tips and tricks online.</a>
+  </string>
 
   <string name="unfound_text">
 Sphero could not be located.  Please try again.

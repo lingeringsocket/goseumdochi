@@ -21,6 +21,7 @@ import android.content._
 import android.net._
 import android.os._
 import android.preference._
+import android.text.method._
 
 trait LeashMainMenuActivityBase
     extends MainMenuActivityBase with TypedFindView
@@ -61,6 +62,8 @@ class LeashMainActivity
     super.onCreate(savedInstanceState)
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
     setContentView(R.layout.main)
+    findView(TR.main_step_2_text).setMovementMethod(
+      LinkMovementMethod.getInstance)
     requestPrerequisites
   }
 

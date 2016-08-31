@@ -36,6 +36,24 @@
           android:layout_alignParentTop="true"
           android:layout_marginTop="10dp"
           android:layout_marginLeft="10dp"/>
+      <ImageView
+          android:id="@+id/main_icon"
+          android:layout_width="100dp"
+          android:layout_height="100dp"
+          android:scaleType="fitCenter"
+          android:adjustViewBounds="true"
+          android:layout_centerHorizontal="true"
+          android:layout_below="@+id/main_step_1_text"
+          android:src="@drawable/icon" />
+      <TextView
+          android:id="@+id/main_step_2_text"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/main_step_2_text"
+          android:layout_alignParentLeft="true"
+          android:layout_below="@+id/main_icon"
+          android:layout_marginTop="10dp"
+          android:layout_marginLeft="10dp"/>
     </RelativeLayout>
   </ScrollView>
 </RelativeLayout>
