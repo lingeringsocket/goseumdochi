@@ -23,8 +23,6 @@ import android.hardware._
 import android.preference._
 import android.view._
 
-import java.io._
-
 import android.hardware.Camera
 
 import scala.collection.JavaConverters._
@@ -50,7 +48,7 @@ class CameraPreview(
     try {
       newCamera.setPreviewDisplay(holder)
     } catch {
-      case exception : IOException => {
+      case exception : Throwable => {
         newCamera.release
         camera = None
       }
