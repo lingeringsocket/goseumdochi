@@ -22,8 +22,8 @@ import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
 
-import collection._
-import util._
+import scala.collection._
+import scala.util._
 
 import BodyDetector._
 
@@ -46,6 +46,8 @@ class RoundBodyDetector(
   private var maxRadius = settings.BodyRecognition.maxRadius
 
   private val filteredCircles = new mutable.LinkedHashSet[RetinalCircle]
+
+  private val storage = AbstractCvMemStorage.create
 
   override def analyzeFrame(
     imageDeck : ImageDeck, frameTime : TimePoint,
@@ -129,29 +131,25 @@ class RoundBodyDetector(
 
   private[vision] def findCircles(gray : IplImage) : Set[RetinalCircle] =
   {
-    val mem = AbstractCvMemStorage.create
-    try {
-      val circles = cvHoughCircles(
-        gray,
-        mem,
-        CV_HOUGH_GRADIENT,
-        2,
-        50,
-        100,
-        sensitivity,
-        minRadius,
-        maxRadius)
+    cvClearMemStorage(storage)
+    val circles = cvHoughCircles(
+      gray,
+      storage,
+      CV_HOUGH_GRADIENT,
+      2,
+      50,
+      100,
+      sensitivity,
+      minRadius,
+      maxRadius)
 
-      (0 until circles.total).map(
-        i => {
-          val circle = new CvPoint3D32f(cvGetSeqElem(circles, i))
-          RetinalCircle(
-            Math.round(circle.x), Math.round(circle.y), Math.round(circle.z))
-        }
-      ).toSet
-    } finally {
-      mem.release
-    }
+    (0 until circles.total).map(
+      i => {
+        val circle = new CvPoint3D32f(cvGetSeqElem(circles, i))
+        RetinalCircle(
+          Math.round(circle.x), Math.round(circle.y), Math.round(circle.z))
+      }
+    ).toSet
   }
 
   private[vision] def visualizeCircles(
@@ -168,4 +166,9 @@ class RoundBodyDetector(
   }
 
   override def isLongLived() : Boolean = true
+
+  override def close()
+  {
+    storage.release
+  }
 }

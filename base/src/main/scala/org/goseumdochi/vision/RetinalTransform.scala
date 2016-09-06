@@ -28,6 +28,7 @@ trait RetinalTransform extends RetinalTransformProvider
   def worldToRetina(pos : PlanarPos) : RetinalPos
   def isValid(pos : RetinalPos) : Boolean = true
   override def getRetinalTransform = this
+  def isMirrorWorld : Boolean = false
 }
 
 // assume your basic parallel projection, but make the retinal y axis point
@@ -40,4 +41,6 @@ case object FlipRetinalTransform extends RetinalTransform
 
   override def worldToRetina(pos : PlanarPos) : RetinalPos =
     RetinalPos(pos.x, -pos.y)
+
+  override def isMirrorWorld : Boolean = true
 }

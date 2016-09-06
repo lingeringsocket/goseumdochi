@@ -4,8 +4,6 @@ android.Plugin.androidBuild
 
 libraryProject in Android := true
 
-typedResources in Android := false
-
 platformTarget in Android := Common.androidPlatformTarget
 
 targetSdkVersion in Android := Common.androidTargetSdkVersion

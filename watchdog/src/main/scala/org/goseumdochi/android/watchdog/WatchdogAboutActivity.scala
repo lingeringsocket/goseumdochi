@@ -15,6 +15,8 @@
 
 package org.goseumdochi.android.watchdog
 
+import org.goseumdochi.android._
+import org.goseumdochi.android.lib._
 import org.goseumdochi.android.R
 import org.goseumdochi.android.TR
 
@@ -23,8 +25,8 @@ import android.net._
 import android.os._
 import android.view._
 
-class AboutActivity extends ActivityBase
-    with View.OnClickListener
+class WatchdogAboutActivity extends ActivityBase
+    with View.OnClickListener with TypedFindView
 {
   override protected def onCreate(savedInstanceState : Bundle)
   {

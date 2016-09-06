@@ -35,7 +35,7 @@ case class TimePoint(d : TimeSpan)
 
 case object TimePoint
 {
-  val bias = System.currentTimeMillis
+  private val bias = System.currentTimeMillis
 
   def now = TimePoint(TimeSpan(System.currentTimeMillis - bias, MILLISECONDS))
 
@@ -44,6 +44,12 @@ case object TimePoint
   final val ONE = TimePoint(TimeSpan(1000, MILLISECONDS))
 
   final val TEN = TimePoint(TimeSpan(10000, MILLISECONDS))
+}
+
+case object TimeSpans
+{
+  // FIXME
+  final val INDEFINITE = TimeSpan(1000, SECONDS)
 }
 
 trait EventMsg
@@ -56,6 +62,8 @@ trait PlanarVector
   def x : Double
   def y : Double
   def construct(x : Double, y : Double) : PlanarVector
+
+  override def toString = "(" + x + ", " + y + ")"
 }
 
 case class PlanarPos(
@@ -64,6 +72,15 @@ case class PlanarPos(
 ) extends PlanarVector
 {
   override def construct(x : Double, y : Double) : PlanarPos = PlanarPos(x, y)
+}
+
+case class PlanarFreeVector(
+  x : Double,
+  y : Double
+) extends PlanarVector
+{
+  override def construct(x : Double, y : Double)
+      : PlanarFreeVector = PlanarFreeVector(x, y)
 }
 
 case class RetinalPos(
@@ -135,17 +152,32 @@ object MoreMath
   }
 
   def midpoint[PV <: PlanarVector](p1 : PV, p2 : PV) : PV =
-  {
     p1.construct((p1.x + p2.x) / 2, (p1.y + p2.y) / 2).asInstanceOf[PV]
+
+  def vectorSum[PV <: PlanarVector](p1 : PV, p2 : PV) : PV =
+    p1.construct(p1.x + p2.x, p1.y + p2.y).asInstanceOf[PV]
+
+  def vectorDiff[PV <: PlanarVector](p1 : PV, p2 : PV) : PV =
+    p1.construct(p1.x - p2.x, p1.y - p2.y).asInstanceOf[PV]
+
+  def vectorScaled[PV <: PlanarVector](pv : PV, s : Double) : PV =
+    pv.construct(pv.x*s, pv.y*s).asInstanceOf[PV]
+
+  def vectorDot[PV <: PlanarVector](p1 : PV, p2 : PV) : Double =
+  {
+    p1.x*p2.x + p1.y*p2.y
   }
 
-  def polarMotion(p1 : PlanarVector, p2 : PlanarVector) =
+  def polarMotion(pv : PlanarVector) : PolarVector =
   {
-    val x = p2.x - p1.x
-    val y = p2.y - p1.y
-    val r = hypot(x, y)
-    val theta = atan2(y, x)
+    val r = hypot(pv.x, pv.y)
+    val theta = atan2(pv.y, pv.x)
     PolarVector(r, normalizeRadians(theta))
+  }
+
+  def polarMotion(p1 : PlanarVector, p2 : PlanarVector) : PolarVector =
+  {
+    polarMotion(vectorDiff(p2, p1))
   }
 
   def predictMotion(impulse : PolarImpulse) =

@@ -47,6 +47,7 @@ class Settings(rootConf : Config)
     val throttlePeriod = getMillis(subConf, "throttle-period")
     val sensorDelay = getMillis(subConf, "sensor-delay")
     val debugDir = subConf.getString("debug-dir")
+    val crosshairsCircle = subConf.getBoolean("crosshairs-circle")
     val transformGuidelineExpiration =
       getMillis(subConf, "transform-guideline-expiration")
   }
@@ -55,10 +56,11 @@ class Settings(rootConf : Config)
   {
     val subConf = conf.getConfig("control")
     val orient = subConf.getBoolean("orient")
-    val panicDelay = getMillis(subConf, "panic-delay")
     val monitorVisibility = subConf.getBoolean("monitor-visibility")
     val visibilityCheckFreq = getMillis(subConf, "visibility-check-freq")
+    val panicDelay = getMillis(subConf, "panic-delay")
     val panicClassName = subConf.getString("panic-class-name")
+    val panicBeforeOrientation = subConf.getBoolean("panic-before-orientation")
     val maxMoveDuration = getMillis(subConf, "max-move-duration")
   }
 
@@ -97,6 +99,7 @@ class Settings(rootConf : Config)
     val quietPeriod = getMillis(subConf, "quiet-period")
     val persistenceFile = subConf.getString("persistence-file")
     val alignmentSmallAngle = subConf.getDouble("alignment-small-angle")
+    val motionThreshold = subConf.getDouble("motion-threshold")
   }
 
   object BodyRecognition
@@ -110,7 +113,6 @@ class Settings(rootConf : Config)
   object MotionDetection
   {
     val subConf = conf.getConfig("motion-detection")
-    val bodyThreshold = subConf.getInt("body-threshold")
     val fineThreshold = subConf.getInt("fine-threshold")
     val coarseThreshold = subConf.getInt("coarse-threshold")
   }

@@ -13,47 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.android.watchdog
+package org.goseumdochi.android.lib
 
-import org.goseumdochi.android.lib._
-import org.goseumdochi.android.R
-import org.goseumdochi.android.TR
+import org.goseumdochi.common._
 
 import android.graphics._
 import android.hardware._
 import android.view._
 
-import java.io._
-import java.text._
-import java.util._
-import java.util.concurrent._
-
 import android.hardware.Camera
 
 import org.bytedeco.javacv._
 
-import org.goseumdochi.common._
+import java.io._
+import java.util.concurrent._
 
-class ControlView(
-  context : ControlActivity,
+abstract class ControlViewBase(
+  context : ControlActivityBase,
   retinalInput : AndroidRetinalInput,
   outputQueue : ArrayBlockingQueue[Bitmap])
     extends View(context) with Camera.PreviewCallback with View.OnTouchListener
 {
-  private var frameNumber = 0
-
-  private val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z")
-
-  private val linearLayout = context.findView(TR.control_linear_layout)
-
-  private val timeTextView = context.findView(TR.control_status_time)
-
-  private val frameTextView = context.findView(TR.control_status_frame)
-
-  private val robotTextView = context.findView(TR.control_status_robot)
-
-  private val msgTextView = context.findView(TR.control_status_message)
-
   private val paint = new Paint
 
   override def onTouch(v : View, e : MotionEvent) =
@@ -104,29 +84,20 @@ class ControlView(
     // janky way to hide the underlying camera preview...
     // apparently these days we should be using SurfaceTexture instead
     // (and camera2 API for that matter)
+    canvas.drawColor(Color.BLACK)
     canvas.drawARGB(255, 0, 0, 0)
 
     if (!outputQueue.isEmpty) {
       val bitmap = outputQueue.take
       val offsetX = (canvas.getWidth - bitmap.getWidth) / 2
       val offsetY = (canvas.getHeight - bitmap.getHeight) / 2
-      linearLayout.setPadding(offsetX, offsetY, 0, 0)
-      canvas.drawBitmap(bitmap, offsetX, offsetY, paint)
-      frameNumber += 1
+      drawFrame(canvas, bitmap, offsetX, offsetY)
     }
+  }
 
-    val timeStamp = sdf.format(Calendar.getInstance.getTime)
-    val robotState = context.getRobotState
-    val lastVoiceMessage = context.getVoiceMessage
-
-    timeTextView.setText(
-      context.getString(R.string.control_status_time_text) + " " + timeStamp)
-    frameTextView.setText(
-      context.getString(R.string.control_status_frame_text) + " " + frameNumber)
-    robotTextView.setText(
-      context.getString(R.string.control_status_robot_text) + " " + robotState)
-    msgTextView.setText(
-      context.getString(R.string.control_status_message_text) +
-        " " + lastVoiceMessage)
+  protected def drawFrame(
+    canvas : Canvas, bitmap : Bitmap, offsetX : Int, offsetY : Int)
+  {
+    canvas.drawBitmap(bitmap, offsetX, offsetY, paint)
   }
 }

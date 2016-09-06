@@ -13,18 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.android.watchdog
+package org.goseumdochi.android.lib
 
-import org.goseumdochi.android._
-import org.goseumdochi.android.R
+import org.goseumdochi.android.common._
 
 import android.content._
 import android.graphics._
 import android.hardware._
 import android.preference._
 import android.view._
-
-import java.io._
 
 import android.hardware.Camera
 
@@ -51,7 +48,7 @@ class CameraPreview(
     try {
       newCamera.setPreviewDisplay(holder)
     } catch {
-      case exception : IOException => {
+      case exception : Throwable => {
         newCamera.release
         camera = None
       }

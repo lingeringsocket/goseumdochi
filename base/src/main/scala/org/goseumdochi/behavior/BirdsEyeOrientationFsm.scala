@@ -36,8 +36,10 @@ object BirdsEyeOrientationFsm
 
   // sent messages
   // * ControlActor.UseVisionAnalyzersMsg
+  // * ControlActor.UseVisionAugmentersMsg
   // * ControlActor.CalibratedMsg
   // * ControlActor.ActuateImpulseMsg
+  // * ControlActor.AnxietyMsg
 
   // states
   case object Blind extends State
@@ -47,13 +49,18 @@ object BirdsEyeOrientationFsm
 
   // data
   case object Empty extends Data
-  final case class StartPoint(pos : PlanarPos) extends Data
+  final case class StartPoint(
+    pos : PlanarPos, startTime : TimePoint) extends Data
 }
 import BirdsEyeOrientationFsm._
 
 class BirdsEyeOrientationFsm()
     extends BehaviorFsm[State, Data]
 {
+  private val panicDelay = settings.Control.panicDelay
+
+  private val motionThreshold = settings.Orientation.motionThreshold
+
   private val forwardImpulse =
     PolarImpulse(settings.Motor.defaultSpeed, 500.milliseconds, 0)
 
@@ -63,6 +70,9 @@ class BirdsEyeOrientationFsm()
     case Event(ControlActor.CameraAcquiredMsg(_, eventTime), _) => {
       sender ! ControlActor.UseVisionAnalyzersMsg(Seq(
         settings.BodyRecognition.className),
+        eventTime)
+      sender ! ControlActor.UseVisionAugmentersMsg(Seq(
+        classOf[CrosshairsGuideline].getName),
         eventTime)
       goto(WaitingForStart)
     }
@@ -74,7 +84,7 @@ class BirdsEyeOrientationFsm()
     }
     case Event(ControlActor.BodyMovedMsg(pos, eventTime), _) => {
       sender ! ControlActor.ActuateImpulseMsg(forwardImpulse, eventTime)
-      goto(WaitingForEnd) using StartPoint(pos)
+      goto(WaitingForEnd) using StartPoint(pos, eventTime)
     }
   }
 
@@ -84,12 +94,17 @@ class BirdsEyeOrientationFsm()
     }
     case Event(
       ControlActor.BodyMovedMsg(endPos, eventTime),
-      StartPoint(startPos)) =>
+      StartPoint(startPos, startTime)) =>
     {
       val predictedMotion = predictMotion(forwardImpulse)
       val actualMotion = polarMotion(startPos, endPos)
-      if (actualMotion.distance < 0.1) {
-        stay
+      if (actualMotion.distance < motionThreshold) {
+        if (eventTime > (startTime + panicDelay)) {
+          sender ! ControlActor.AnxietyMsg(eventTime)
+          goto(Done)
+        } else {
+          stay
+        }
       } else {
         val bodyMapping = BodyMapping(
           actualMotion.distance / predictedMotion.distance,

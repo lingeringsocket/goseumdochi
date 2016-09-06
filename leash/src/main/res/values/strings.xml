@@ -1,0 +1,38 @@
+<resources>
+  <string name="app_name">RollWithMe for Sphero</string>
+  <string name="setup_label">Let\'s Go</string>
+  <string name="about_title">About RollWithMe</string>
+  <string name="error_title">RollWithMe Error</string>
+  <string name="prefs_title">RollWithMe Preferences</string>
+  <string name="about_text">
+Now you can take your Sphero for a walk!
+  </string>
+  <string name="about_version">RollWithMe for Sphero (v0.1)</string>
+  <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
+  <string name="about_author_email">info@goseumdochi.org</string>
+  <string name="about_project_url">https://goseumdochi.org</string>
+  <string name="help_url">https://goseumdochi.org/roll-with-me-help#tips</string>
+  <string name="bugs_url">https://goseumdochi.org/report-a-bug#details</string>
+  <string name="control_status_text">Status:</string>
+
+  <string name="pref_category_speed">Sphero Roll Speed</string>
+  <string name="pref_title_walk_speed">Walking</string>
+  <string name="pref_default_walk_speed">25</string>
+  <string name="pref_title_run_speed">Running</string>
+  <string name="pref_default_run_speed">100</string>
+
+  <string name="main_step_1_text">Ready to take Sphero for a walk?\n\nFirst, make sure your Sphero is paired and awake.\n\nThen, press the button below to start the setup.\n\nFollow the instructions as we use your camera to adjust an invisible "leash" between your phone and Sphero.\n\nOnce Sphero turns magenta, it means it is ready to follow your lead whenever you start walking!\n\n
+  </string>
+  <string name="main_step_2_text">
+    Have fun!  <a href="https://goseumdochi.org/roll-with-me-help#tips">You can also get help or learn some tips and tricks online</a>.
+  </string>
+
+  <string name="unfound_text">
+Sphero could not be located.  Please try again.
+  </string>
+  <string name="nosensor_text">
+Unfortunately, your device does not support one or more required sensors
+(rotation vector and/or accelerometer).
+  </string>
+
+</resources>

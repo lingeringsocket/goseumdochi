@@ -67,8 +67,9 @@ class LightLocalizationFsm()
     case Event(
       StateTimeout, WithControl(controlActor, eventTime)) =>
     {
+      // in most cases this should be ColorfulBodyDetector
       controlActor ! ControlActor.UseVisionAnalyzersMsg(Seq(
-        classOf[ColorfulBodyDetector].getName),
+        settings.BodyRecognition.className),
         eventTime)
       goto(FindingBody)
     }

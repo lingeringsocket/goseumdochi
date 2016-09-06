@@ -22,7 +22,7 @@ import org.bytedeco.javacpp.opencv_core._
 import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_imgproc._
 
-import collection._
+import scala.collection._
 
 import archery.RTree
 import archery.Entry
@@ -59,6 +59,15 @@ object BlobAnalysis
   {
     override def apply(rect : Rect) : Boolean =
       (rect.size.width < threshold) && (rect.size.height < threshold)
+  }
+
+  class IgnoreExtremes(lower : Int, upper : Int) extends BlobFilter
+  {
+    val ignoreSmall = new IgnoreSmall(lower)
+    val ignoreLarge = new IgnoreLarge(upper)
+
+    override def apply(rect : Rect) : Boolean =
+      ignoreSmall(rect) || ignoreLarge(rect)
   }
 
   object KeepAll extends BlobFilter

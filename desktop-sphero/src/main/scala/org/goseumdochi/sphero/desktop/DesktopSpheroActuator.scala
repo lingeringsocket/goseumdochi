@@ -25,8 +25,13 @@ class DesktopSpheroActuator(robot : Robot) extends SpheroActuator
 {
   override protected def executeTemporaryMacro(builder : SpheroMacroBuilder)
   {
-    // kill motor on exit
-    val macroFlags = SaveTemporaryMacroCommand.MacroFlagMotorControl
+    val macroFlags = {
+      if (builder.isKillMotorOnExit) {
+        SaveTemporaryMacroCommand.MacroFlagMotorControl
+      } else {
+        0
+      }
+    }
     robot.sendCommand(
       new SaveTemporaryMacroCommand(macroFlags, builder.getMacroBytes))
     robot.sendCommand(
@@ -42,5 +47,12 @@ class DesktopSpheroActuator(robot : Robot) extends SpheroActuator
   {
     robot.sendCommand(
       new RGBLEDCommand(color.red.toInt, color.green.toInt, color.blue.toInt))
+  }
+
+  override def setMotionTimeout(duration : TimeSpan)
+  {
+    // FIXME:  need to implement this in Sphero-Desktop-API
+    throw new UnsupportedOperationException(
+      "setMotionTimeout is not supported by DesktopSpheroActuator")
   }
 }

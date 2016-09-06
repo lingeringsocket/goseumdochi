@@ -24,7 +24,7 @@ import akka.routing._
 
 import scala.concurrent.duration._
 
-import collection._
+import scala.collection._
 
 object VisionActor
 {
@@ -38,6 +38,18 @@ object VisionActor
     {}
   }
   trait ObjDetectedMsg extends AnalyzerResponseMsg
+  final case class TheaterClickMsg(
+    pos : PlanarPos,
+    retinalPos : RetinalPos,
+    eventTime : TimePoint)
+      extends ObjDetectedMsg
+  {
+    override def renderOverlay(overlay : RetinalOverlay)
+    {
+      overlay.drawCircle(
+        retinalPos, 10, NamedColor.RED, 2)
+    }
+  }
   final case class RequireLightMsg(
     color : LightColor,
     eventTime : TimePoint)
@@ -57,6 +69,15 @@ object VisionActor
     eventTime : TimePoint)
       extends EventMsg
   final case class HintBodyLocationMsg(pos : PlanarPos, eventTime : TimePoint)
+      extends EventMsg
+  final case class GoalLocationMsg(
+    pos : Option[PlanarPos], eventTime : TimePoint)
+      extends EventMsg
+  final case class OpenEyesMsg(
+    eventTime : TimePoint)
+      extends EventMsg
+  final case class CloseEyesMsg(
+    eventTime : TimePoint)
       extends EventMsg
 
   def startFrameGrabber(visionActor : ActorRef, listener : ActorRef)
@@ -85,7 +106,13 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
 
   private var hintBodyPos : Option[PlanarPos] = None
 
+  private var goalPos : Option[PlanarPos] = None
+
+  private var goalExpiry = TimePoint.ZERO
+
   private var retinalTransform : RetinalTransform = FlipRetinalTransform
+
+  private var eyesOpen = true
 
   private var shutDown = false
 
@@ -93,10 +120,17 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
 
   def receive =
   {
+    case OpenEyesMsg(eventTime) => {
+      eyesOpen = true
+      self ! GrabFrameMsg(eventTime)
+    }
+    case CloseEyesMsg(eventTime) => {
+      eyesOpen = false
+    }
     case GrabFrameMsg(lastTime) => {
       if (!shutDown) {
         val thisTime = TimePoint.now
-        val analyze = (thisTime > lastTime + throttlePeriod)
+        val analyze = eyesOpen && (thisTime > lastTime + throttlePeriod)
         grabOne(analyze)
         import context.dispatcher
         context.system.scheduler.scheduleOnce(200.milliseconds) {
@@ -121,6 +155,10 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
     }
     case HintBodyLocationMsg(pos, eventTime) => {
       hintBodyPos = Some(pos)
+    }
+    case GoalLocationMsg(pos, eventTime) => {
+      goalPos = pos
+      goalExpiry = eventTime + 10.seconds
     }
     case m : Any => {
       listenerManagement(m)
@@ -167,6 +205,17 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
         corner = Some(newCorner)
       }
       val overlay = new OpenCvRetinalOverlay(img, retinalTransform, corner.get)
+      if (frameTime > goalExpiry) {
+        goalPos = None
+      }
+      goalPos match {
+        case Some(pos) => {
+          overlay.drawCircle(
+            retinalTransform.worldToRetina(pos),
+            30, NamedColor.BLUE, 2)
+        }
+        case _ => {}
+      }
       if (analyze) {
         val msgs = analyzeFrame(img, frameTime)
         msgs.foreach(_.renderOverlay(overlay))
@@ -175,7 +224,7 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
           case Some(pos) => {
             overlay.drawCircle(
               retinalTransform.worldToRetina(pos),
-              6, NamedColor.GREEN, 2)
+              30, NamedColor.GREEN, 2)
           }
           case _ => {}
         }
@@ -230,10 +279,9 @@ class VisionActor(retinalInput : RetinalInput, theater : RetinalTheater)
   override def onTheaterClick(retinalPos : RetinalPos)
   {
     gossip(
-      MotionDetector.MotionDetectedMsg(
+      TheaterClickMsg(
         retinalTransform.retinaToWorld(retinalPos),
-        RetinalPos(retinalPos.x - 10, retinalPos.y - 10),
-        RetinalPos(retinalPos.x + 10, retinalPos.y + 10),
+        retinalPos,
         TimePoint.now))
   }
 

@@ -23,8 +23,7 @@ import org.bytedeco.javacpp.helper.opencv_core._
 import org.bytedeco.javacpp.opencv_video._
 
 import scala.annotation._
-
-import collection._
+import scala.collection._
 
 import BlobAnalysis._
 

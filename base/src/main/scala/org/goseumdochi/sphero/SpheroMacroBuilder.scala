@@ -25,6 +25,8 @@ class SpheroMacroBuilder
 {
   private val buf = new ArrayBuffer[Byte]
 
+  private var killMotorOnExit = true
+
   private var ended = false
 
   private def appendByte(b : Byte)
@@ -45,6 +47,13 @@ class SpheroMacroBuilder
       value
     }
   }
+
+  def killMotor(flag : Boolean)
+  {
+    killMotorOnExit = flag
+  }
+
+  def isKillMotorOnExit = killMotorOnExit
 
   def getMacroBytes() =
   {
@@ -68,7 +77,13 @@ class SpheroMacroBuilder
     val degrees = (360.0*normalizeRadiansPositive(impulse.theta) / TWO_PI).toInt
     val heading = (degrees % 360).toInt
     val velocity = clamp(impulse.speed.toFloat, 0.0D, 1.0D)
-    val millis = impulse.duration.toMillis.toInt
+    val millis = {
+      if (impulse.duration == TimeSpans.INDEFINITE) {
+        0
+      } else {
+        impulse.duration.toMillis.toInt
+      }
+    }
     appendByte(0x1D)
     appendByte((velocity * 255.0D).toInt.toByte)
     appendByte((heading >> 8).toByte)

@@ -22,20 +22,27 @@ import com.orbotix._
 import com.orbotix.command._
 import com.orbotix.`macro`._
 
-trait ConvenienceRobotProvider
+trait AndroidSpheroContext
 {
   def getRobot : Option[ConvenienceRobot]
+
+  def getRotationCompensation : Double = 0.0
 }
 
 class AndroidSpheroActuator(
-  context : ConvenienceRobotProvider)
+  context : AndroidSpheroContext)
     extends SpheroActuator
 {
   override protected def executeTemporaryMacro(builder : SpheroMacroBuilder)
   {
     context.getRobot.foreach(robot => {
-      // kill motor on exit
-      val macroFlags = 1.toByte
+      val macroFlags = {
+        if (builder.isKillMotorOnExit) {
+          1.toByte
+        } else {
+          0.toByte
+        }
+      }
       robot.sendCommand(
         new SaveTemporaryMacroCommand(macroFlags, builder.getMacroBytes))
       robot.sendCommand(
@@ -54,6 +61,21 @@ class AndroidSpheroActuator(
   {
     context.getRobot.foreach(robot => {
       robot.setLed(color.red.toFloat, color.green.toFloat, color.blue.toFloat)
+    })
+  }
+
+  override def actuateMotion(impulse : PolarImpulse)
+  {
+    val rotated = PolarImpulse(
+      impulse.speed, impulse.duration,
+      impulse.theta - context.getRotationCompensation)
+    super.actuateMotion(rotated)
+  }
+
+  override def setMotionTimeout(duration : TimeSpan)
+  {
+    context.getRobot.foreach(robot => {
+      robot.sendCommand(new SetMotionTimeoutCommand(duration.toMillis.toInt))
     })
   }
 }

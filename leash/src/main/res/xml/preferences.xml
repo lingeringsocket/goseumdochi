@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <PreferenceCategory
+      android:title="@string/pref_category_speed">
+    <SeekBarPreference
+        android:key="pref_key_walk_speed"
+        android:title="@string/pref_title_walk_speed"
+        android:max="100"
+        android:defaultValue="@string/pref_default_walk_speed" />
+    <SeekBarPreference
+        android:key="pref_key_run_speed"
+        android:title="@string/pref_title_run_speed"
+        android:max="100"
+        android:defaultValue="@string/pref_default_run_speed" />
+  </PreferenceCategory>
+</PreferenceScreen>

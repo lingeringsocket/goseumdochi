@@ -13,11 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.goseumdochi.android.watchdog
+package org.goseumdochi.android.lib
 
-import org.goseumdochi.android.lib._
-import org.goseumdochi.android.R
-import org.goseumdochi.android.TR
+import org.goseumdochi.android.common.R
 
 import android._
 import android.app._
@@ -25,13 +23,11 @@ import android.bluetooth._
 import android.content._
 import android.content.pm._
 import android.os._
-import android.preference._
-import android.text.method._
 import android.view._
 
 import java.util._
 
-class MainActivity extends MainMenuActivityBase
+abstract class MainActivityBase extends MainMenuActivityBase
 {
   private final val ENABLE_BT_REQUEST = 43
 
@@ -43,29 +39,7 @@ class MainActivity extends MainMenuActivityBase
 
   private var setupRequested = false
 
-  override protected def onCreate(savedInstanceState : Bundle)
-  {
-    super.onCreate(savedInstanceState)
-    PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
-    setContentView(R.layout.main)
-    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-    val enableVoice = prefs.getBoolean(
-      SettingsActivity.PREF_ENABLE_VOICE, true)
-    GlobalTts.init(getApplicationContext, enableVoice)
-    GlobalVideo.init(getApplicationContext, this)
-    findView(TR.cctv_text).setMovementMethod(LinkMovementMethod.getInstance)
-    findView(TR.step_3_text).setMovementMethod(LinkMovementMethod.getInstance)
-    requestPrerequisites
-  }
-
-  override protected def onDestroy()
-  {
-    GlobalTts.shutdown
-    GlobalVideo.shutdown
-    super.onDestroy
-  }
-
-  private def requestPrerequisites()
+  protected def requestPrerequisites()
   {
     val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter
     if (!bluetoothAdapter.isEnabled) {
@@ -103,33 +77,33 @@ class MainActivity extends MainMenuActivityBase
     if (requestCode == ENABLE_BT_REQUEST) {
       if (resultCode == Activity.RESULT_OK) {
         bluetoothEnabled = true
-        tryStartControl
+        tryStart
       } else {
         toastLong(R.string.toast_bluetooth_required)
       }
     }
   }
 
-  def onSetupClicked(v : View)
-  {
-    setupRequested = true
-    if (!tryStartControl) {
-      requestPrerequisites
-    }
-  }
-
   private def allPrerequisitesMet =
     bluetoothEnabled && cameraEnabled && locationEnabled
 
-  private def tryStartControl() =
+  protected def startNextActivity()
+
+  protected def tryStart() =
   {
     if (setupRequested && allPrerequisitesMet) {
-      val intent = new Intent(this, classOf[SetupActivity])
-      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-      startActivity(intent)
+      startNextActivity
       true
     } else {
       false
+    }
+  }
+
+  def onStartClicked(v : View)
+  {
+    setupRequested = true
+    if (!tryStart) {
+      requestPrerequisites
     }
   }
 
@@ -151,10 +125,10 @@ class MainActivity extends MainMenuActivityBase
         permissions(i) match {
           case Manifest.permission.ACCESS_COARSE_LOCATION =>
             locationEnabled = true
-            tryStartControl
+            tryStart
           case Manifest.permission.CAMERA =>
             cameraEnabled = true
-            tryStartControl
+            tryStart
           case _ =>
         }
       }
@@ -163,3 +137,4 @@ class MainActivity extends MainMenuActivityBase
     }
   }
 }
+
