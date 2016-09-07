@@ -44,7 +44,7 @@
           android:adjustViewBounds="true"
           android:layout_centerHorizontal="true"
           android:layout_below="@+id/main_step_1_text"
-          android:src="@drawable/icon" />
+          android:src="@drawable/icon_unframed" />
       <TextView
           android:id="@+id/main_step_2_text"
           android:layout_width="wrap_content"
