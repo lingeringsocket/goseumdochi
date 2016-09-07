@@ -3,15 +3,10 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="120px" height="120px" viewBox="0 0 120 120" enable-background="new 0 0 120 120" xml:space="preserve">
-<path fill="#FFFFFF" d="M119,106.752c0,6.489-5.262,11.75-11.75,11.75h-94c-6.489,0-11.75-5.261-11.75-11.75v-94
-	c0-6.489,5.261-11.75,11.75-11.75h94c6.488,0,11.75,5.261,11.75,11.75V106.752z"/>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
 	M33.78,63.871c-2.895-14.883-3.166-36.488,15.788-40.383c9.694-1.993,18.858,4.09,26.812,9.036
 	c4.661,2.897,14.769,11.523,20.94,9.973c7.279-1.829,7.06-15.575,7.685-21.298c-1.95-4.991-5.479-12.004,0.963-14.565
 	c5.378-2.136,9.489,3.483,7.541,8.614c-1.362,3.587-5.388,4.759-8.459,6.499"/>
-<path display="none" fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="
-	M106.206,19.229c1.553,0.636,2.483,1.866,2.079,2.75c-0.402,0.883-1.985,1.085-3.534,0.447c-1.55-0.634-2.479-1.867-2.077-2.75
-	C103.077,18.792,104.658,18.592,106.206,19.229z"/>
 <linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="367.5898" y1="1504.4668" x2="337.1148" y2="1575.1926" gradientTransform="matrix(0.9947 -0.1033 0.2786 0.9764 -719.7034 -1384.9751)">
 	<stop  offset="0" style="stop-color:#DF0CEA"/>
 	<stop  offset="0.1136" style="stop-color:#E13FEA"/>
