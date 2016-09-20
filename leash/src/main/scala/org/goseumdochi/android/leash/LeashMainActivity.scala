@@ -18,6 +18,7 @@ package org.goseumdochi.android.leash
 import org.goseumdochi.android.lib._
 
 import android.content._
+import android.graphics.drawable._
 import android.net._
 import android.os._
 import android.preference._
@@ -62,8 +63,11 @@ class LeashMainActivity
     super.onCreate(savedInstanceState)
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
     setContentView(R.layout.main)
-    findView(TR.main_step_2_text).setMovementMethod(
+    findView(TR.intro_post_text).setMovementMethod(
       LinkMovementMethod.getInstance)
+    val img = findView(TR.intro_animation_image)
+    img.setBackgroundResource(R.drawable.intro_animation)
+    img.getBackground.asInstanceOf[AnimationDrawable].start
     requestPrerequisites
   }
 
