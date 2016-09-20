@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/selected" android:oneshot="false">
+  <item android:drawable="@drawable/intro1"
+        android:duration="@string/intro_animation_delay" />
+  <item android:drawable="@drawable/intro2"
+        android:duration="@string/intro_animation_delay" />
+  <item android:drawable="@drawable/intro3"
+        android:duration="@string/intro_animation_delay" />
+  <item android:drawable="@drawable/intro4"
+        android:duration="@string/intro_animation_delay" />
+  <item android:drawable="@drawable/intro5"
+        android:duration="@string/intro_animation_delay" />
+  <item android:drawable="@drawable/intro6"
+        android:duration="@string/intro_animation_delay" />
+  <item android:drawable="@drawable/intro7"
+        android:duration="@string/intro_animation_delay" />
+</animation-list>

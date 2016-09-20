@@ -3,57 +3,44 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
-  <LinearLayout
-      android:id="@+id/buttons"
-      android:layout_width="fill_parent"
+  <ImageView
+      android:id="@+id/intro_animation_image"
+      android:scaleType="fitCenter"
+      android:adjustViewBounds="true"
+      android:layout_centerVertical="true"
+      android:layout_centerHorizontal="true"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
+  <TextView
+      android:id="@+id/intro_post_text"
+      android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:orientation="horizontal"
-      android:gravity="center"
-      android:layout_alignParentBottom="true">
-    <Button
-        android:id="@+id/setup_button"
-        android:text="@string/setup_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp"
-        android:onClick="onStartClicked" />
-  </LinearLayout>
-  <ScrollView
-      android:layout_width="fill_parent"
-      android:layout_height="fill_parent"
-      android:layout_above="@id/buttons">
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-      <TextView
-          android:id="@+id/main_step_1_text"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="@string/main_step_1_text"
-          android:layout_alignParentLeft="true"
-          android:layout_alignParentTop="true"
-          android:layout_marginTop="10dp"
-          android:layout_marginLeft="10dp"/>
-      <ImageView
-          android:id="@+id/main_icon"
-          android:layout_width="100dp"
-          android:layout_height="100dp"
-          android:scaleType="fitCenter"
-          android:adjustViewBounds="true"
-          android:layout_centerHorizontal="true"
-          android:layout_below="@+id/main_step_1_text"
-          android:src="@drawable/icon_unframed" />
-      <TextView
-          android:id="@+id/main_step_2_text"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="@string/main_step_2_text"
-          android:layout_alignParentLeft="true"
-          android:layout_below="@+id/main_icon"
-          android:layout_marginTop="10dp"
-          android:layout_marginLeft="10dp"/>
-    </RelativeLayout>
-  </ScrollView>
+      android:gravity="center_horizontal"
+      android:text="@string/intro_post_text"
+      android:textStyle="italic"
+      android:layout_alignParentBottom="true"
+      android:layout_marginBottom="5dp"
+      android:layout_marginLeft="70dp"
+      android:layout_marginRight="70dp"/>
+  <Button
+      android:id="@+id/setup_button"
+      android:text="@string/setup_label"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_centerHorizontal="true"
+      android:layout_above="@id/intro_post_text"
+      android:layout_marginBottom="5dp"
+      android:layout_marginTop="5dp"
+      android:onClick="onStartClicked" />
+  <TextView
+      android:id="@+id/intro_pre_text"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="center_horizontal"
+      android:text="@string/intro_pre_text"
+      android:textStyle="italic"
+      android:layout_above="@id/setup_button"
+      android:layout_marginTop="5dp"
+      android:layout_marginLeft="70dp"
+      android:layout_marginRight="70dp"/>
 </RelativeLayout>
