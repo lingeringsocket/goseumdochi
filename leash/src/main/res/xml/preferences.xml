@@ -13,4 +13,18 @@
         android:max="100"
         android:defaultValue="@string/pref_default_run_speed" />
   </PreferenceCategory>
+  <PreferenceCategory
+      android:title="@string/pref_category_walkthrough">
+    <CheckBoxPreference
+        android:title="@string/pref_title_walkthrough"
+        android:defaultValue="false"
+        android:key="pref_key_walkthrough" />
+  </PreferenceCategory>
+  <PreferenceCategory
+      android:title="@string/pref_category_analytics">
+    <CheckBoxPreference
+        android:title="@string/pref_title_analytics"
+        android:defaultValue="false"
+        android:key="pref_key_analytics_opt_out" />
+  </PreferenceCategory>
 </PreferenceScreen>

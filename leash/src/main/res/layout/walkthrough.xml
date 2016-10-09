@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+  <ImageView
+      android:id="@+id/walkthrough_animation_image"
+      android:scaleType="fitCenter"
+      android:adjustViewBounds="true"
+      android:layout_centerVertical="true"
+      android:layout_centerHorizontal="true"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
+  <TextView
+      android:id="@+id/walkthrough_text"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_centerHorizontal="true"
+      android:gravity="center_horizontal"
+      android:text=""
+      android:textStyle="italic"
+      android:textSize="10pt"
+      android:layout_alignParentTop="true"
+      android:layout_marginTop="10dp"
+      android:layout_marginLeft="40dp"
+      android:layout_marginRight="40dp"/>
+  <Button
+      android:id="@+id/close_walkthrough_button"
+      android:text="@string/close_walkthrough_label"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_centerHorizontal="true"
+      android:layout_below="@id/walkthrough_text"
+      android:layout_marginBottom="5dp"
+      android:layout_marginTop="5dp"
+      android:onClick="onCloseClicked" />
+</RelativeLayout>

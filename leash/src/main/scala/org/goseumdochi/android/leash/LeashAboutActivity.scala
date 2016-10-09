@@ -36,6 +36,12 @@ class LeashAboutActivity extends ActivityBase
     projectUrl.setOnClickListener(this)
   }
 
+  override protected def onResume()
+  {
+    super.onResume
+    LeashAnalytics.trackScreen("About")
+  }
+
   def onClick(v : View)
   {
     v.getId match {

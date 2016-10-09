@@ -62,11 +62,13 @@ class CameraPreview(
 
   def closeCamera()
   {
-    camera.foreach(c => {
-      c.stopPreview
-      c.release
-    })
-    camera = None
+    this.synchronized {
+      camera.foreach(c => {
+        c.stopPreview
+        c.release
+      })
+      camera = None
+    }
   }
 
   override def surfaceChanged(

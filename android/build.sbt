@@ -27,7 +27,7 @@ resolvers ++= Common.resolvers
 
 libraryDependencies ++= Seq(
   aar("com.google.android" % "multidex" % "0.1"),
-  aar("com.google.android.gms" % "play-services" % "4.0.30"),
+  aar("com.google.android.gms" % "play-services" % "9.2.0"),
   aar("com.android.support" % "support-v4" % "22.1.0"),
   aar("com.android.support" % "appcompat-v7" % "22.1.0"),
   "org.slf4j" % "slf4j-android" % "1.7.21"

@@ -47,3 +47,9 @@ javacOptions ++= Seq("-target", "1.7", "-source", "1.7")
 maxErrors := Common.maxErrors
 
 traceLevel := Common.traceLevel
+
+libraryDependencies ++= Seq(
+  aar("com.google.android.gms" % "play-services-analytics" % "9.2.0")
+)
+
+googleServicesSettings

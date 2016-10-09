@@ -19,6 +19,8 @@ import org.goseumdochi.common._
 import org.goseumdochi.sphero._
 
 import com.orbotix._
+import com.orbotix.common._
+import com.orbotix.common.internal._
 import com.orbotix.command._
 import com.orbotix.`macro`._
 
@@ -31,8 +33,46 @@ trait AndroidSpheroContext
 
 class AndroidSpheroActuator(
   context : AndroidSpheroContext)
-    extends SpheroActuator
+    extends SpheroActuator with ResponseListener
 {
+  private var powerState = ""
+
+  override def handleAsyncMessage(response : AsyncMessage, robot : Robot)
+  {
+  }
+
+  override def handleStringResponse(response : String, robot : Robot)
+  {
+  }
+
+  override def handleResponse(response : DeviceResponse, robot : Robot)
+  {
+    response match {
+      case response : GetPowerStateResponse => {
+        powerState = "{ " +
+          ", state = " + response.getPowerState +
+          ", voltage = " + response.getBatteryVoltage +
+          ", charge count = " + response.getNumberOfCharges +
+          ", time since last = " + response.getTimeSinceLastCharge +
+          " }"
+      }
+      case _ => {
+      }
+    }
+  }
+
+  override def getPowerState : String =
+  {
+    if (powerState.isEmpty && !context.getRobot.isEmpty) {
+      powerState = super.getPowerState
+      context.getRobot.foreach(robot => {
+        robot.addResponseListener(this)
+        robot.sendCommand(new GetPowerStateCommand())
+      })
+    }
+    powerState
+  }
+
   override protected def executeTemporaryMacro(builder : SpheroMacroBuilder)
   {
     context.getRobot.foreach(robot => {

@@ -32,6 +32,8 @@ class LeashControlView(
 {
   private val statusTextView = context.findView(TR.control_status)
 
+  private var lastYank = 0L
+
   override protected def onDraw(canvas : Canvas)
   {
     super.onDraw(canvas)
@@ -49,8 +51,14 @@ class LeashControlView(
       val centerX = (left + right) / 2
       val centerY = (top + bottom) / 2
 
+      val leash = context.getLeash
       renderMotion(
-        canvas, centerX, centerY, context.getLeash.sampleMagnitude, paint)
+        canvas, centerX, centerY, leash.sampleMagnitude, paint)
+      val newYank = leash.getLastYank
+      if (newYank != lastYank) {
+        LeashAnalytics.trackEvent("yank", "timestamp" + newYank)
+        lastYank = newYank
+      }
     }
 
     statusTextView.setText(context.getStateText)

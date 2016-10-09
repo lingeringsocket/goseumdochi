@@ -23,6 +23,7 @@ import android.net._
 import android.os._
 import android.preference._
 import android.text.method._
+import android.view._
 
 trait LeashMainMenuActivityBase
     extends MainMenuActivityBase with TypedFindView
@@ -61,6 +62,7 @@ class LeashMainActivity
   override protected def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
+    LeashAnalytics.init(getApplication)
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false)
     setContentView(R.layout.main)
     findView(TR.intro_post_text).setMovementMethod(
@@ -71,9 +73,35 @@ class LeashMainActivity
     requestPrerequisites
   }
 
+  override protected def onResume()
+  {
+    super.onResume
+    val textView = findView(TR.intro_post_text)
+    if (walkthroughSeen) {
+      textView.setVisibility(View.VISIBLE)
+    } else {
+      textView.setVisibility(View.INVISIBLE)
+    }
+    LeashAnalytics.trackScreen("Intro")
+  }
+
+  private def walkthroughSeen() =
+  {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    prefs.getBoolean(
+      LeashSettingsActivity.PREF_WALKTHROUGH, false)
+  }
+
   override protected def startNextActivity()
   {
-    val intent = new Intent(this, classOf[LeashControlActivity])
+    val activityClass = {
+      if (walkthroughSeen) {
+        classOf[LeashControlActivity]
+      } else {
+        classOf[LeashWalkthroughActivity]
+      }
+    }
+    val intent = new Intent(this, activityClass)
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     startActivity(intent)
   }
