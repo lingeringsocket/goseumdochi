@@ -21,6 +21,8 @@ trait Actuator
 {
   def setMotionTimeout(duration : TimeSpan)
 
+  def getPowerState : String = "{power state unknown}"
+
   def actuateMotion(impulse : PolarImpulse)
 
   def actuateLight(color : LightColor)

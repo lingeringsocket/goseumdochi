@@ -20,7 +20,7 @@
       android:text="@string/intro_post_text"
       android:textStyle="italic"
       android:layout_alignParentBottom="true"
-      android:layout_marginBottom="5dp"
+      android:layout_marginBottom="10dp"
       android:layout_marginLeft="70dp"
       android:layout_marginRight="70dp"/>
   <Button
@@ -30,8 +30,8 @@
       android:layout_height="wrap_content"
       android:layout_centerHorizontal="true"
       android:layout_above="@id/intro_post_text"
-      android:layout_marginBottom="5dp"
-      android:layout_marginTop="5dp"
+      android:layout_marginBottom="10dp"
+      android:layout_marginTop="10dp"
       android:onClick="onStartClicked" />
   <TextView
       android:id="@+id/intro_pre_text"
@@ -42,7 +42,7 @@
       android:text="@string/intro_pre_text"
       android:textStyle="italic"
       android:layout_above="@id/setup_button"
-      android:layout_marginTop="5dp"
+      android:layout_marginTop="10dp"
       android:layout_marginLeft="70dp"
       android:layout_marginRight="70dp"/>
 </RelativeLayout>

@@ -27,6 +27,10 @@ object LeashSettingsActivity
 
   final val PREF_RUN_SPEED = "pref_key_run_speed"
 
+  final val PREF_WALKTHROUGH = "pref_key_walkthrough"
+
+  final val PREF_ANALYTICS_OPT_OUT = "pref_key_analytics_opt_out"
+
   private def getSpeedDefault(context : Context, key : String) =
   {
     val defaultRes = key match {
@@ -73,6 +77,9 @@ class LeashSettingsActivity extends SettingsActivityBase with TypedFindView
     key match {
       case PREF_WALK_SPEED | PREF_RUN_SPEED => {
         updateSpeed(prefs, key)
+      }
+      case PREF_ANALYTICS_OPT_OUT => {
+        LeashAnalytics.setOptOut(prefs.getBoolean(key, false))
       }
       case _ =>
     }

@@ -109,6 +109,12 @@ class LeashControlActivity extends ControlActivityBase
     })
   }
 
+  override protected def onResume()
+  {
+    super.onResume
+    LeashAnalytics.trackScreen("Control")
+  }
+
   override protected def createControlView() =
   {
     new LeashControlView(this, retinalInput, outputQueue)
@@ -267,7 +273,10 @@ class LeashControlActivity extends ControlActivityBase
     super.handleConnectionEstablished
     orienting = true
     actuator.setMotionTimeout(10.seconds)
+    LeashAnalytics.trackEvent("status", "CONNECTED")
   }
+
+  def getActuator = actuator
 
   override protected def handleConnectionFailed()
   {
@@ -309,6 +318,7 @@ class LeashControlActivity extends ControlActivityBase
     if (msg.status == ControlActor.ControlStatus.ORIENTING) {
       localizing = false
     }
+    LeashAnalytics.trackEvent("status", msg.status.toString)
   }
 
   private def changeColor(newColor : LightColor)

@@ -194,6 +194,8 @@ class VirtualLeash(restThreshold : Long)
     return false
   }
 
+  def getLastYank = lastYank
+
   def rememberYank(impulse : PolarImpulse)
   {
     lastYank = iLatest

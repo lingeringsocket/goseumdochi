@@ -22,7 +22,8 @@ import android.text.method._
 import android.widget._
 
 abstract class LeashErrorActivity(
-  viewId : Int, linkView : Option[TypedResource[TextView]] = None)
+  viewId : Int, screenName : String,
+  linkView : Option[TypedResource[TextView]] = None)
     extends ErrorActivity(viewId, classOf[LeashMainActivity])
     with LeashMainMenuActivityBase
 {
@@ -32,11 +33,19 @@ abstract class LeashErrorActivity(
     linkView.foreach(
       findView(_).setMovementMethod(LinkMovementMethod.getInstance))
   }
+
+  override protected def onResume()
+  {
+    super.onResume
+    LeashAnalytics.trackScreen(screenName)
+  }
 }
 
-class LeashUnfoundActivity extends LeashErrorActivity(R.layout.unfound)
+class LeashUnfoundActivity extends LeashErrorActivity(
+  R.layout.unfound, "Unfound Error")
 
-class LeashNoSensorActivity extends LeashErrorActivity(R.layout.nosensor)
+class LeashNoSensorActivity extends LeashErrorActivity(
+  R.layout.nosensor, "Sensor Error")
 
 class LeashBluetoothErrorActivity extends LeashErrorActivity(
-  R.layout.bluetooth, Some(TR.bluetooth_error_content))
+  R.layout.bluetooth, "Bluetooth Error", Some(TR.bluetooth_error_content))
