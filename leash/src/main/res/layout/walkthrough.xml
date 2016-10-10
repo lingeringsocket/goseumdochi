@@ -22,16 +22,28 @@
       android:textSize="10pt"
       android:layout_alignParentTop="true"
       android:layout_marginTop="10dp"
-      android:layout_marginLeft="40dp"
-      android:layout_marginRight="40dp"/>
+      android:layout_marginLeft="20dp"
+      android:layout_marginRight="20dp"/>
   <Button
       android:id="@+id/close_walkthrough_button"
-      android:text="@string/close_walkthrough_label"
+      android:text="@string/walkthrough_connect_label"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_centerHorizontal="true"
       android:layout_below="@id/walkthrough_text"
-      android:layout_marginBottom="5dp"
-      android:layout_marginTop="5dp"
-      android:onClick="onCloseClicked" />
+      android:layout_marginBottom="10dp"
+      android:layout_marginTop="10dp"
+      android:onClick="onStartClicked" />
+  <TextView
+      android:id="@+id/walkthrough_hint"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_centerHorizontal="true"
+      android:gravity="center_horizontal"
+      android:text="@string/walkthrough_hint"
+      android:textStyle="italic"
+      android:layout_alignParentBottom="true"
+      android:layout_marginBottom="10dp"
+      android:layout_marginLeft="20dp"
+      android:layout_marginRight="20dp"/>
 </RelativeLayout>

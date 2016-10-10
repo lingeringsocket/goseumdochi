@@ -24,7 +24,7 @@ import android.preference._
 import android.view._
 
 class LeashWalkthroughActivity
-    extends ActivityBase
+    extends PrerequisitesActivityBase
     with TypedFindView
     with View.OnTouchListener
 {
@@ -38,6 +38,8 @@ class LeashWalkthroughActivity
     getResources.getStringArray(R.array.walkthrough_text)
 
   private lazy val textView = findView(TR.walkthrough_text)
+
+  private lazy val hintView = findView(TR.walkthrough_hint)
 
   private lazy val buttonView = findView(TR.close_walkthrough_button)
 
@@ -79,8 +81,10 @@ class LeashWalkthroughActivity
     textView.setText(textArray(iFrame))
     if (iFrame >= (animation.getNumberOfFrames - 1)) {
       buttonView.setVisibility(View.VISIBLE)
+      hintView.setVisibility(View.INVISIBLE)
     } else {
-      buttonView.setVisibility(View.GONE)
+      buttonView.setVisibility(View.INVISIBLE)
+      hintView.setVisibility(View.VISIBLE)
     }
     LeashAnalytics.trackScreen("Walkthrough " + iFrame)
   }
@@ -105,7 +109,17 @@ class LeashWalkthroughActivity
     updateFrame
   }
 
-  def onCloseClicked(v : View)
+  override def onStartClicked(v : View)
+  {
+    if (iFrame >= (animation.getNumberOfFrames - 1)) {
+      super.onStartClicked(v)
+    } else {
+      iFrame += 1
+      updateFrame
+    }
+  }
+
+  override protected def startNextActivity()
   {
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     val editor = prefs.edit
@@ -113,6 +127,7 @@ class LeashWalkthroughActivity
     editor.apply
     val intent = new Intent(this, classOf[LeashControlActivity])
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    finish
     startActivity(intent)
   }
 }
