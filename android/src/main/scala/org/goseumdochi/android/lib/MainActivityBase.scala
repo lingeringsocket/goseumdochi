@@ -27,26 +27,21 @@ import android.view._
 
 import java.util._
 
-abstract class MainActivityBase extends MainMenuActivityBase
+abstract class PrerequisitesActivityBase extends ActivityBase
 {
   private final val ENABLE_BT_REQUEST = 43
-
-  private var bluetoothEnabled = false
 
   private var cameraEnabled = false
 
   private var locationEnabled = false
 
-  private var setupRequested = false
+  private var startRequested = false
 
   protected def requestPrerequisites()
   {
-    val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter
-    if (!bluetoothAdapter.isEnabled) {
+    if (!bluetoothEnabled) {
       val intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
       startActivityForResult(intent, ENABLE_BT_REQUEST)
-    } else {
-      bluetoothEnabled = true
     }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       cameraEnabled = hasCameraPermission
@@ -76,13 +71,14 @@ abstract class MainActivityBase extends MainMenuActivityBase
   {
     if (requestCode == ENABLE_BT_REQUEST) {
       if (resultCode == Activity.RESULT_OK) {
-        bluetoothEnabled = true
         tryStart
       } else {
         toastLong(R.string.toast_bluetooth_required)
       }
     }
   }
+
+  private def bluetoothEnabled = BluetoothAdapter.getDefaultAdapter.isEnabled
 
   private def allPrerequisitesMet =
     bluetoothEnabled && cameraEnabled && locationEnabled
@@ -91,7 +87,7 @@ abstract class MainActivityBase extends MainMenuActivityBase
 
   protected def tryStart() =
   {
-    if (setupRequested && allPrerequisitesMet) {
+    if (startRequested && allPrerequisitesMet) {
       startNextActivity
       true
     } else {
@@ -101,7 +97,7 @@ abstract class MainActivityBase extends MainMenuActivityBase
 
   def onStartClicked(v : View)
   {
-    setupRequested = true
+    startRequested = true
     if (!tryStart) {
       requestPrerequisites
     }
@@ -138,3 +134,7 @@ abstract class MainActivityBase extends MainMenuActivityBase
   }
 }
 
+abstract class MainActivityBase
+    extends PrerequisitesActivityBase with MainMenuActivityBase
+{
+}

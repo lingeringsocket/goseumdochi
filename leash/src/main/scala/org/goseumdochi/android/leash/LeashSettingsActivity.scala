@@ -71,6 +71,12 @@ class LeashSettingsActivity extends SettingsActivityBase with TypedFindView
     updateSpeed(prefs, PREF_RUN_SPEED)
   }
 
+  override protected def onResume()
+  {
+    super.onResume
+    LeashAnalytics.trackScreen("Settings")
+  }
+
   override def onSharedPreferenceChanged(
     prefs : SharedPreferences, key : String)
   {

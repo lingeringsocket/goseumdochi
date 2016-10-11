@@ -70,17 +70,19 @@ class LeashMainActivity
     val img = findView(TR.intro_animation_image)
     img.setBackgroundResource(R.drawable.intro_animation)
     img.getBackground.asInstanceOf[AnimationDrawable].start
-    requestPrerequisites
   }
 
   override protected def onResume()
   {
     super.onResume
-    val textView = findView(TR.intro_post_text)
+    val preTextView = findView(TR.intro_pre_text)
+    val postTextView = findView(TR.intro_post_text)
     if (walkthroughSeen) {
-      textView.setVisibility(View.VISIBLE)
+      preTextView.setText(getString(R.string.intro_expert_text))
+      postTextView.setVisibility(View.VISIBLE)
     } else {
-      textView.setVisibility(View.INVISIBLE)
+      preTextView.setText(getString(R.string.intro_pre_text))
+      postTextView.setVisibility(View.INVISIBLE)
     }
     LeashAnalytics.trackScreen("Intro")
   }
@@ -90,6 +92,15 @@ class LeashMainActivity
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     prefs.getBoolean(
       LeashSettingsActivity.PREF_WALKTHROUGH, false)
+  }
+
+  override def onStartClicked(v : View)
+  {
+    if (walkthroughSeen) {
+      super.onStartClicked(v)
+    } else {
+      startNextActivity
+    }
   }
 
   override protected def startNextActivity()

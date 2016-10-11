@@ -1,7 +1,7 @@
 <resources>
   <string name="app_name">RollWithMe for Sphero</string>
   <string name="setup_label">Let\'s Go</string>
-  <string name="close_walkthrough_label">Connect</string>
+  <string name="walkthrough_connect_label">Connect</string>
   <string name="about_title">About RollWithMe</string>
   <string name="error_title">RollWithMe Error</string>
   <string name="prefs_title">RollWithMe Preferences</string>
@@ -9,7 +9,7 @@
   <string name="about_text">
 Now you can take your Sphero for a walk!
   </string>
-  <string name="about_version">RollWithMe for Sphero (v0.5)</string>
+  <string name="about_version">RollWithMe for Sphero (v0.6)</string>
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
@@ -28,7 +28,10 @@ Now you can take your Sphero for a walk!
   <string name="pref_title_analytics">Opt Out</string>
 
   <string name="intro_pre_text">Make sure your Sphero is paired and awake, then press this button to get started!</string>
-  <string name="intro_post_text"><a href="https://goseumdochi.org/roll-with-me-help#tips">You can also get help or learn some tips and tricks online</a></string>
+  <string name="intro_expert_text">Use the app menu to adjust preferences or see the walkthrough again.</string>
+  <string name="intro_post_text"><a href="https://goseumdochi.org/roll-with-me-help#tips">Get help or learn some tips and tricks online</a></string>
+
+  <string name="walkthrough_hint">(Swipe left to continue)</string>
 
   <string name="unfound_text">
 Sphero could not be located.  Please try again.
@@ -42,13 +45,13 @@ Unfortunately, your device does not support one or more required sensors
   <string name="walkthrough_animation_delay">4000</string>
 
   <string-array name="walkthrough_text">
-    <item>For RollWithMe to work, you\'ll first need to get started with a few simple steps.  Swipe left to learn how.</item>
-    <item>You\'ll start by putting your Sphero on the ground near you.</item>
-    <item>Next, you\'ll be asked to hold your phone over your Sphero, like this.</item>
+    <item>Let\'s learn how to get RollWithMe working in a few simple steps.</item>
+    <item>You\'ll start by putting Sphero on the ground near you.</item>
+    <item>Next, you\'ll be asked to hold your phone over Sphero, like this.</item>
     <item>Then, you\'ll use the camera view to center Sphero in the crosshairs.</item>
     <item>Next, you\'ll touch the screen in the center of the crosshairs, causing Sphero to roll away from the center.</item>
     <item>Hold your phone motionless during this step so that RollWithMe can measure Sphero\'s movement correctly.</item>
-    <item>Once Sphero stops moving and your screen turns magenta, setup will be complete.  Ready?  Press the button below to get going.</item>
+    <item>Once Sphero stops moving and your screen turns magenta, setup will be complete, and Sphero will be ready to roll with you.  Now, enough talk, let\'s do it!</item>
   </string-array>
 
 </resources>
