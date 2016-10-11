@@ -41,6 +41,9 @@ trait MainMenuActivityBase extends ActivityBase
     } else if (itemId == R.id.bugs) {
       startBugsActivity
       true
+    } else if (itemId == R.id.walkthrough) {
+      startWalkthroughActivity
+      true
     } else if (itemId == R.id.settings) {
       startSettingsActivity
       true
@@ -56,4 +59,8 @@ trait MainMenuActivityBase extends ActivityBase
   protected def startBugsActivity()
 
   protected def startSettingsActivity()
+
+  protected def startWalkthroughActivity()
+  {
+  }
 }

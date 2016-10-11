@@ -2,6 +2,7 @@
   <string name="settings_label">Preferences</string>
   <string name="about_label">About</string>
   <string name="help_label">Help</string>  
+  <string name="walkthrough_label">Walkthrough</string>  
   <string name="bugs_label">Report A Bug</string>
   <string name="ok">OK</string>
 

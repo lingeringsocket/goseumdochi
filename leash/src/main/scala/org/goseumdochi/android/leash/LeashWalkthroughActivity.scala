@@ -43,6 +43,30 @@ class LeashWalkthroughActivity
 
   private lazy val buttonView = findView(TR.close_walkthrough_button)
 
+  override def onCreateOptionsMenu(menu : Menu) =
+  {
+    super.onCreateOptionsMenu(menu)
+    val inflater = getMenuInflater
+    inflater.inflate(R.menu.walkthrough_menu, menu)
+    true
+  }
+
+  override def onOptionsItemSelected(item : MenuItem) =
+  {
+    val itemId = item.getItemId
+    if (itemId == R.id.next) {
+      if (iFrame < (animation.getNumberOfFrames - 1)) {
+        iFrame += 1
+        updateFrame
+      } else {
+        onStartClicked(buttonView)
+      }
+      true
+    } else {
+      false
+    }
+  }
+
   override def onTouch(v : View, event : MotionEvent) : Boolean =
   {
     event.getAction match {
@@ -107,16 +131,6 @@ class LeashWalkthroughActivity
   {
     super.onResume
     updateFrame
-  }
-
-  override def onStartClicked(v : View)
-  {
-    if (iFrame >= (animation.getNumberOfFrames - 1)) {
-      super.onStartClicked(v)
-    } else {
-      iFrame += 1
-      updateFrame
-    }
   }
 
   override protected def startNextActivity()
