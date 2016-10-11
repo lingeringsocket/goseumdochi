@@ -61,10 +61,29 @@ class LeashWalkthroughActivity
       } else {
         onStartClicked(buttonView)
       }
-      true
-    } else {
-      false
+    } else if (itemId == R.id.slide0) {
+      iFrame = 0
+      updateFrame
+    } else if (itemId == R.id.slide1) {
+      iFrame = 1
+      updateFrame
+    } else if (itemId == R.id.slide2) {
+      iFrame = 2
+      updateFrame
+    } else if (itemId == R.id.slide3) {
+      iFrame = 3
+      updateFrame
+    } else if (itemId == R.id.slide4) {
+      iFrame = 4
+      updateFrame
+    } else if (itemId == R.id.slide5) {
+      iFrame = 5
+      updateFrame
+    } else if (itemId == R.id.slide6) {
+      iFrame = 6
+      updateFrame
     }
+    true
   }
 
   override def onTouch(v : View, event : MotionEvent) : Boolean =
@@ -110,6 +129,7 @@ class LeashWalkthroughActivity
       buttonView.setVisibility(View.INVISIBLE)
       hintView.setVisibility(View.VISIBLE)
     }
+    setTitle(getString(R.string.walkthrough_title) + " (" + (iFrame+1) + "/7)")
     LeashAnalytics.trackScreen("Walkthrough " + iFrame)
   }
 
