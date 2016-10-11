@@ -25,6 +25,7 @@ import android.hardware._
 import android.os._
 import android.preference._
 
+import android.Manifest
 import android.hardware.Camera
 
 import org.goseumdochi.vision._

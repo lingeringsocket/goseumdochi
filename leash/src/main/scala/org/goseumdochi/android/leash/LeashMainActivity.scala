@@ -53,6 +53,13 @@ trait LeashMainMenuActivityBase
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     startActivity(intent)
   }
+
+  override protected def startWalkthroughActivity()
+  {
+    val intent = new Intent(this, classOf[LeashWalkthroughActivity])
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    startActivity(intent)
+  }
 }
 
 class LeashMainActivity
@@ -99,21 +106,19 @@ class LeashMainActivity
     if (walkthroughSeen) {
       super.onStartClicked(v)
     } else {
-      startNextActivity
+      startWalkthroughActivity
     }
   }
 
   override protected def startNextActivity()
   {
-    val activityClass = {
-      if (walkthroughSeen) {
-        classOf[LeashControlActivity]
-      } else {
-        classOf[LeashWalkthroughActivity]
-      }
+    if (walkthroughSeen) {
+      val activityClass = classOf[LeashControlActivity]
+      val intent = new Intent(this, activityClass)
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+      startActivity(intent)
+    } else {
+      startWalkthroughActivity
     }
-    val intent = new Intent(this, activityClass)
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-    startActivity(intent)
   }
 }

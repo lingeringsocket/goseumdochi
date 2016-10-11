@@ -24,6 +24,8 @@ import android.app._
 import android.content._
 import android.os._
 
+import android.Manifest
+
 import java.util._
 
 object WatchdogSettingsActivity
