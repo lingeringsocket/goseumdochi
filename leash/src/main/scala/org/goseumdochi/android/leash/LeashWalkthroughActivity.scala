@@ -129,7 +129,8 @@ class LeashWalkthroughActivity
       buttonView.setVisibility(View.INVISIBLE)
       hintView.setVisibility(View.VISIBLE)
     }
-    setTitle(getString(R.string.walkthrough_title) + " (" + (iFrame+1) + "/7)")
+    setTitle(getString(R.string.walkthrough_title) +
+      " (" + (iFrame + 1) + "/7)")
     LeashAnalytics.trackScreen("Walkthrough " + iFrame)
   }
 
