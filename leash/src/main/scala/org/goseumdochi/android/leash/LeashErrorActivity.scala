@@ -42,7 +42,7 @@ abstract class LeashErrorActivity(
 }
 
 class LeashUnfoundActivity extends LeashErrorActivity(
-  R.layout.unfound, "Unfound Error")
+  R.layout.unfound, "Unfound Error", Some(TR.unfound_content))
 
 class LeashNoSensorActivity extends LeashErrorActivity(
   R.layout.nosensor, "Sensor Error")

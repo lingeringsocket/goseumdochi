@@ -35,7 +35,7 @@ Now you can take your Sphero for a walk!
   <string name="walkthrough_hint">(Swipe left to continue)</string>
 
   <string name="unfound_text">
-Sphero could not be located.  Please try again.
+Sphero could not be located.  Please <a href="https://goseumdochi.org/roll-with-me-help#tips">read the help page</a> and then try again.
   </string>
   <string name="nosensor_text">
 Unfortunately, your device does not support one or more required sensors
