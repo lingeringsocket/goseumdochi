@@ -31,7 +31,7 @@ object LeashAnalytics
     val instance = GoogleAnalytics.getInstance(app)
     ga = Some(instance)
     tracker.enableAutoActivityTracking(false)
-    tracker.enableExceptionReporting(false)
+    tracker.enableExceptionReporting(true)
     val prefs = PreferenceManager.getDefaultSharedPreferences(app)
     if (prefs.getBoolean(LeashSettingsActivity.PREF_ANALYTICS_OPT_OUT, false)) {
       instance.setAppOptOut(true)
