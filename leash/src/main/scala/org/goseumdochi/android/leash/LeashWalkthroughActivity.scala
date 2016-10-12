@@ -71,7 +71,6 @@ class LeashWalkthroughActivity
   private def replaceSlide(iSlide : Int)
   {
     val intent = new Intent(this, classOf[LeashWalkthroughActivity])
-    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     intent.putExtra("iFrame", iSlide)
     startActivity(intent)
   }

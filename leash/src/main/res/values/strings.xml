@@ -10,7 +10,7 @@
   <string name="about_text">
 Now you can take your Sphero for a walk!
   </string>
-  <string name="about_version">RollWithMe for Sphero (v0.12 beta)</string>
+  <string name="about_version">RollWithMe for Sphero (v0.13 beta)</string>
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
@@ -52,7 +52,7 @@ Unfortunately, your device does not support one or more required sensors
     <item>Then, you\'ll use the camera view to center Sphero in the crosshairs.</item>
     <item>Next, you\'ll touch the screen in the center of the crosshairs, causing Sphero to roll away from the center.</item>
     <item>Hold your phone motionless during this step so that RollWithMe can measure Sphero\'s movement correctly.</item>
-    <item>Once Sphero stops moving and your screen turns magenta, setup will be complete, and Sphero will be ready to roll with you.  Now, enough talk, let\'s do it!</item>
+    <item>Once Sphero stops moving and your screen turns magenta, Sphero will be ready to roll with you.  Now, enough talk, let\'s do it!</item>
   </string-array>
 
 </resources>
