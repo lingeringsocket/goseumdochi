@@ -68,6 +68,11 @@ class LeashWalkthroughActivity
   {
     if (iFrame < (animation.getNumberOfFrames - 1)) {
       iFrame += 1
+      val intent = new Intent(this, classOf[LeashWalkthroughActivity])
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+      intent.putExtra("iFrame", iFrame)
+      finish
+      startActivity(intent)
       updateFrame
     } else {
       onStartClicked(buttonView)
@@ -136,6 +141,7 @@ class LeashWalkthroughActivity
   {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.walkthrough)
+    iFrame = getIntent.getIntExtra("iFrame", 0)
   }
 
   override protected def onResume()
