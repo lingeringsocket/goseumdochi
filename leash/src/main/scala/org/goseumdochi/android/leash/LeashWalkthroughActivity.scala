@@ -18,7 +18,6 @@ package org.goseumdochi.android.leash
 import org.goseumdochi.android.lib._
 
 import android.content._
-import android.graphics.drawable._
 import android.os._
 import android.preference._
 import android.view._
