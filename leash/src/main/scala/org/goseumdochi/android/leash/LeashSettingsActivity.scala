@@ -85,7 +85,11 @@ class LeashSettingsActivity extends SettingsActivityBase with TypedFindView
         updateSpeed(prefs, key)
       }
       case PREF_ANALYTICS_OPT_OUT => {
-        LeashAnalytics.setOptOut(prefs.getBoolean(key, false))
+        val optOut = prefs.getBoolean(key, false)
+        if (optOut) {
+          LeashAnalytics.trackEvent("analytics", "optOut")
+        }
+        LeashAnalytics.setOptOut(optOut)
       }
       case _ =>
     }
