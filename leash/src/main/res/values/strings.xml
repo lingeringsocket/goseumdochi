@@ -2,6 +2,7 @@
   <string name="app_name">RollWithMe for Sphero</string>
   <string name="setup_label">Let\'s Go</string>
   <string name="next_label">Next</string>
+  <string name="back_label">Back To Start</string>
   <string name="walkthrough_connect_label">Connect</string>
   <string name="about_title">About RollWithMe</string>
   <string name="error_title">RollWithMe Error</string>
@@ -10,7 +11,7 @@
   <string name="about_text">
 Now you can take your Sphero for a walk!
   </string>
-  <string name="about_version">RollWithMe for Sphero (v0.13 beta)</string>
+  <string name="about_version">RollWithMe for Sphero (v0.14 beta)</string>
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
@@ -43,7 +44,6 @@ Unfortunately, your device does not support one or more required sensors
   </string>
 
   <string name="intro_animation_delay">200</string>
-  <string name="walkthrough_animation_delay">4000</string>
 
   <string-array name="walkthrough_text">
     <item>Let\'s learn how to get RollWithMe working in a few simple steps.</item>

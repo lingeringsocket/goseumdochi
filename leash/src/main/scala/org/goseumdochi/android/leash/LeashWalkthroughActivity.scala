@@ -28,11 +28,23 @@ class LeashWalkthroughActivity
     with TypedFindView
     with View.OnTouchListener
 {
+  private lazy val frameImg = loadAnimation
+
+  private val frames = Array(
+    R.drawable.walkthrough0,
+    R.drawable.walkthrough1,
+    R.drawable.walkthrough2,
+    R.drawable.walkthrough3,
+    R.drawable.walkthrough4,
+    R.drawable.walkthrough5,
+    R.drawable.walkthrough6
+  )
+
   private var x1 = 0f
 
-  private var iFrame = 0
+  private lazy val useMenu = getIntent.getBooleanExtra("menu", false)
 
-  private lazy val animation = loadAnimation
+  private var iFrame = 0
 
   private lazy val textArray =
     getResources.getStringArray(R.array.walkthrough_text)
@@ -46,12 +58,16 @@ class LeashWalkthroughActivity
   override def onCreateOptionsMenu(menu : Menu) =
   {
     super.onCreateOptionsMenu(menu)
-    if (iFrame > 0) {
-      false
-    } else {
+    if (useMenu) {
       val inflater = getMenuInflater
-      inflater.inflate(R.menu.walkthrough_menu_0, menu)
+      if (iFrame > 0) {
+        inflater.inflate(R.menu.walkthrough_menu_etc, menu)
+      } else {
+        inflater.inflate(R.menu.walkthrough_menu_0, menu)
+      }
       true
+    } else {
+      false
     }
   }
 
@@ -64,6 +80,7 @@ class LeashWalkthroughActivity
       case R.id.slide4 => replaceSlide(4)
       case R.id.slide5 => replaceSlide(5)
       case R.id.slide6 => replaceSlide(6)
+      case _ => finish
     }
     true
   }
@@ -72,6 +89,7 @@ class LeashWalkthroughActivity
   {
     val intent = new Intent(this, classOf[LeashWalkthroughActivity])
     intent.putExtra("iFrame", iSlide)
+    intent.putExtra("menu", useMenu)
     startActivity(intent)
   }
 
@@ -88,7 +106,7 @@ class LeashWalkthroughActivity
         if (Math.abs(delta) > 100) {
           if (delta < 0) {
             // swipe right
-            if (iFrame < (animation.getNumberOfFrames - 1)) {
+            if (iFrame < (frames.size - 1)) {
               iFrame += 1
               updateFrame
             }
@@ -109,9 +127,9 @@ class LeashWalkthroughActivity
 
   private def updateFrame()
   {
-    animation.selectDrawable(iFrame)
+    frameImg.setImageResource(frames(iFrame))
     textView.setText(textArray(iFrame))
-    if (iFrame >= (animation.getNumberOfFrames - 1)) {
+    if (iFrame >= (frames.size - 1)) {
       buttonView.setVisibility(View.VISIBLE)
       hintView.setVisibility(View.GONE)
     } else {
@@ -127,9 +145,8 @@ class LeashWalkthroughActivity
   private def loadAnimation =
   {
     val img = findView(TR.walkthrough_animation_image)
-    img.setBackgroundResource(R.drawable.walkthrough_animation)
     img.setOnTouchListener(this)
-    img.getBackground.asInstanceOf[AnimationDrawable]
+    img
   }
 
   override protected def onCreate(savedInstanceState : Bundle)
