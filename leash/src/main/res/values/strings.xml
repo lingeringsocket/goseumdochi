@@ -2,7 +2,6 @@
   <string name="app_name">RollWithMe for Sphero</string>
   <string name="setup_label">Let\'s Go</string>
   <string name="next_label">Next</string>
-  <string name="back_label">Back To Start</string>
   <string name="walkthrough_connect_label">Connect</string>
   <string name="about_title">About RollWithMe</string>
   <string name="error_title">RollWithMe Error</string>

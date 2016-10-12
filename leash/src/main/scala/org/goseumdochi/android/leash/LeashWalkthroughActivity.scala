@@ -57,13 +57,9 @@ class LeashWalkthroughActivity
   override def onCreateOptionsMenu(menu : Menu) =
   {
     super.onCreateOptionsMenu(menu)
-    if (useMenu) {
+    if (useMenu && (iFrame == 0)) {
       val inflater = getMenuInflater
-      if (iFrame > 0) {
-        inflater.inflate(R.menu.walkthrough_menu_etc, menu)
-      } else {
-        inflater.inflate(R.menu.walkthrough_menu_0, menu)
-      }
+      inflater.inflate(R.menu.walkthrough_menu_0, menu)
       true
     } else {
       false

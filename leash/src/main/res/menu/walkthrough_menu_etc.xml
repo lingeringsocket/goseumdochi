@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-   <item android:id="@+id/back_to_start" android:title="@string/back_label"
-      android:icon="@android:drawable/ic_menu_close_clear_cancel" android:alphabeticShortcut="b" />
-</menu>
