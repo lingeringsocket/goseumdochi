@@ -55,29 +55,37 @@ class LeashWalkthroughActivity
   {
     iFrame match {
       case 0 => R.menu.walkthrough_menu_0
-      case 1 => R.menu.walkthrough_menu_1
-      case 2 => R.menu.walkthrough_menu_2
-      case 3 => R.menu.walkthrough_menu_3
-      case 4 => R.menu.walkthrough_menu_4
-      case 5 => R.menu.walkthrough_menu_5
-      case _ => R.menu.walkthrough_menu_6
+      case _ => R.menu.walkthrough_menu_next
     }
   }
 
   override def onOptionsItemSelected(item : MenuItem) =
   {
-    if (iFrame < (animation.getNumberOfFrames - 1)) {
-      iFrame += 1
-      val intent = new Intent(this, classOf[LeashWalkthroughActivity])
-      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-      intent.putExtra("iFrame", iFrame)
-      finish
-      startActivity(intent)
-      updateFrame
-    } else {
-      onStartClicked(buttonView)
+    item.getItemId match {
+      case R.id.walkthrough_next => {
+        if (iFrame < (animation.getNumberOfFrames - 1)) {
+          iFrame += 1
+          updateFrame
+        } else {
+          onStartClicked(buttonView)
+        }
+      }
+      case R.id.slide1 => replaceSlide(1)
+      case R.id.slide2 => replaceSlide(2)
+      case R.id.slide3 => replaceSlide(3)
+      case R.id.slide4 => replaceSlide(4)
+      case R.id.slide5 => replaceSlide(5)
+      case R.id.slide6 => replaceSlide(6)
     }
     true
+  }
+
+  private def replaceSlide(iSlide : Int)
+  {
+    val intent = new Intent(this, classOf[LeashWalkthroughActivity])
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    intent.putExtra("iFrame", iSlide)
+    startActivity(intent)
   }
 
   override def onTouch(v : View, event : MotionEvent) : Boolean =
@@ -118,9 +126,9 @@ class LeashWalkthroughActivity
     textView.setText(textArray(iFrame))
     if (iFrame >= (animation.getNumberOfFrames - 1)) {
       buttonView.setVisibility(View.VISIBLE)
-      hintView.setVisibility(View.INVISIBLE)
+      hintView.setVisibility(View.GONE)
     } else {
-      buttonView.setVisibility(View.INVISIBLE)
+      buttonView.setVisibility(View.GONE)
       hintView.setVisibility(View.VISIBLE)
     }
     setTitle(getString(R.string.walkthrough_title) +
