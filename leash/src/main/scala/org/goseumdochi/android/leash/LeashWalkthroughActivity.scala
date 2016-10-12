@@ -47,41 +47,30 @@ class LeashWalkthroughActivity
   {
     super.onCreateOptionsMenu(menu)
     val inflater = getMenuInflater
-    inflater.inflate(R.menu.walkthrough_menu, menu)
+    inflater.inflate(chooseMenuId, menu)
     true
+  }
+
+  private def chooseMenuId() =
+  {
+    iFrame match {
+      case 0 => R.menu.walkthrough_menu_0
+      case 1 => R.menu.walkthrough_menu_1
+      case 2 => R.menu.walkthrough_menu_2
+      case 3 => R.menu.walkthrough_menu_3
+      case 4 => R.menu.walkthrough_menu_4
+      case 5 => R.menu.walkthrough_menu_5
+      case _ => R.menu.walkthrough_menu_6
+    }
   }
 
   override def onOptionsItemSelected(item : MenuItem) =
   {
-    val itemId = item.getItemId
-    if (itemId == R.id.next) {
-      if (iFrame < (animation.getNumberOfFrames - 1)) {
-        iFrame += 1
-        updateFrame
-      } else {
-        onStartClicked(buttonView)
-      }
-    } else if (itemId == R.id.slide0) {
-      iFrame = 0
+    if (iFrame < (animation.getNumberOfFrames - 1)) {
+      iFrame += 1
       updateFrame
-    } else if (itemId == R.id.slide1) {
-      iFrame = 1
-      updateFrame
-    } else if (itemId == R.id.slide2) {
-      iFrame = 2
-      updateFrame
-    } else if (itemId == R.id.slide3) {
-      iFrame = 3
-      updateFrame
-    } else if (itemId == R.id.slide4) {
-      iFrame = 4
-      updateFrame
-    } else if (itemId == R.id.slide5) {
-      iFrame = 5
-      updateFrame
-    } else if (itemId == R.id.slide6) {
-      iFrame = 6
-      updateFrame
+    } else {
+      onStartClicked(buttonView)
     }
     true
   }
@@ -131,6 +120,7 @@ class LeashWalkthroughActivity
     }
     setTitle(getString(R.string.walkthrough_title) +
       " (" + (iFrame + 1) + "/7)")
+    invalidateOptionsMenu
     LeashAnalytics.trackScreen("Walkthrough " + iFrame)
   }
 
