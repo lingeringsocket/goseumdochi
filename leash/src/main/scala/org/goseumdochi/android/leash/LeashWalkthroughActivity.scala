@@ -46,30 +46,18 @@ class LeashWalkthroughActivity
   override def onCreateOptionsMenu(menu : Menu) =
   {
     super.onCreateOptionsMenu(menu)
-    val inflater = getMenuInflater
-    inflater.inflate(chooseMenuId, menu)
-    true
-  }
-
-  private def chooseMenuId() =
-  {
-    iFrame match {
-      case 0 => R.menu.walkthrough_menu_0
-      case _ => R.menu.walkthrough_menu_next
+    if (iFrame > 0) {
+      false
+    } else {
+      val inflater = getMenuInflater
+      inflater.inflate(R.menu.walkthrough_menu_0, menu)
+      true
     }
   }
 
   override def onOptionsItemSelected(item : MenuItem) =
   {
     item.getItemId match {
-      case R.id.walkthrough_next => {
-        if (iFrame < (animation.getNumberOfFrames - 1)) {
-          iFrame += 1
-          updateFrame
-        } else {
-          onStartClicked(buttonView)
-        }
-      }
       case R.id.slide1 => replaceSlide(1)
       case R.id.slide2 => replaceSlide(2)
       case R.id.slide3 => replaceSlide(3)
