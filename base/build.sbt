@@ -16,8 +16,6 @@ scalacOptions in Test ++= Seq("-Yrangepos")
 
 classpathTypes += "maven-plugin"
 
-// resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
-
 resolvers += "bintray/meetup" at "http://dl.bintray.com/meetup/maven"
 
 resolvers ++= Common.resolvers
