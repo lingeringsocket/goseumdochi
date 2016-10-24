@@ -34,6 +34,8 @@ class LeashControlView(
 
   private var lastYank = 0L
 
+  private var unripe = context.isUnripe
+
   override protected def onDraw(canvas : Canvas)
   {
     super.onDraw(canvas)
@@ -58,6 +60,10 @@ class LeashControlView(
       if (newYank != lastYank) {
         LeashAnalytics.trackEvent("yank", "timestamp" + newYank)
         lastYank = newYank
+        if (unripe) {
+          context.ripen
+          unripe = false
+        }
       }
     }
 

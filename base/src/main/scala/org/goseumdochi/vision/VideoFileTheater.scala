@@ -46,7 +46,7 @@ class VideoFileTheater(
     val width = firstFrame.imageWidth
     val height = firstFrame.imageHeight
     if (!filterString.isEmpty) {
-      val f = new FFmpegFrameFilter("showinfo=n", width, height)
+      val f = new FFmpegFrameFilter(filterString, width, height)
       f.start
       filter = Some(f)
     }
@@ -125,6 +125,7 @@ class VideoFileTheater(
         f.release
       })
       recorder = None
+      filter = None
     }
   }
 

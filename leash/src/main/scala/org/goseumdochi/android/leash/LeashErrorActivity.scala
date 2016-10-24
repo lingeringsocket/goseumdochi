@@ -43,9 +43,16 @@ abstract class LeashErrorActivity(
 
 class LeashUnfoundActivity extends LeashErrorActivity(
   R.layout.unfound, "Unfound Error", Some(TR.unfound_content))
+{
+  override protected def getSubject = "Need Help with RollWithMe Setup"
+}
 
 class LeashNoSensorActivity extends LeashErrorActivity(
   R.layout.nosensor, "Sensor Error")
 
 class LeashBluetoothErrorActivity extends LeashErrorActivity(
   R.layout.bluetooth, "Bluetooth Error", Some(TR.bluetooth_error_content))
+{
+  override protected def getSubject =
+    "Need Help with RollWithMe Sphero Connection"
+}

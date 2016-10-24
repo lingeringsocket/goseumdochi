@@ -167,6 +167,18 @@ class LeashControlActivity extends ControlActivityBase
     }
   }
 
+  def ripen()
+  {
+    LeashSettingsActivity.setFeedbackRipeness(
+      this, LeashSettingsActivity.FEEDBACK_RIPE)
+  }
+
+  def isUnripe() : Boolean =
+  {
+    val ripeness = LeashSettingsActivity.getFeedbackRipeness(this)
+    return ripeness == LeashSettingsActivity.FEEDBACK_UNRIPE
+  }
+
   private def accelerationEvent(event : SensorEvent)
   {
     val (jerkNow, acceleration) = leash.processEvent(event)
