@@ -15,7 +15,10 @@
 
 package org.goseumdochi.android.lib
 
+import org.goseumdochi.android.common.R
+
 import android.content._
+import android.net._
 import android.os._
 import android.view._
 
@@ -37,4 +40,17 @@ abstract class ErrorActivity(
     finish
     startActivity(intent)
   }
+
+  def onHelpClicked(v : View)
+  {
+    val intent = new Intent(
+      Intent.ACTION_SENDTO,
+      Uri.parse("mailto:info@goseumdochi.org"))
+    intent.putExtra(Intent.EXTRA_SUBJECT, getSubject)
+    startActivity(Intent.createChooser(
+      intent,
+      getString(R.string.help_chooser)))
+  }
+
+  protected def getSubject : String = "Help Me!"
 }

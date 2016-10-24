@@ -29,7 +29,17 @@ object LeashSettingsActivity
 
   final val PREF_WALKTHROUGH = "pref_key_walkthrough"
 
+  final val PREF_ANALYTICS = "pref_key_analytics"
+
   final val PREF_ANALYTICS_OPT_OUT = "pref_key_analytics_opt_out"
+
+  final val PREF_FEEDBACK = "pref_key_feedback"
+
+  final val FEEDBACK_UNRIPE = "unripe"
+
+  final val FEEDBACK_RIPE = "ripe"
+
+  final val FEEDBACK_FRUIT = "fruit"
 
   private def getSpeedDefault(context : Context, key : String) =
   {
@@ -56,6 +66,21 @@ object LeashSettingsActivity
 
   def getRunningSpeed(context : Context) : Double =
     getSpeed(context, PREF_RUN_SPEED)
+
+  def getFeedbackRipeness(context : Context) : String =
+  {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    prefs.getString(
+      LeashSettingsActivity.PREF_FEEDBACK, FEEDBACK_UNRIPE)
+  }
+
+  def setFeedbackRipeness(context : Context, ripeness : String)
+  {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    val editor = prefs.edit
+    editor.putString(LeashSettingsActivity.PREF_FEEDBACK, ripeness)
+    editor.apply
+  }
 }
 
 import LeashSettingsActivity._
@@ -66,6 +91,10 @@ class LeashSettingsActivity extends SettingsActivityBase with TypedFindView
   {
     super.onCreate(savedInstanceState)
     addPreferencesFromResource(R.xml.preferences)
+    val analyticsCategory = findPreference(PREF_ANALYTICS).
+      asInstanceOf[PreferenceCategory]
+    val feedbackPreference = findPreference(PREF_FEEDBACK)
+    analyticsCategory.removePreference(feedbackPreference)
     val prefs = PreferenceManager.getDefaultSharedPreferences(this)
     updateSpeed(prefs, PREF_WALK_SPEED)
     updateSpeed(prefs, PREF_RUN_SPEED)

@@ -21,10 +21,15 @@
         android:key="pref_key_walkthrough" />
   </PreferenceCategory>
   <PreferenceCategory
-      android:title="@string/pref_category_analytics">
+        android:key="pref_key_analytics"
+        android:title="@string/pref_category_analytics">
     <CheckBoxPreference
         android:title="@string/pref_title_analytics"
         android:defaultValue="false"
         android:key="pref_key_analytics_opt_out" />
+    <EditTextPreference
+        android:title="Feedback"
+        android:defaultValue="unripe"
+        android:key="pref_key_feedback" />
   </PreferenceCategory>
 </PreferenceScreen>

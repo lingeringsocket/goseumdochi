@@ -106,7 +106,7 @@ abstract class MotionDetector(
     img : IplImage, frameTime : TimePoint)
       : Option[MotionDetectedMsg] =
   {
-    var first = diffOpt.isEmpty
+    val first = diffOpt.isEmpty
     if (first) {
       diffOpt = Some(AbstractIplImage.create(
         img.width, img.height, IPL_DEPTH_8U, 1))

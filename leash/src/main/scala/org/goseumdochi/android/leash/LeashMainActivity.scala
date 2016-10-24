@@ -17,6 +17,7 @@ package org.goseumdochi.android.leash
 
 import org.goseumdochi.android.lib._
 
+import android.app._
 import android.content._
 import android.graphics.drawable._
 import android.net._
@@ -80,6 +81,7 @@ class LeashMainActivity
     setContentView(R.layout.main)
     findView(TR.intro_post_text).setMovementMethod(
       LinkMovementMethod.getInstance)
+    checkPrerequisites
     val img = findView(TR.intro_animation_image)
     img.setBackgroundResource(R.drawable.intro_animation)
     img.getBackground.asInstanceOf[AnimationDrawable].start
@@ -98,6 +100,45 @@ class LeashMainActivity
       postTextView.setVisibility(View.INVISIBLE)
     }
     LeashAnalytics.trackScreen("Intro")
+    if (feedbackRipe) {
+      val dialog = new AlertDialog.Builder(this).
+        setTitle(R.string.feedback_title).
+        setMessage(R.string.feedback_message).
+        setPositiveButton(
+          R.string.yes_label, new DialogInterface.OnClickListener {
+            override def onClick(dialog : DialogInterface, which : Int)
+            {
+              LeashAnalytics.trackEvent("feedback", "yes")
+              val appUrl = "market://details?id=" + getPackageName
+              val intent = new Intent(Intent.ACTION_VIEW, Uri.parse(appUrl))
+              startActivity(intent)
+              dialog.dismiss
+            }
+          }
+        ).
+        setNeutralButton(
+          R.string.later_label, new DialogInterface.OnClickListener {
+            override def onClick(dialog : DialogInterface, which : Int)
+            {
+              LeashAnalytics.trackEvent("feedback", "no")
+              dialog.dismiss
+            }
+          }
+        ).
+        show
+    }
+  }
+
+  private def feedbackRipe() =
+  {
+    val ripeness = LeashSettingsActivity.getFeedbackRipeness(this)
+    if (ripeness == LeashSettingsActivity.FEEDBACK_RIPE) {
+      LeashSettingsActivity.setFeedbackRipeness(
+        this, LeashSettingsActivity.FEEDBACK_FRUIT)
+      true
+    } else {
+      false
+    }
   }
 
   private def walkthroughSeen() =

@@ -37,6 +37,17 @@ abstract class PrerequisitesActivityBase extends ActivityBase
 
   private var startRequested = false
 
+  protected def checkPrerequisites()
+  {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      cameraEnabled = hasCameraPermission
+      locationEnabled = hasLocationPermission
+    } else {
+      cameraEnabled = true
+      locationEnabled = true
+    }
+  }
+
   protected def requestPrerequisites()
   {
     if (!bluetoothEnabled) {
@@ -44,8 +55,7 @@ abstract class PrerequisitesActivityBase extends ActivityBase
       startActivityForResult(intent, ENABLE_BT_REQUEST)
     }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      cameraEnabled = hasCameraPermission
-      locationEnabled = hasLocationPermission
+      checkPrerequisites
       val gotPermissions = cameraEnabled && locationEnabled
       if (!gotPermissions) {
         val permissions = new ArrayList[String]
@@ -60,9 +70,6 @@ abstract class PrerequisitesActivityBase extends ActivityBase
             new Array[String](permissions.size)),
           PERMISSION_REQUEST)
       }
-    } else {
-      cameraEnabled = true
-      locationEnabled = true
     }
   }
 

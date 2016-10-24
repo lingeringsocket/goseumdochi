@@ -5,6 +5,8 @@
   <string name="walkthrough_label">Walkthrough</string>  
   <string name="bugs_label">Report A Bug</string>
   <string name="ok">OK</string>
+  <string name="ask_for_help">Get Help</string>
+  <string name="help_chooser">Send questions or comments via email...</string>
 
   <string name="pref_title_white_balance">Camera White Balance</string>
   <string name="pref_summary_white_balance">White balance to set for camera feed (important for accurate color detection)</string>

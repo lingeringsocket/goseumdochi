@@ -44,3 +44,7 @@ class WatchdogUnfoundActivity extends WatchdogErrorActivity(R.layout.unfound)
 
 class WatchdogBluetoothErrorActivity extends WatchdogErrorActivity(
   R.layout.bluetooth, Some(TR.bluetooth_error_content))
+{
+  override protected def getSubject =
+    "Need Help with Watchdog for Sphero Connection"
+}
