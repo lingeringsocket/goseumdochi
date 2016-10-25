@@ -235,7 +235,7 @@ class LeashControlActivity extends ControlActivityBase
       }
     }
     if (yank) {
-      leash.rememberYank(impulse)
+      leash.rememberYank(impulse, (state == RUNNING))
       controlActorOpt.foreach(controlActor => {
         controlActor ! ControlActor.ActuateImpulseMsg(
           impulse,
