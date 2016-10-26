@@ -72,6 +72,8 @@ class VirtualLeash(restThreshold : Long)
 
   private var lastYank = 0L
 
+  private var lastYankRunning = false
+
   private var magnitudeSum = 0.0
 
   private var magnitudeCount = 0
@@ -196,10 +198,13 @@ class VirtualLeash(restThreshold : Long)
 
   def getLastYank = lastYank
 
-  def rememberYank(impulse : PolarImpulse)
+  def getLastYankRunning = lastYankRunning
+
+  def rememberYank(impulse : PolarImpulse, running : Boolean)
   {
     lastYank = iLatest
     lastImpulse = impulse
+    lastYankRunning = running
   }
 
   def sampleMagnitude : Double =

@@ -58,7 +58,7 @@ class LeashControlView(
         canvas, centerX, centerY, leash.sampleMagnitude, paint)
       val newYank = leash.getLastYank
       if (newYank != lastYank) {
-        LeashAnalytics.trackEvent("yank", "timestamp" + newYank)
+        LeashAnalytics.trackEvent("yank", leash.getLastYankRunning.toString)
         lastYank = newYank
         if (unripe) {
           context.ripen
