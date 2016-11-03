@@ -149,6 +149,7 @@ class LeashWalkthroughActivity
     super.onCreate(savedInstanceState)
     setContentView(R.layout.walkthrough)
     iFrame = getIntent.getIntExtra("iFrame", 0)
+    checkPrerequisites
   }
 
   override protected def onResume()
