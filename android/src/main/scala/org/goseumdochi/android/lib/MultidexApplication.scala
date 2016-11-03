@@ -19,8 +19,6 @@ import android.content._
 import android.support.multidex._
 import android.app._
 
-import java.io._
-
 import com.typesafe.config._
 
 class MultidexApplication extends Application
