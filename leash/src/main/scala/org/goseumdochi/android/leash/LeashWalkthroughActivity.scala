@@ -18,9 +18,12 @@ package org.goseumdochi.android.leash
 import org.goseumdochi.android.lib._
 
 import android.content._
+import android.graphics._
+import android.graphics.drawable._
 import android.os._
 import android.preference._
 import android.view._
+import android.widget._
 
 class LeashWalkthroughActivity
     extends PrerequisitesActivityBase
@@ -122,7 +125,7 @@ class LeashWalkthroughActivity
 
   private def updateFrame()
   {
-    frameImg.setImageResource(frames(iFrame))
+    updateBitmap(frameImg, frames(iFrame))
     textView.setText(textArray(iFrame))
     if (iFrame >= (frames.size - 1)) {
       buttonView.setVisibility(View.VISIBLE)
@@ -168,5 +171,27 @@ class LeashWalkthroughActivity
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
     finish
     startActivity(intent)
+  }
+
+  private def updateBitmap(view : ImageView, id : Int)
+  {
+    var verifyBitmap : Bitmap = null
+
+    val options = new BitmapFactory.Options
+    options.inMutable = true
+    Option(view.getDrawable) match {
+      case Some(drawable) => {
+        options.inBitmap = drawable.asInstanceOf[BitmapDrawable].getBitmap
+        verifyBitmap = options.inBitmap
+      }
+      case _ =>
+    }
+    val bitmap = BitmapFactory.decodeResource(getResources, id, options)
+    if (verifyBitmap != null) {
+      if (bitmap != verifyBitmap) {
+        throw new Exception("oops")
+      }
+    }
+    view.setImageBitmap(bitmap)
   }
 }

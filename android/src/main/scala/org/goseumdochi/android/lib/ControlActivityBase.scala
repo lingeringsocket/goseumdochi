@@ -23,7 +23,6 @@ import android.view._
 
 import android.hardware.Camera
 
-import java.io._
 import java.util._
 
 import org.goseumdochi.common._
@@ -31,8 +30,6 @@ import org.goseumdochi.control._
 import org.goseumdochi.vision._
 
 import akka.actor._
-
-import com.typesafe.config._
 
 import com.orbotix._
 import com.orbotix.common._
@@ -76,7 +73,7 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
 
   private lazy val actorSystem = ActorSystem(
     "AndroidActors" + ControlActivityBase.nextId,
-    ConfigFactory.load("android.conf"))
+    getApplication.asInstanceOf[MultidexApplication].getConfig)
 
   protected lazy val settings = ActorSettings(actorSystem)
 
@@ -153,11 +150,6 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
       case RobotChangedStateNotificationType.Online => {
         connectionTimer.cancel
         robot = Some(new ConvenienceRobot(r))
-        val file = new File(
-          getApplicationContext.getFilesDir, "orientation.ser")
-        System.setProperty(
-          "GOSEUMDOCHI_ORIENTATION_FILE",
-          file.getAbsolutePath)
         val props = Props(
           classOf[ControlActor],
           actuator,
