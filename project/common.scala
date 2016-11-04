@@ -104,6 +104,7 @@ object Common {
   def proguardOptions = Seq(
     "-ignorewarnings",
     "-dontobfuscate",
+    "-keep class com.typesafe.config.** { *; }",
     "-keep class org.goseumdochi.** { *; }",
     "-keep class scala.Dynamic",
     "-keep class scala.Option",
