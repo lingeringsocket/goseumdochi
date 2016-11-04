@@ -19,13 +19,11 @@ import android.content._
 import android.support.multidex._
 import android.app._
 
-import com.typesafe.config._
-
 class MultidexApplication extends Application
 {
-  private val config = ConfigFactory.load("android.conf")
+  private val resourceClassLoader = Thread.currentThread.getContextClassLoader
 
-  def getConfig = config
+  def getResourceClassLoader = resourceClassLoader
 
   override protected def attachBaseContext(base : Context)
   {
