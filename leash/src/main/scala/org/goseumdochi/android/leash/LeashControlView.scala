@@ -40,7 +40,7 @@ class LeashControlView(
   {
     super.onDraw(canvas)
 
-    if (context.getState != ATTACHING) {
+    if (!context.isAttaching) {
       val paint = new Paint
       paint.setColor(Color.WHITE)
       paint.setStrokeWidth(5)
@@ -94,9 +94,18 @@ class LeashControlView(
         case SITTING => Color.MAGENTA
         case WALKING => Color.GREEN
         case RUNNING => Color.CYAN
-        case _ => Color.BLACK
+        case _ => getDefaultColor
       }
       canvas.drawColor(color)
+    }
+  }
+
+  override protected def getDefaultColor =
+  {
+    if (context.isOrienting) {
+      Color.BLACK
+    } else {
+      Color.WHITE
     }
   }
 }

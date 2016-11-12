@@ -14,6 +14,14 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical">
+      <ImageView
+          android:id="@+id/connect_animation_image"
+          android:scaleType="fitCenter"
+          android:adjustViewBounds="true"
+          android:layout_centerVertical="true"
+          android:layout_centerHorizontal="true"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"/>
       <TextView android:id="@+id/control_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -24,9 +32,8 @@
                 android:layout_marginRight="10dp"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 android:background="@color/white_transparent" />
-      android:layout_marginTop="10dp"/>
     </RelativeLayout>
   </FrameLayout>
 </LinearLayout>
