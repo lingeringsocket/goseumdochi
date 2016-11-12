@@ -84,8 +84,7 @@ abstract class ControlViewBase(
     // janky way to hide the underlying camera preview...
     // apparently these days we should be using SurfaceTexture instead
     // (and camera2 API for that matter)
-    canvas.drawColor(Color.BLACK)
-    canvas.drawARGB(255, 0, 0, 0)
+    canvas.drawColor(getDefaultColor)
 
     if (!outputQueue.isEmpty) {
       val bitmap = outputQueue.take
@@ -100,4 +99,6 @@ abstract class ControlViewBase(
   {
     canvas.drawBitmap(bitmap, offsetX, offsetY, paint)
   }
+
+  protected def getDefaultColor = Color.BLACK
 }

@@ -23,8 +23,10 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
+import android.graphics.drawable._
 import android.hardware._
 import android.os._
+import android.view._
 
 import scala.concurrent.duration._
 
@@ -32,7 +34,8 @@ object LeashControlActivity
 {
   object LeashState extends Enumeration {
     type LeashState = Value
-    val ATTACHING, SITTING, TWIRLING, WALKING, RUNNING, STOPPING = Value
+    val CONNECTING, ORIENTING, SITTING, TWIRLING, WALKING, RUNNING,
+      STOPPING = Value
   }
 }
 
@@ -64,7 +67,7 @@ class LeashControlActivity extends ControlActivityBase
 
   private var lastTime = 0L
 
-  private var state = ATTACHING
+  private var state = CONNECTING
 
   private var color = NamedColor.BLACK
 
@@ -73,9 +76,12 @@ class LeashControlActivity extends ControlActivityBase
 
   private var localizing = true
 
-  private var orienting = false
-
   private var active = false
+
+  private lazy val connectImg = findView(TR.connect_animation_image)
+
+  private lazy val connectAnimation =
+    connectImg.getBackground.asInstanceOf[AnimationDrawable]
 
   override protected def onCreate(savedInstanceState : Bundle)
   {
@@ -96,6 +102,8 @@ class LeashControlActivity extends ControlActivityBase
     if (rotationVector.isEmpty || accelerometer.isEmpty) {
       finishWithError(classOf[LeashNoSensorActivity])
     }
+    connectImg.setBackgroundResource(R.drawable.connect_animation)
+    connectAnimation.start
   }
 
   override protected def onStart()
@@ -249,8 +257,8 @@ class LeashControlActivity extends ControlActivityBase
 
   def getStateText =
   {
-    if (state == ATTACHING) {
-      if (orienting) {
+    if (isAttaching) {
+      if (isOrienting) {
         if (localizing) {
           if (level) {
             "NOW CENTER CAMERA DIRECTLY ABOVE SPHERO AND " +
@@ -283,7 +291,9 @@ class LeashControlActivity extends ControlActivityBase
   override protected def handleConnectionEstablished()
   {
     super.handleConnectionEstablished
-    orienting = true
+    connectAnimation.stop
+    connectImg.setVisibility(View.GONE)
+    state = ORIENTING
     actuator.setMotionTimeout(10.seconds)
     LeashAnalytics.trackEvent("status", "CONNECTED")
   }
@@ -299,7 +309,7 @@ class LeashControlActivity extends ControlActivityBase
   override protected def handleConnectionLost()
   {
     super.handleConnectionLost
-    state = ATTACHING
+    state = CONNECTING
     finishWithError(classOf[LeashBluetoothErrorActivity])
   }
 
@@ -311,7 +321,6 @@ class LeashControlActivity extends ControlActivityBase
         controlActor ! VisionActor.CloseEyesMsg(
           TimePoint.now)
       })
-      orienting = false
       changeColor(NamedColor.MAGENTA)
       state = SITTING
       active = true
@@ -345,7 +354,11 @@ class LeashControlActivity extends ControlActivityBase
     }
   }
 
-  def isOrienting = orienting
+  def isOrienting = (state == ORIENTING)
+
+  def isConnecting = (state == CONNECTING)
+
+  def isAttaching = (isConnecting || isOrienting)
 
   def getLeash = leash
 }
