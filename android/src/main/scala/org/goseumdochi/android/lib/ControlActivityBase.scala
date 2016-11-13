@@ -31,8 +31,6 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-import com.typesafe.config._
-
 import com.orbotix._
 import com.orbotix.common._
 import com.orbotix.common.RobotChangedStateListener._
@@ -75,9 +73,7 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
 
   private lazy val actorSystem = ActorSystem(
     "AndroidActors" + ControlActivityBase.nextId,
-    ConfigFactory.load(
-      getApplication.asInstanceOf[MultidexApplication].getResourceClassLoader,
-      "android.conf"))
+    config)
 
   protected lazy val settings = ActorSettings(actorSystem)
 

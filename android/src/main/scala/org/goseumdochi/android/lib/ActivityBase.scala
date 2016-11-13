@@ -23,6 +23,8 @@ import android.widget._
 
 import android.support.v7.app._
 
+import com.typesafe.config._
+
 trait ContextBase
 {
   def getApplicationContext() : Context
@@ -41,6 +43,10 @@ trait ContextBase
 trait ActivityBaseNoCompat extends Activity with ContextBase
 {
   protected final val PERMISSION_REQUEST = 42
+
+  protected lazy val config = ConfigFactory.load(
+    getApplication.asInstanceOf[MultidexApplication].getResourceClassLoader,
+    "android.conf")
 
   protected def hasPermission(permission : String) =
   {
