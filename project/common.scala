@@ -46,6 +46,8 @@ object Common {
 
   def androidPlatformTarget = "android-23"
 
+  def androidMinSdkVersion = "11"
+
   def androidTargetSdkVersion = "23"
 
   lazy val defaultPlatform = org.bytedeco.javacpp.Loader.getPlatform
