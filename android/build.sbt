@@ -6,6 +6,8 @@ libraryProject in Android := true
 
 platformTarget in Android := Common.androidPlatformTarget
 
+minSdkVersion in Android := Common.androidMinSdkVersion
+
 targetSdkVersion in Android := Common.androidTargetSdkVersion
 
 name := """goseumdochi-android"""
