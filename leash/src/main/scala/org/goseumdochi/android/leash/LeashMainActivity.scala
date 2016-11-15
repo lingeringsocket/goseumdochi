@@ -85,7 +85,6 @@ class LeashMainActivity
     val img = findView(TR.intro_animation_image)
     img.setBackgroundResource(R.drawable.intro_animation)
     img.getBackground.asInstanceOf[AnimationDrawable].start
-    config
   }
 
   override protected def onResume()
