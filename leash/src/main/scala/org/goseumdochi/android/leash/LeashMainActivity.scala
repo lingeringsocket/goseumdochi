@@ -19,7 +19,6 @@ import org.goseumdochi.android.lib._
 
 import android.app._
 import android.content._
-import android.graphics.drawable._
 import android.net._
 import android.os._
 import android.preference._
@@ -82,9 +81,9 @@ class LeashMainActivity
     findView(TR.intro_post_text).setMovementMethod(
       LinkMovementMethod.getInstance)
     checkPrerequisites
-    val img = findView(TR.intro_animation_image)
-    img.setBackgroundResource(R.drawable.intro_animation)
-    img.getBackground.asInstanceOf[AnimationDrawable].start
+    EfficientAnimation.animate(
+      R.drawable.intro_animation, findView(TR.intro_animation_image),
+      getResources.getInteger(R.integer.intro_animation_delay))
   }
 
   override protected def onResume()
