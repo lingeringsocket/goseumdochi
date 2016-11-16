@@ -52,7 +52,7 @@ traceLevel := Common.traceLevel
 
 libraryDependencies ++= Seq(
   aar("com.google.android.gms" % "play-services-analytics" % "9.2.0"),
-  "org.apache.directory.studio" % "org.apache.commons.io" % "2.4"
+  "commons-io" % "commons-io" % "2.4"
 )
 
 googleServicesSettings
