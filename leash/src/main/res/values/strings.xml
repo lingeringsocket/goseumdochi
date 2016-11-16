@@ -12,7 +12,7 @@
   <string name="about_text">
 Now you can take your Sphero for a walk!
   </string>
-  <string name="about_version">RollWithMe for Sphero (v1.10)</string>
+  <string name="about_version">RollWithMe for Sphero (v1.12)</string>
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
@@ -46,9 +46,6 @@ Sphero could not be located.  Please <a href="https://goseumdochi.org/roll-with-
 Unfortunately, your device does not support one or more required sensors
 (rotation vector and/or accelerometer).
   </string>
-
-  <string name="intro_animation_delay">200</string>
-  <string name="connect_animation_delay">200</string>
 
   <string-array name="walkthrough_text">
     <item>Let\'s learn how to get RollWithMe working in a few simple steps.</item>
