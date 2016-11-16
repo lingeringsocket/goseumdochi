@@ -102,8 +102,9 @@ class LeashControlActivity extends ControlActivityBase
     if (rotationVector.isEmpty || accelerometer.isEmpty) {
       finishWithError(classOf[LeashNoSensorActivity])
     }
-    connectImg.setBackgroundResource(R.drawable.connect_animation)
-    connectAnimation.start
+    EfficientAnimation.animate(
+      R.drawable.connect_animation, connectImg,
+      getResources.getInteger(R.integer.connect_animation_delay))
   }
 
   override protected def onStart()

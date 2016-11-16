@@ -1,0 +1,4 @@
+<resources>
+  <integer name="intro_animation_delay">200</integer>
+  <integer name="connect_animation_delay">200</integer>
+</resources>

@@ -3,17 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/intro_animation" android:oneshot="false">
   <item android:drawable="@drawable/intro1"
-        android:duration="@string/intro_animation_delay" />
+        android:duration="@integer/intro_animation_delay" />
   <item android:drawable="@drawable/intro2"
-        android:duration="@string/intro_animation_delay" />
+        android:duration="@integer/intro_animation_delay" />
   <item android:drawable="@drawable/intro3"
-        android:duration="@string/intro_animation_delay" />
+        android:duration="@integer/intro_animation_delay" />
   <item android:drawable="@drawable/intro4"
-        android:duration="@string/intro_animation_delay" />
+        android:duration="@integer/intro_animation_delay" />
   <item android:drawable="@drawable/intro5"
-        android:duration="@string/intro_animation_delay" />
+        android:duration="@integer/intro_animation_delay" />
   <item android:drawable="@drawable/intro6"
-        android:duration="@string/intro_animation_delay" />
-  <item android:drawable="@drawable/intro7"
-        android:duration="@string/intro_animation_delay" />
+        android:duration="@integer/intro_animation_delay" />
 </animation-list>

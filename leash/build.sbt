@@ -51,7 +51,8 @@ maxErrors := Common.maxErrors
 traceLevel := Common.traceLevel
 
 libraryDependencies ++= Seq(
-  aar("com.google.android.gms" % "play-services-analytics" % "9.2.0")
+  aar("com.google.android.gms" % "play-services-analytics" % "9.2.0"),
+  "commons-io" % "commons-io" % "2.4"
 )
 
 googleServicesSettings

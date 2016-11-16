@@ -3,11 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/connect_animation" android:oneshot="false">
   <item android:drawable="@drawable/connect1"
-        android:duration="@string/connect_animation_delay" />
+        android:duration="@integer/connect_animation_delay" />
   <item android:drawable="@drawable/connect2"
-        android:duration="@string/connect_animation_delay" />
+        android:duration="@integer/connect_animation_delay" />
   <item android:drawable="@drawable/connect3"
-        android:duration="@string/connect_animation_delay" />
+        android:duration="@integer/connect_animation_delay" />
   <item android:drawable="@drawable/connect4"
-        android:duration="@string/connect_animation_delay" />
+        android:duration="@integer/connect_animation_delay" />
 </animation-list>
