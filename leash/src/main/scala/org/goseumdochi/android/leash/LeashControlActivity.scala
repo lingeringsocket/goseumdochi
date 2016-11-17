@@ -80,9 +80,6 @@ class LeashControlActivity extends ControlActivityBase
 
   private lazy val connectImg = findView(TR.connect_animation_image)
 
-  private lazy val connectAnimation =
-    connectImg.getBackground.asInstanceOf[AnimationDrawable]
-
   override protected def onCreate(savedInstanceState : Bundle)
   {
     super.onCreate(savedInstanceState)
@@ -292,7 +289,6 @@ class LeashControlActivity extends ControlActivityBase
   override protected def handleConnectionEstablished()
   {
     super.handleConnectionEstablished
-    connectAnimation.stop
     connectImg.setVisibility(View.GONE)
     state = ORIENTING
     actuator.setMotionTimeout(10.seconds)
