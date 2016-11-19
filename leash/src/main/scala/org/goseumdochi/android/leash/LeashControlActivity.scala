@@ -23,7 +23,6 @@ import org.goseumdochi.vision._
 
 import akka.actor._
 
-import android.graphics.drawable._
 import android.hardware._
 import android.os._
 import android.view._

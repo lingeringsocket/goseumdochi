@@ -6,7 +6,11 @@
    <item name="android:paddingLeft">30dp</item>
    <item name="android:paddingRight">30dp</item>
    <item name="android:letterSpacing">.15</item>
-   <item name="android:textColor">#fcfddd</item>
+   <item name="android:textColor">#fffabf</item>
+   <item name="android:shadowColor">#a8a8a8</item>
+   <item name="android:shadowDx">0</item>
+   <item name="android:shadowDy">0</item>
+   <item name="android:shadowRadius">10</item>
    <item name="android:textStyle">bold</item>
    <item name="android:background">@drawable/round_button</item>
  </style>  

@@ -12,7 +12,7 @@
   <string name="about_text">
 Now you can take your Sphero for a walk!
   </string>
-  <string name="about_version">RollWithMe for Sphero (v1.13)</string>
+  <string name="about_version">RollWithMe for Sphero (v1.14)</string>
   <string name="about_copyright">&#169; 2016 Lingering Socket Labs</string>
   <string name="about_author_email">info@goseumdochi.org</string>
   <string name="about_project_url">https://goseumdochi.org</string>
@@ -39,12 +39,9 @@ Now you can take your Sphero for a walk!
 
   <string name="walkthrough_hint">(Swipe left to continue)</string>
 
-  <string name="unfound_text">
-Sphero could not be located.  Please <a href="https://goseumdochi.org/roll-with-me-help#tips">read the help page</a> and then try again.  You can also <a href="https://youtu.be/7waOVA_C6QQ">watch a video example</a>.
+  <string name="unfound_text">Sphero could not be located.  Please <a href="https://goseumdochi.org/roll-with-me-help#tips">read the help page</a> and then try again.  You can also <a href="https://youtu.be/7waOVA_C6QQ">watch a video example</a>.
   </string>
-  <string name="nosensor_text">
-Unfortunately, your device does not support one or more required sensors
-(rotation vector and/or accelerometer).
+  <string name="nosensor_text">Unfortunately, your device does not support one or more required sensors (rotation vector and/or accelerometer).
   </string>
 
   <string-array name="walkthrough_text">

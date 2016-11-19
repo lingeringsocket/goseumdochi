@@ -19,6 +19,7 @@ import org.goseumdochi.android.lib._
 
 import android.os._
 import android.text.method._
+import android.view._
 import android.widget._
 
 abstract class LeashErrorActivity(
@@ -39,6 +40,12 @@ abstract class LeashErrorActivity(
     super.onResume
     LeashAnalytics.trackScreen(screenName)
   }
+
+  override def onHelpClicked(v : View)
+  {
+    LeashAnalytics.trackEvent("help", "click")
+    super.onHelpClicked(v)
+  }
 }
 
 class LeashUnfoundActivity extends LeashErrorActivity(
@@ -51,7 +58,7 @@ class LeashNoSensorActivity extends LeashErrorActivity(
   R.layout.nosensor, "Sensor Error")
 
 class LeashBluetoothErrorActivity extends LeashErrorActivity(
-  R.layout.bluetooth, "Bluetooth Error", Some(TR.bluetooth_error_content))
+  R.layout.leash_bluetooth, "Bluetooth Error", Some(TR.bluetooth_error_content))
 {
   override protected def getSubject =
     "Need Help with RollWithMe Sphero Connection"
