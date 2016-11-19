@@ -7,6 +7,14 @@
     android:layout_height="wrap_content"
     android:layout_width="wrap_content"
     android:layout_gravity="center">
+  <Button
+      android:text="@string/ask_for_help"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:layout_marginTop="10dp"
+      android:layout_marginBottom="10dp"
+      android:onClick="onHelpClicked" />
   <ImageView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
@@ -15,18 +23,18 @@
       android:layout_gravity="center_horizontal"
       android:src="@drawable/leash_error" />
   <TextView
-      android:id="@+id/nosensor_content"
+      android:id="@+id/bluetooth_error_content"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:text="@string/nosensor_text"
+      android:text="@string/bluetooth_error_text"
       android:layout_marginTop="10dp"
       android:layout_gravity="center" />
   <Button
       android:text="@string/ok"
-      android:id="@+id/about_ok"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="center"
       android:layout_marginTop="10dp"
-      android:onClick="onOkClicked" />
+      android:onClick="onOkClicked"
+      android:width="100dp" />
 </LinearLayout>

@@ -11,17 +11,17 @@
       android:text="@string/ask_for_help"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_gravity="right"
+      android:layout_gravity="center"
       android:layout_marginTop="10dp"
       android:layout_marginBottom="10dp"
       android:onClick="onHelpClicked" />
   <ImageView
-      android:layout_width="100dp"
-      android:layout_height="100dp"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
       android:scaleType="fitCenter"
       android:adjustViewBounds="true"
       android:layout_gravity="center_horizontal"
-      android:src="@drawable/unfound" />
+      android:src="@drawable/leash_error" />
   <TextView
       android:id="@+id/unfound_content"
       android:layout_width="wrap_content"

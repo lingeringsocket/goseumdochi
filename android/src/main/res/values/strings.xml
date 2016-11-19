@@ -15,8 +15,7 @@
   <string name="toast_bluetooth_required">Unable to run without Bluetooth enabled.</string>
   <string name="toast_permissions_required">Unable to run until all requested permissions have been granted.</string>
 
-  <string name="bluetooth_error_text">
-Bluetooth connection to Sphero failed.  <a href="https://goseumdochi.org/sphero-connection/#tips">Please make sure Sphero is paired and awake with its battery charged</a>, then try setup again.
+  <string name="bluetooth_error_text">Bluetooth connection to Sphero failed.  <a href="https://goseumdochi.org/sphero-connection/#tips">Please make sure Sphero is paired and awake with its battery charged</a>, then try setup again.
   </string>
 
   <string-array name="white_balance_options">

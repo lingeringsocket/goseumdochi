@@ -16,9 +16,12 @@
 package org.goseumdochi.android.leash
 
 import android.app._
+import android.content._
 import android.preference._
 
 import com.google.android.gms.analytics._
+
+import java.io._
 
 object LeashAnalytics
 {
@@ -30,6 +33,10 @@ object LeashAnalytics
   {
     val instance = GoogleAnalytics.getInstance(app)
     ga = Some(instance)
+    val reporter = new ExceptionReporter(
+      tracker, Thread.getDefaultUncaughtExceptionHandler, app)
+    reporter.setExceptionParser(new LeashAnalyticsExceptionParser(app))
+    Thread.setDefaultUncaughtExceptionHandler(reporter)
     tracker.enableAutoActivityTracking(false)
     tracker.enableExceptionReporting(true)
     val prefs = PreferenceManager.getDefaultSharedPreferences(app)
@@ -63,4 +70,22 @@ object LeashAnalytics
   }
 
   private def optOut = ga.map(_.getAppOptOut).getOrElse(false)
+}
+
+class LeashAnalyticsExceptionParser(context : Context)
+    extends StandardExceptionParser(context, null)
+{
+  override protected def getDescription(
+    cause : Throwable,
+    element : StackTraceElement,
+    threadName : String) =
+  {
+    val descriptionBuilder = new StringBuilder
+    val writer = new StringWriter
+    val printWriter = new PrintWriter(writer)
+    cause.printStackTrace(printWriter)
+    descriptionBuilder.append(writer.toString)
+    printWriter.close
+    descriptionBuilder.toString
+  }
 }
