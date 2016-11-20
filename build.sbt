@@ -31,9 +31,9 @@ lazy val root = (project in file(".")).
 
 lazy val android = project.dependsOn(base)
 
-lazy val watchdog = project.androidBuildWith(android)
+lazy val watchdog = project.enablePlugins(AndroidApp).dependsOn(android)
 
-lazy val leash = project.androidBuildWith(android)
+lazy val leash = project.enablePlugins(AndroidApp).dependsOn(android)
 
 mainClass in Compile := Some("org.goseumdochi.ConsoleMain")
 
