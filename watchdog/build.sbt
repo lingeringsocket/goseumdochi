@@ -36,8 +36,6 @@ proguardScala in Android := true
 
 dexMulti in Android := true
 
-dexMinimizeMain in Android := true
-
 dexMaxProcessCount := 1
 
 dexMainClasses in Android := Common.dexMainClasses

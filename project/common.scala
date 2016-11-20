@@ -104,7 +104,10 @@ object Common {
   )
 
   def proguardOptions = Seq(
+    "-dontpreverify",
     "-dontobfuscate",
+    "-dontoptimize",
+    "-keepattributes EnclosingMethod",
     "-keep class com.typesafe.config.** { *; }",
     "-keep,includedescriptorclasses class org.goseumdochi.** { *; }",
     "-keep class scala.Dynamic",
@@ -116,7 +119,6 @@ object Common {
     "-keep @org.bytedeco.javacpp.annotation.Platform public class *",
     "-keepclasseswithmembernames class * {@org.bytedeco.* <fields>;}",
     "-keepclasseswithmembernames class * {@org.bytedeco.* <methods>;}",
-    "-keepattributes EnclosingMethod",
     "-keep @interface org.bytedeco.javacpp.annotation.*,javax.inject.*",
     "-keepattributes *Annotation*, Exceptions, Signature, Deprecated, SourceFile, SourceDir, LineNumberTable, LocalVariableTable, LocalVariableTypeTable, Synthetic, EnclosingMethod, RuntimeVisibleAnnotations, RuntimeInvisibleAnnotations, RuntimeVisibleParameterAnnotations, RuntimeInvisibleParameterAnnotations, AnnotationDefault, InnerClasses",
     "-keep class com.orbotix.** {*;}",
