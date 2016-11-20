@@ -104,10 +104,9 @@ object Common {
   )
 
   def proguardOptions = Seq(
-    "-ignorewarnings",
     "-dontobfuscate",
     "-keep class com.typesafe.config.** { *; }",
-    "-keep class org.goseumdochi.** { *; }",
+    "-keep,includedescriptorclasses class org.goseumdochi.** { *; }",
     "-keep class scala.Dynamic",
     "-keep class scala.Option",
     "-keep class scala.Tuple*",
@@ -123,24 +122,35 @@ object Common {
     "-keep class com.orbotix.** {*;}",
     "-keep class org.bytedeco.javacpp.* {*;}",
     "-keep class org.bytedeco.javacpp.helper.* {*;}",
+    "-dontwarn com.orbotix.**",
+    "-dontwarn com.owlike.genson.**",
+    "-dontwarn com.google.android.gms.**",
+    "-dontnote com.google.android.gms.**",
+    "-dontwarn com.google.firebase.**",
+    "-dontnote com.google.firebase.**",
+    "-dontnote akka.util.Reflect$",
     "-dontwarn java.awt.**",
+    "-dontwarn resource.jta.**",
+    "-dontnote org.bytedeco.javacv.**",
+    "-dontnote org.bytedeco.javacpp.**",
     "-dontwarn org.bytedeco.javacv.**",
     "-dontwarn org.bytedeco.javacpp.**",
-    "-keep class akka.actor.LightArrayRevolverScheduler { *; }",
-    "-keep class akka.actor.LocalActorRefProvider { *; }",
+    "-dontwarn sun.misc.Unsafe",
+    "-keep,includedescriptorclasses class akka.actor.LightArrayRevolverScheduler { *; }",
+    "-keep,includedescriptorclasses class akka.actor.LocalActorRefProvider { *; }",
+    "-keep,includedescriptorclasses class akka.actor.LocalActorRefProvider$SystemGuardian { *; }",
     "-keep class akka.actor.CreatorFunctionConsumer { *; }",
     "-keep class akka.actor.TypedCreatorFunctionConsumer { *; }",
     "-keep class akka.dispatch.BoundedDequeBasedMessageQueueSemantics { *; }",
     "-keep class akka.dispatch.UnboundedMessageQueueSemantics { *; }",
     "-keep class akka.dispatch.UnboundedDequeBasedMessageQueueSemantics { *; }",
-    "-keep class akka.dispatch.DequeBasedMessageQueueSemantics { *; }",
+    "-keep,includedescriptorclasses class akka.dispatch.DequeBasedMessageQueueSemantics { *; }",
     "-keep class akka.dispatch.MultipleConsumerSemantics { *; }",
     "-keep class akka.actor.LocalActorRefProvider$Guardian { *; }",
     "-keep class akka.actor.LocalActorRefProvider$SystemGuardian { *; }",
-    "-keep class akka.dispatch.UnboundedMailbox { *; }",
+    "-keep,includedescriptorclasses class akka.dispatch.UnboundedMailbox { *; }",
     "-keep class akka.actor.DefaultSupervisorStrategy { *; }",
-    "-keep class macroid.akka.AkkaAndroidLogger { *; }",
-    "-keep class akka.event.Logging$LogExt { *; }"
+    "-keep,includedescriptorclasses class akka.event.Logging$LogExt { *; }"
   )
 
   def packagingExcludes = Seq(
