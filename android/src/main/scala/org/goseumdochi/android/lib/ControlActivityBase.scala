@@ -73,7 +73,9 @@ abstract class ControlActivityBase extends ActivityBaseNoCompat
 
   private lazy val actorSystem = ActorSystem(
     "AndroidActors" + ControlActivityBase.nextId,
-    config)
+    config,
+    getClass.getClassLoader
+  )
 
   protected lazy val settings = ActorSettings(actorSystem)
 
