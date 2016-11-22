@@ -32,6 +32,7 @@ libraryDependencies ++= Seq(
   aar("com.android.support" % "support-v4" % "23.0.0"),
   aar("com.android.support" % "appcompat-v7" % "23.0.0"),
   aar("com.android.support" % "multidex" % "1.0.1"),
+  "com.getkeepsafe.relinker" % "relinker" % "1.2.2",
   "org.slf4j" % "slf4j-android" % "1.7.21"
 )
 
