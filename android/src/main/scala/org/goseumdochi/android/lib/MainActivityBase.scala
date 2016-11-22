@@ -27,6 +27,8 @@ import android.view._
 
 import java.util._
 
+import com.getkeepsafe.relinker._
+
 abstract class PrerequisitesActivityBase extends ActivityBase
 {
   private final val ENABLE_BT_REQUEST = 43
@@ -36,6 +38,17 @@ abstract class PrerequisitesActivityBase extends ActivityBase
   private var locationEnabled = false
 
   private var startRequested = false
+
+  override protected def onCreate(savedInstanceState : Bundle)
+  {
+    super.onCreate(savedInstanceState)
+    ReLinker.recursively.loadLibrary(this, "jniopencv_core");
+    ReLinker.recursively.loadLibrary(this, "opencv_core");
+    ReLinker.recursively.loadLibrary(this, "jniopencv_imgcodecs");
+    ReLinker.recursively.loadLibrary(this, "opencv_imgcodecs");
+    ReLinker.recursively.loadLibrary(this, "jniopencv_imgproc");
+    ReLinker.recursively.loadLibrary(this, "opencv_imgproc");
+  }
 
   protected def checkPrerequisites()
   {

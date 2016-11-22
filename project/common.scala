@@ -40,7 +40,7 @@ object Common {
 
   def javacppVersion = "1.2"
 
-  def javacppPointVersion = "1.2.1"
+  def javacppPointVersion = "1.2.5"
 
   def ffmpegVersion = "3.0.2"
 
